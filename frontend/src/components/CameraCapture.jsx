@@ -5,8 +5,23 @@ const VIDEO_CONSTRAINTS = {
   facingMode: 'environment',
 }
 
+const STEPS = {
+  side: {
+    instructions:
+      'Hold your finger sideways (profile view) against a plain background, nail facing the camera, fingertip pointing toward the bottom of the frame.',
+    buttonLabel: 'Capture side profile',
+  },
+  top: {
+    instructions:
+      'Now lay your finger flat and photograph it from above, nail facing the camera, against a plain background.',
+    buttonLabel: 'Capture top-down view',
+  },
+}
+
 export default function CameraCapture({ onCapture, loading }) {
   const webcamRef = useRef(null)
+  const [step, setStep] = useState('side')
+  const [sideImage, setSideImage] = useState(null)
   const [cameraError, setCameraError] = useState(null)
 
   const handleCapture = useCallback(() => {
@@ -16,15 +31,21 @@ export default function CameraCapture({ onCapture, loading }) {
       return
     }
     const base64 = screenshot.split(',')[1]
-    onCapture(base64)
-  }, [onCapture])
+
+    if (step === 'side') {
+      setSideImage(base64)
+      setStep('top')
+    } else {
+      onCapture({ sideImage, topImage: base64 })
+    }
+  }, [step, sideImage, onCapture])
+
+  const { instructions, buttonLabel } = STEPS[step]
 
   return (
     <div className="capture-card">
-      <p className="capture-instructions">
-        Hold your finger sideways (profile view) against a plain background, with the
-        nail facing the camera. Good lighting helps.
-      </p>
+      <p className="capture-step">Step {step === 'side' ? '1' : '2'} of 2</p>
+      <p className="capture-instructions">{instructions}</p>
 
       <div className="webcam-frame">
         {cameraError ? (
@@ -53,7 +74,7 @@ export default function CameraCapture({ onCapture, loading }) {
         onClick={handleCapture}
         disabled={loading || !!cameraError}
       >
-        {loading ? 'Analyzing…' : 'Capture & Analyze'}
+        {loading ? 'Analyzing…' : buttonLabel}
       </button>
     </div>
   )

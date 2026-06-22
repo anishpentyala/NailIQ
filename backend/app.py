@@ -1,7 +1,11 @@
 import os
+import sys
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ml.infer.pipeline import analyze_side_profile  # noqa: E402
 
 app = Flask(__name__)
 CORS(app)
@@ -10,19 +14,13 @@ CORS(app)
 @app.route("/analyze", methods=["POST"])
 def analyze():
     data = request.get_json(silent=True) or {}
-    if "image" not in data:
-        return jsonify({"error": "missing 'image' field (base64 string)"}), 400
+    if "side_image" not in data or "top_image" not in data:
+        return jsonify({"error": "missing 'side_image' and/or 'top_image' fields (base64 strings)"}), 400
 
-    # Stub: hardcoded response so the frontend loop can be built and tested
-    # before the real CV pipeline (Track A/B) exists.
-    return jsonify(
-        {
-            "angle": 165.0,
-            "verdict": "within",
-            "confidence": 0.0,
-            "track_used": "stub",
-        }
-    )
+    # top_image is accepted now and reserved for future color/texture-based
+    # findings (leukonychia, splinter hemorrhages, Terry's nails) -- not analyzed yet.
+    result = analyze_side_profile(data["side_image"])
+    return jsonify(result)
 
 
 if __name__ == "__main__":

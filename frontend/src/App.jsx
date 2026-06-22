@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import CameraCapture from './components/CameraCapture'
 import ResultView from './components/ResultView'
-import { analyzeImage } from './api'
+import { analyzeImages } from './api'
 import './App.css'
 
 function App() {
@@ -9,11 +9,11 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleCapture = useCallback(async (base64Image) => {
+  const handleCapture = useCallback(async ({ sideImage, topImage }) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await analyzeImage(base64Image)
+      const data = await analyzeImages({ sideImage, topImage })
       setResult(data)
     } catch (err) {
       setError("Couldn't reach the analysis server. Is the backend running?")
@@ -31,12 +31,12 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="brand">Lovibond</h1>
-        <p className="tagline">A precautionary nail-angle screener</p>
+        <p className="tagline">A precautionary nail-health screener</p>
       </header>
 
       <p className="disclaimer-banner">
         This is an educational screening tool, not a diagnosis. It only flags whether
-        your nail angle is typical or worth a doctor's look.
+        your nail signs are typical or worth a doctor's look.
       </p>
 
       {error && <div className="camera-error">{error}</div>}

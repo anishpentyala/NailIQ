@@ -43,6 +43,15 @@
   flex: 1;
 }
 
+.capture-step {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .capture-instructions {
   font-size: 14px;
   color: var(--text-muted);
@@ -126,19 +135,46 @@
   justify-content: center;
 }
 
+.findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.finding-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.findings-list .finding-card:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.finding-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .result-icon {
-  font-size: 40px;
+  font-size: 32px;
   line-height: 1;
 }
 
 .result-angle {
-  font-size: 48px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--text);
 }
 
 .result-verdict {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -148,6 +184,10 @@
 
 .result-verdict.outside {
   color: var(--warn);
+}
+
+.result-verdict.inconclusive {
+  color: var(--text-muted);
 }
 
 .result-message {
