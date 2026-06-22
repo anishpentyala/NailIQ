@@ -1,0 +1,164 @@
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 32px;
+  gap: 20px;
+}
+
+.app-header {
+  text-align: center;
+}
+
+.app-header .brand {
+  font-size: 22px;
+  color: var(--primary-dark);
+}
+
+.app-header .tagline {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.disclaimer-banner {
+  background: var(--primary-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Camera capture */
+.capture-card {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.capture-instructions {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.webcam-frame {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 3 / 4;
+}
+
+.webcam-frame video,
+.webcam-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.webcam-guide {
+  position: absolute;
+  inset: 8%;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.camera-error {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--primary-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Result view */
+.result-card {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.result-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.result-angle {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.result-verdict {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.result-verdict.within {
+  color: var(--primary-dark);
+}
+
+.result-verdict.outside {
+  color: var(--warn);
+}
+
+.result-message {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.result-disclaimer {
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}

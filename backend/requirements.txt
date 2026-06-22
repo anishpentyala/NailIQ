@@ -1,0 +1,13 @@
+flask==3.0.3
+flask-cors==4.0.1
+flask-sqlalchemy==3.1.1
+python-dotenv==1.0.1
+pillow==10.4.0
+numpy==1.26.4
+
+# Added in step 3 (Track B classifier):
+# tensorflow==2.16.1
+
+# Added in step 4 (Track A geometric):
+# opencv-python==4.10.0.84
+# mediapipe==0.10.14

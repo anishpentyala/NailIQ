@@ -1,0 +1,36 @@
+# Python
+backend/venv/
+ml/venv/
+__pycache__/
+*.pyc
+*.db
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Data (large/binary, not committed)
+data/raw/
+data/positive/*
+data/negative/*
+data/augmented/*
+!data/positive/.gitkeep
+!data/negative/.gitkeep
+!data/augmented/.gitkeep
+
+# ML model weights (large binary)
+ml/models/*.h5
+ml/models/*.pt
+ml/models/*.tflite
