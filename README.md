@@ -1,9 +1,9 @@
-# Lovibond
+# NailIQ
 
 A precautionary screener for nail-based signs of systemic disease. Digital clubbing
 is present in ~35% of non-small-cell lung cancer cases and is also linked to heart
 disease, COPD, and liver disease; koilonychia (spoon nails) is linked to iron
-deficiency anemia. Both develop slowly and are rarely self-noticed. Lovibond lets
+deficiency anemia. Both develop slowly and are rarely self-noticed. NailIQ lets
 anyone photograph their finger and get a quick, honest read on whether their nail
 signs are worth mentioning to a doctor.
 
@@ -126,6 +126,15 @@ from "within"/"outside": it never guesses a verdict it isn't confident in.
 `confidence` is a heuristic derived from keypoint-detection quality (tip
 sharpness, cuticle curvature clarity), not a statistically calibrated probability.
 
+`POST /validate_photo`
+
+Request: `{ "image": "<base64>", "view": "side" | "top" }`
+Response: `{ "ok": true|false, "failure_reason": null | "<reason>" }`
+
+Called right after each capture, before advancing to the next step or submitting
+to `/analyze` — so a photo with no detectable finger/nail gets a retake prompt
+immediately instead of after both photos are taken and the full analysis runs.
+
 ## Decisions made without asking (per project brief: "ask me nothing you can
 reasonably decide yourself")
 
@@ -162,3 +171,8 @@ reasonably decide yourself")
 - **Koilonychia's threshold is a rough starting estimate** — there's no labeled
   dataset yet to calibrate against. Same caveat applies to `confidence`: it's a
   heuristic, not a calibrated probability, and isn't presented as one in the UI.
+- **Added a `/validate_photo` endpoint** rather than only catching a missing
+  nail at the end of `/analyze` — waiting for both photos and a full analysis
+  round trip just to find out the first photo was unusable was a worse user
+  experience than catching it right after each capture, while the user is still
+  standing in the same position holding the same pose.

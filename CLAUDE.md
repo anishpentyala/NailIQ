@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Lovibond: a precautionary screener for nail-based signs of systemic disease
+NailIQ: a precautionary screener for nail-based signs of systemic disease
 (currently digital clubbing and koilonychia/spoon nails). A user photographs their
 finger and gets a finding per condition, each one only ever "within typical range,"
 "outside typical range," or "couldn't analyze this photo" — **never** a named
@@ -73,6 +73,25 @@ independently `within` / `outside` / `inconclusive`:
 locate the finger or its keypoints — it never guesses a verdict it isn't confident
 in. `confidence` is a heuristic from keypoint-detection quality signals, not a
 calibrated probability — don't present it as one in any UI copy.
+
+### Per-photo retake check (`/validate_photo`)
+
+Waiting until both photos are captured and `/analyze` runs to discover a photo had
+no detectable finger/nail was a bad user experience, so `CameraCapture.jsx` calls
+`POST /validate_photo` (`{ image, view: 'side' | 'top' }` → `{ ok, failure_reason }`)
+right after each capture, before advancing to the next step or submitting. On
+`ok: false` it shows a retake message (via `failureReasonMessage()` in
+`frontend/src/failureReasons.js`) and lets the user retake that same photo without
+losing progress on the other one.
+
+`ml/infer/pipeline.py`'s `_extract()` backs both this and `/analyze`: it takes a
+`require_keypoints` flag because the side and top photos need different rigor —
+`view: 'side'` runs the full fingertip+cuticle keypoint search (same checks
+`/analyze` relies on), `view: 'top'` only confirms a finger-shaped contour exists,
+since the cuticle-vertex search assumes the side-profile orientation and doesn't
+apply to a top-down shot. `validate_photo()` and `analyze_side_profile()` are now
+both thin wrappers around `_extract()` — don't reintroduce duplicate
+decode/threshold/contour logic in either one.
 
 ### `ml/infer/`: one shared geometry pipeline, multiple findings
 

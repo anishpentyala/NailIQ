@@ -1,5 +1,7 @@
 import { useRef, useState, useCallback } from 'react'
 import Webcam from 'react-webcam'
+import { validatePhoto } from '../api'
+import { failureReasonMessage } from '../failureReasons'
 
 const VIDEO_CONSTRAINTS = {
   facingMode: 'environment',
@@ -23,14 +25,33 @@ export default function CameraCapture({ onCapture, loading }) {
   const [step, setStep] = useState('side')
   const [sideImage, setSideImage] = useState(null)
   const [cameraError, setCameraError] = useState(null)
+  const [validating, setValidating] = useState(false)
+  const [retakeError, setRetakeError] = useState(null)
 
-  const handleCapture = useCallback(() => {
+  const handleCapture = useCallback(async () => {
     const screenshot = webcamRef.current?.getScreenshot()
     if (!screenshot) {
       setCameraError("Couldn't capture an image. Make sure your camera is allowed and try again.")
       return
     }
     const base64 = screenshot.split(',')[1]
+
+    setRetakeError(null)
+    setValidating(true)
+    let validation
+    try {
+      validation = await validatePhoto(base64, step)
+    } catch (err) {
+      setValidating(false)
+      setRetakeError("Couldn't check that photo. Is the backend running?")
+      return
+    }
+    setValidating(false)
+
+    if (!validation.ok) {
+      setRetakeError(failureReasonMessage(validation.failure_reason))
+      return
+    }
 
     if (step === 'side') {
       setSideImage(base64)
@@ -46,6 +67,8 @@ export default function CameraCapture({ onCapture, loading }) {
     <div className="capture-card">
       <p className="capture-step">Step {step === 'side' ? '1' : '2'} of 2</p>
       <p className="capture-instructions">{instructions}</p>
+
+      {retakeError && <div className="camera-error">{retakeError}</div>}
 
       <div className="webcam-frame">
         {cameraError ? (
@@ -72,9 +95,9 @@ export default function CameraCapture({ onCapture, loading }) {
         type="button"
         className="primary-btn"
         onClick={handleCapture}
-        disabled={loading || !!cameraError}
+        disabled={loading || validating || !!cameraError}
       >
-        {loading ? 'Analyzing…' : buttonLabel}
+        {validating ? 'Checking photo…' : loading ? 'Analyzing…' : buttonLabel}
       </button>
     </div>
   )

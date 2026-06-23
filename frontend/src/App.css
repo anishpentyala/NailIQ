@@ -2,12 +2,57 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 24px 20px 32px;
+  padding: 24px 20px calc(32px + 72px);
   gap: 20px;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(31, 42, 46, 0.06);
+  z-index: 10;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 6px 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.bottom-nav-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottom-nav-item.active {
+  color: var(--primary-dark);
 }
 
 .app-header {
   text-align: center;
+}
+
+.brand-icon {
+  display: block;
+  font-size: 28px;
+  color: var(--primary);
+  margin-bottom: 2px;
 }
 
 .app-header .brand {
@@ -29,6 +74,63 @@
   font-size: 13px;
   color: var(--text-muted);
   text-align: center;
+}
+
+/* Info section */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px 14px;
+}
+
+.info-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.info-summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.info-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.info-blurb {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.info-detail {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 0 0 14px 34px;
 }
 
 /* Camera capture */
@@ -163,8 +265,30 @@
 }
 
 .result-icon {
-  font-size: 32px;
+  font-size: 22px;
   line-height: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.result-icon--within {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+}
+
+.result-icon--outside {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.result-icon--inconclusive {
+  background: var(--border);
+  color: var(--text-muted);
 }
 
 .result-angle {

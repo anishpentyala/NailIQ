@@ -1,3 +1,5 @@
+import { failureReasonMessage } from '../failureReasons'
+
 const COPY = {
   within: {
     icon: '✓',
@@ -13,17 +15,17 @@ const COPY = {
   inconclusive: {
     icon: '?',
     label: "Couldn't analyze this photo",
-    message:
-      'Try retaking with a plainer background, better lighting, and your whole finger in frame.',
   },
 }
 
 function FindingCard({ finding }) {
   const copy = COPY[finding.verdict] ?? COPY.inconclusive
+  const message =
+    finding.verdict === 'inconclusive' ? failureReasonMessage(finding.failure_reason) : copy.message
 
   return (
     <div className="finding-card">
-      <div className="result-icon">{copy.icon}</div>
+      <div className={`result-icon result-icon--${finding.verdict}`}>{copy.icon}</div>
       <div className="finding-name">{finding.display_name}</div>
       {finding.value != null && (
         <div className="result-angle">
@@ -32,7 +34,7 @@ function FindingCard({ finding }) {
         </div>
       )}
       <div className={`result-verdict ${finding.verdict}`}>{copy.label}</div>
-      <p className="result-message">{copy.message}</p>
+      <p className="result-message">{message}</p>
     </div>
   )
 }
@@ -53,7 +55,7 @@ export default function ResultView({ result, onReset }) {
       </button>
 
       <p className="result-disclaimer">
-        Lovibond is an educational screening tool, not a medical device. It does not
+        NailIQ is an educational screening tool, not a medical device. It does not
         diagnose any condition. Always consult a doctor about health concerns.
       </p>
     </div>

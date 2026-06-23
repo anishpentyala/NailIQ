@@ -1,10 +1,13 @@
 import { useState, useCallback } from 'react'
 import CameraCapture from './components/CameraCapture'
 import ResultView from './components/ResultView'
+import InfoSection from './components/InfoSection'
+import BottomNav from './components/BottomNav'
 import { analyzeImages } from './api'
 import './App.css'
 
 function App() {
+  const [activeTab, setActiveTab] = useState('scan')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -30,22 +33,30 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="brand">Lovibond</h1>
+        <span className="brand-icon" aria-hidden="true">◐</span>
+        <h1 className="brand">NailIQ</h1>
         <p className="tagline">A precautionary nail-health screener</p>
       </header>
 
       <p className="disclaimer-banner">
-        This is an educational screening tool, not a diagnosis. It only flags whether
-        your nail signs are typical or worth a doctor's look.
+        <span aria-hidden="true">ⓘ</span> This is an educational screening tool, not a
+        diagnosis. It only flags whether your nail signs are typical or worth a doctor's look.
       </p>
 
-      {error && <div className="camera-error">{error}</div>}
-
-      {result ? (
-        <ResultView result={result} onReset={handleReset} />
+      {activeTab === 'scan' ? (
+        <>
+          {error && <div className="camera-error">{error}</div>}
+          {result ? (
+            <ResultView result={result} onReset={handleReset} />
+          ) : (
+            <CameraCapture onCapture={handleCapture} loading={loading} />
+          )}
+        </>
       ) : (
-        <CameraCapture onCapture={handleCapture} loading={loading} />
+        <InfoSection />
       )}
+
+      <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>
   )
 }
