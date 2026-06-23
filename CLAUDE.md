@@ -56,15 +56,21 @@ the contract on purpose so the capture flow and request shape don't need to chan
 again when color/texture-based findings (leukonychia, splinter hemorrhages, Terry's
 nails — all need a top-down view) get added later.
 
-As of the ML track landing, `/analyze` runs **two tracks**: the geometry track
-(clubbing angle + koilonychia sagitta from the side photo) plus a trained-CNN
-track (`ml/infer/classifier.py`, MobileNetV3-Small) that classifies *both* photos
-as separate findings (`track_used: "ml"`, `label: "ml_side"|"ml_top"`). The ML
-track is optional — `classifier.is_available()` gates it, so the geometry response
-still works in a torch-free environment. See "The trained-CNN track" below.
+`/analyze` runs **two tracks and fuses them**: the geometry track (clubbing angle
++ koilonychia sagitta from the side photo) and a trained-CNN track
+(`ml/infer/classifier.py`, MobileNetV3-Large) that classifies the top-down photo.
+`ml/infer/fusion.py` combines them into **one finding per condition**
+(`track_used: "fused"`): when both tracks agree the verdict's confidence is
+boosted; when they disagree the finding is `inconclusive` (`tracks_disagree`)
+rather than asserting a split call. The ML track is optional —
+`classifier.is_available()` gates it, so if torch/weights are absent the geometry
+findings are returned unchanged (`track_used: "geometric"`). See "The trained-CNN
+track" and "Fusing the two tracks" below.
 
-The response is always `{ "findings": [...] }`, one entry per condition/track, each
-independently `within` / `outside` / `inconclusive`:
+The response is always `{ "findings": [...] }`, one entry per condition, each
+independently `within` / `outside` / `inconclusive`. A fused finding adds
+`agreement` ("agree" | "geometry_only" | "disagree" | "geometry_unavailable")
+plus `geometry` and `ml` sub-objects; a torch-free geometry finding looks like:
 ```json
 {
   "label": "clubbing",
@@ -139,28 +145,66 @@ following the existing pattern, and call it from `pipeline.py`.
 
 ### The trained-CNN track (`ml/infer/classifier.py`)
 
-A MobileNetV3-Small (ImageNet transfer learning) classifies a photo as
+A MobileNetV3-Large (ImageNet transfer learning) classifies a photo as
 `clubbing` / `koilonychia` / `healthy`. Trained by `ml/train/train_classifier.py`
 on the NailCheck dataset (`data/raw/nailcheck-3xvkl`, downloaded via
 `scripts/download_data.py` from Roboflow Universe, CC BY 4.0). Weights live in
 `ml/models/nail_classifier.pt` + `nail_classifier_labels.json` (gitignored —
-regenerate by re-running training). Test accuracy ~88% on the dataset's held-out
-split — **NOT** on real phone photos; treat real-world accuracy as unknown/lower,
-and never present it as clinical-grade.
+regenerate by re-running training; the JSON carries `backbone`, `img_size`,
+normalization, and the calibration `temperature`). Reported accuracy is on the
+dataset's held-out split — **NOT** on real phone photos; treat real-world accuracy
+as unknown/lower (measure it with `ml/eval/eval_real.py`) and never present it as
+clinical-grade.
+
+What makes the prediction more than a raw softmax guess (all in
+`classifier.classify_bgr`, mirrored in training so train/inference match):
+- **ROI crop.** `preprocessing.crop_to_finger_roi` crops to the detected finger
+  (same contour detector geometry uses) **before** classifying, so the CNN keys on
+  the nail, not the background. This is the single biggest real-world robustness
+  fix — feeding the whole frame let background clutter swing the prediction.
+- **TTA.** Predictions are averaged over the image + its horizontal flip.
+- **Temperature scaling.** Logits are divided by a temperature fit on the
+  validation set (`fit_temperature` in training) so the probability the
+  `CONFIDENCE_THRESHOLD` (0.50) gates on is calibrated, not over-confident.
 
 Key facts:
 - **Lazy + optional.** torch/torchvision and the weights are only loaded on first
   use; `classifier.is_available()` gates the whole track so `pipeline.analyze()`
-  silently omits ML findings (geometry still runs) if torch isn't installed or the
-  model isn't trained. Don't make the Flask app hard-depend on torch.
-- **Runs on both photos** as two findings (`label: "ml_side"|"ml_top"`). The model
-  was trained on top-down/frontal images, so the **side-view ML output is a domain
-  mismatch** and weaker than the top-down one — geometry is the authority on the
-  side profile. ML findings carry extra fields `predicted_label` and `probs`.
+  returns the geometry findings unchanged if torch isn't installed or the model
+  isn't trained. Don't make the Flask app hard-depend on torch.
+- **Top-down photo only.** The model trained on top-down/frontal images, so only
+  the top photo is classified for fusion; the side profile is geometry's domain.
+  `build_finding` returns extra fields `predicted_label` and `probs`.
 - Verdict mapping: predicted `healthy` → `within`; any condition → `outside`; top
-  prob below `CONFIDENCE_THRESHOLD` (0.50) → `inconclusive` (`low_confidence`).
-- `pipeline.analyze(side, top)` is the full two-track entry point `/analyze` calls;
+  prob below `CONFIDENCE_THRESHOLD` → `inconclusive` (`low_confidence`).
+- `pipeline.analyze(side, top)` is the full entry point `/analyze` calls;
   `analyze_side_profile(side)` remains the geometry-only path.
+
+Training (`ml/train/train_classifier.py`) fine-tunes the last few backbone blocks
+(not just the head) at a lower LR, with class weights + label smoothing for the
+mild imbalance and phone-realistic augmentation (perspective, blur). It prints a
+confusion matrix + per-class precision/recall — for a screener, **recall on the
+condition classes** (don't miss a real sign) is the metric to watch.
+
+### Fusing the two tracks (`ml/infer/fusion.py`)
+
+`fuse(geometry_findings, ml_top_finding)` returns one fused finding per condition.
+Per condition C: geometry inconclusive → inconclusive; ML missing / low-confidence
+/ predicting the *other* condition → geometry alone stands
+(`agreement: "geometry_only"`); tracks agree → agreed verdict with boosted
+confidence (`"agree"`); tracks disagree → `inconclusive` (`tracks_disagree`,
+`"disagree"`). Only the **top-view** ML signal is used — side-view ML is a domain
+mismatch and is deliberately ignored here.
+
+### Eval / diagnostics (`ml/eval/`)
+
+- `grad_cam.py` — Grad-CAM overlays (last conv block) on test images, written to
+  `ml/eval/gradcam_out/` (gitignored), to confirm the model attends to the nail,
+  not the background. Good judging/demo artifact.
+- `eval_real.py` — runs the **full inference path** (ROI + TTA + temperature) over
+  real phone photos in `data/real_eval/<label>/` (gitignored, personal images) and
+  reports a confusion matrix + per-class recall. This is the number that matters;
+  the training split accuracy doesn't reflect phone photos.
 
 ### Frontend component contract
 
@@ -171,8 +215,10 @@ Key facts:
   `verdict` through a `COPY` lookup (`within` / `outside` / `inconclusive`) for
   icon/label/message. Any new finding type automatically gets card rendering for
   free as long as it follows the same `{label, display_name, value, unit, verdict,
-  confidence, failure_reason}` shape. `track_used: "ml"` findings additionally show
-  an "AI model" badge and a "closest visual match" line from `predicted_label`.
+  confidence, failure_reason}` shape. `track_used: "fused"` findings show a
+  "Geometry + AI" badge plus an agreement note (from `agreement`) and the model's
+  closest visual match (from `ml.predicted_label`); the legacy `track_used: "ml"`
+  badge path is still handled for standalone ML findings.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
 

@@ -35,3 +35,12 @@ ml/models/*.h5
 ml/models/*.pt
 ml/models/*.tflite
 ml/models/*.json
+
+# ML eval artifacts + real-photo eval set (personal images)
+ml/eval/gradcam_out/
+data/real_eval/
+
+# Scratch
+_train_log.txt
+_bt/
+_realtest/

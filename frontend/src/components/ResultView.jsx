@@ -25,17 +25,28 @@ const ML_LABELS = {
   healthy: 'a typical, healthy-looking nail',
 }
 
+// How the two tracks lined up, shown on fused cards so the result is honest
+// about where it came from.
+const AGREEMENT_NOTE = {
+  agree: 'The shape measurement and the AI model agree on this.',
+  geometry_only: 'Based on the shape measurement; the AI model wasn’t conclusive here.',
+}
+
 function FindingCard({ finding, index }) {
   const copy = COPY[finding.verdict] ?? COPY.inconclusive
   const message =
     finding.verdict === 'inconclusive' ? failureReasonMessage(finding.failure_reason) : copy.message
 
   const isMl = finding.track_used === 'ml'
+  const isFused = finding.track_used === 'fused'
   const matchLabel = isMl && finding.predicted_label ? ML_LABELS[finding.predicted_label] : null
+  const mlMatch = isFused && finding.ml?.predicted_label ? ML_LABELS[finding.ml.predicted_label] : null
+  const agreementNote = isFused ? AGREEMENT_NOTE[finding.agreement] : null
 
   return (
     <div className="finding-card" style={{ '--finding-delay': `${index * 70}ms` }}>
       {isMl && <span className="track-badge">AI model</span>}
+      {isFused && <span className="track-badge">Geometry + AI</span>}
       <div className={`result-icon result-icon--${finding.verdict}`}>
         <Icon name={copy.icon} size={22} />
       </div>
@@ -51,6 +62,10 @@ function FindingCard({ finding, index }) {
         <p className="result-match">
           Closest visual match: {matchLabel} · {Math.round(finding.confidence * 100)}% confidence
         </p>
+      )}
+      {agreementNote && <p className="result-match">{agreementNote}</p>}
+      {mlMatch && finding.verdict !== 'inconclusive' && (
+        <p className="result-match">AI model’s closest visual match: {mlMatch}</p>
       )}
       <p className="result-message">{message}</p>
     </div>

@@ -113,3 +113,40 @@ def extract_best_contour(image_bgr, min_area=MIN_CONTOUR_AREA):
         if best_failure["reason"] == "no_contour_found":
             best_failure = validation
     return None, best_failure
+
+
+# Padding (fraction of the bbox) left around the finger when cropping the ROI,
+# so the cuticle/tip aren't clipped right at the edge.
+ROI_PAD_FRAC = 0.15
+
+
+def crop_to_finger_roi(image_bgr, pad_frac=ROI_PAD_FRAC):
+    """Crop to the detected finger's bounding box (with padding).
+
+    The classifier was hurt by background clutter: feeding the whole frame let it
+    key off whatever was behind the finger. Cropping to the finger ROI first --
+    using the same contour detector the geometry track relies on -- aligns what
+    the CNN sees at inference with the tight nail crops it trained on.
+
+    Falls back to the original image when no finger contour is found (e.g. an
+    already-cropped dataset image, or a frame the detector can't segment), so it
+    never throws and never returns an empty crop.
+    """
+    contour, validation = extract_best_contour(image_bgr)
+    if not validation["is_valid"]:
+        return image_bgr
+
+    h, w = image_bgr.shape[:2]
+    xs, ys = contour[:, 0], contour[:, 1]
+    x0, x1 = int(xs.min()), int(xs.max())
+    y0, y1 = int(ys.min()), int(ys.max())
+
+    pad_x = int((x1 - x0) * pad_frac)
+    pad_y = int((y1 - y0) * pad_frac)
+    x0 = max(0, x0 - pad_x)
+    y0 = max(0, y0 - pad_y)
+    x1 = min(w, x1 + pad_x)
+    y1 = min(h, y1 + pad_y)
+
+    crop = image_bgr[y0:y1, x0:x1]
+    return crop if crop.size else image_bgr

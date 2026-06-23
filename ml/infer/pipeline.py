@@ -1,4 +1,4 @@
-from . import classifier, clubbing, koilonychia
+from . import classifier, clubbing, fusion, koilonychia
 from .keypoints import find_keypoints
 from .preprocessing import BLUR_THRESHOLD, decode_base64_image, extract_best_contour, focus_score
 
@@ -74,16 +74,20 @@ def _ml_finding(image_b64, view):
 
 
 def analyze(side_image_b64, top_image_b64):
-    """Full response: geometry track (side photo) + trained-CNN track (both photos).
+    """Full response: geometry (side photo) fused with the trained-CNN track.
 
-    The classifier runs on both views as two separate findings; if torch or the
-    weights aren't present (classifier.is_available() is False) the ML findings
-    are simply omitted and the geometry findings stand on their own.
+    Geometry measures the side profile. The CNN classifies the top-down photo
+    (its trained view), and fusion.fuse() combines the two into one finding per
+    condition: agreeing tracks boost confidence, disagreeing tracks return
+    inconclusive rather than asserting a split verdict.
+
+    If torch or the weights aren't present (classifier.is_available() is False),
+    the geometry findings stand on their own unchanged -- the app still works in
+    a torch-free environment.
     """
-    result = analyze_side_profile(side_image_b64)
-    if classifier.is_available():
-        for view, b64 in (("side", side_image_b64), ("top", top_image_b64)):
-            finding = _ml_finding(b64, view)
-            if finding is not None:
-                result["findings"].append(finding)
-    return result
+    geometry = analyze_side_profile(side_image_b64)["findings"]
+    if not classifier.is_available():
+        return {"findings": geometry}
+
+    ml_top = _ml_finding(top_image_b64, "top")
+    return {"findings": fusion.fuse(geometry, ml_top)}
