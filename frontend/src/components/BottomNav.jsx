@@ -1,6 +1,9 @@
+import Icon from './Icon'
+
 const TABS = [
-  { key: 'scan', icon: '📷', label: 'Scan' },
-  { key: 'learn', icon: '📖', label: 'Learn' },
+  { key: 'home', icon: 'home', label: 'Home' },
+  { key: 'scan', icon: 'camera', label: 'Scan' },
+  { key: 'learn', icon: 'book', label: 'Learn' },
 ]
 
 export default function BottomNav({ active, onChange }) {
@@ -13,7 +16,7 @@ export default function BottomNav({ active, onChange }) {
           className={`bottom-nav-item ${active === tab.key ? 'active' : ''}`}
           onClick={() => onChange(tab.key)}
         >
-          <span className="bottom-nav-icon" aria-hidden="true">{tab.icon}</span>
+          <Icon name={tab.icon} className="bottom-nav-icon" />
           <span className="bottom-nav-label">{tab.label}</span>
         </button>
       ))}

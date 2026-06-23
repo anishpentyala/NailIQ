@@ -1,31 +1,34 @@
 import { failureReasonMessage } from '../failureReasons'
+import Icon from './Icon'
 
 const COPY = {
   within: {
-    icon: '✓',
+    icon: 'checkCircle',
     label: 'Within typical range',
     message:
       'Keep an eye on changes over time, and always follow up on any health concerns with a doctor.',
   },
   outside: {
-    icon: '!',
+    icon: 'alertTriangle',
     label: 'Outside typical range',
     message: 'This is worth showing a doctor. It is not a diagnosis.',
   },
   inconclusive: {
-    icon: '?',
+    icon: 'helpCircle',
     label: "Couldn't analyze this photo",
   },
 }
 
-function FindingCard({ finding }) {
+function FindingCard({ finding, index }) {
   const copy = COPY[finding.verdict] ?? COPY.inconclusive
   const message =
     finding.verdict === 'inconclusive' ? failureReasonMessage(finding.failure_reason) : copy.message
 
   return (
-    <div className="finding-card">
-      <div className={`result-icon result-icon--${finding.verdict}`}>{copy.icon}</div>
+    <div className="finding-card" style={{ '--finding-delay': `${index * 70}ms` }}>
+      <div className={`result-icon result-icon--${finding.verdict}`}>
+        <Icon name={copy.icon} size={22} />
+      </div>
       <div className="finding-name">{finding.display_name}</div>
       {finding.value != null && (
         <div className="result-angle">
@@ -45,8 +48,8 @@ export default function ResultView({ result, onReset }) {
   return (
     <div className="result-card">
       <div className="findings-list">
-        {findings.map((finding) => (
-          <FindingCard key={finding.label} finding={finding} />
+        {findings.map((finding, index) => (
+          <FindingCard key={finding.label} finding={finding} index={index} />
         ))}
       </div>
 

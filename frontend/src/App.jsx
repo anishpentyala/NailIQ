@@ -2,12 +2,14 @@ import { useState, useCallback } from 'react'
 import CameraCapture from './components/CameraCapture'
 import ResultView from './components/ResultView'
 import InfoSection from './components/InfoSection'
+import HomeScreen from './components/HomeScreen'
 import BottomNav from './components/BottomNav'
+import Icon from './components/Icon'
 import { analyzeImages } from './api'
 import './App.css'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('scan')
+  const [activeTab, setActiveTab] = useState('home')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -30,31 +32,43 @@ function App() {
     setError(null)
   }, [])
 
+  const startScan = useCallback(() => {
+    setResult(null)
+    setError(null)
+    setActiveTab('scan')
+  }, [])
+
   return (
     <div className="app">
-      <header className="app-header">
-        <span className="brand-icon" aria-hidden="true">◐</span>
-        <h1 className="brand">NailIQ</h1>
-        <p className="tagline">A precautionary nail-health screener</p>
-      </header>
+      {activeTab !== 'home' && (
+        <header className="app-header">
+          <span className="brand-icon"><Icon name="logo" size={28} /></span>
+          <h1 className="brand">NailIQ</h1>
+          <p className="tagline">A precautionary nail-health screener</p>
+        </header>
+      )}
 
       <p className="disclaimer-banner">
-        <span aria-hidden="true">ⓘ</span> This is an educational screening tool, not a
+        <Icon name="info" size={16} className="disclaimer-icon" /> This is an educational screening tool, not a
         diagnosis. It only flags whether your nail signs are typical or worth a doctor's look.
       </p>
 
-      {activeTab === 'scan' ? (
-        <>
-          {error && <div className="camera-error">{error}</div>}
-          {result ? (
-            <ResultView result={result} onReset={handleReset} />
-          ) : (
-            <CameraCapture onCapture={handleCapture} loading={loading} />
-          )}
-        </>
-      ) : (
-        <InfoSection />
-      )}
+      <div className="tab-fade" key={activeTab}>
+        {activeTab === 'home' && <HomeScreen onStartScan={startScan} />}
+
+        {activeTab === 'scan' && (
+          <>
+            {error && <div className="camera-error">{error}</div>}
+            {result ? (
+              <ResultView result={result} onReset={handleReset} />
+            ) : (
+              <CameraCapture onCapture={handleCapture} loading={loading} />
+            )}
+          </>
+        )}
+
+        {activeTab === 'learn' && <InfoSection />}
+      </div>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>

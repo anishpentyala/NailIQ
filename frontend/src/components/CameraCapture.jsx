@@ -93,7 +93,7 @@ export default function CameraCapture({ onCapture, loading }) {
 
       <button
         type="button"
-        className="primary-btn"
+        className={`primary-btn ${loading || validating ? 'is-busy' : ''}`.trim()}
         onClick={handleCapture}
         disabled={loading || validating || !!cameraError}
       >
