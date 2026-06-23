@@ -3,30 +3,31 @@ import Webcam from 'react-webcam'
 import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
 
-const VIDEO_CONSTRAINTS = {
-  facingMode: 'environment',
-}
-
 const STEPS = {
   side: {
     instructions:
-      'Hold your finger sideways (profile view) against a plain background, nail facing the camera, fingertip pointing toward the bottom of the frame.',
-    buttonLabel: 'Capture side profile',
+      'Hold your finger sideways (profile view) against a plain background, nail facing the camera.',
+    shortLabel: 'Side Profile',
   },
   top: {
     instructions:
-      'Now lay your finger flat and photograph it from above, nail facing the camera, against a plain background.',
-    buttonLabel: 'Capture top-down view',
+      'Now photograph your finger from above, nail facing the camera, against a plain background.',
+    shortLabel: 'Top Down',
   },
 }
 
-export default function CameraCapture({ onCapture, loading }) {
+export default function CameraCapture({ onCapture, loading, onClose }) {
   const webcamRef = useRef(null)
   const [step, setStep] = useState('side')
   const [sideImage, setSideImage] = useState(null)
   const [cameraError, setCameraError] = useState(null)
   const [validating, setValidating] = useState(false)
   const [retakeError, setRetakeError] = useState(null)
+  const [flashActive, setFlashActive] = useState(false)
+  const [torchSupported, setTorchSupported] = useState(false)
+  const [facingMode, setFacingMode] = useState('environment')
+  const [shutterFlash, setShutterFlash] = useState(false)
+  const streamRef = useRef(null)
 
   const handleCapture = useCallback(async () => {
     const screenshot = webcamRef.current?.getScreenshot()
@@ -35,6 +36,10 @@ export default function CameraCapture({ onCapture, loading }) {
       return
     }
     const base64 = screenshot.split(',')[1]
+
+    // Shutter flash animation
+    setShutterFlash(true)
+    setTimeout(() => setShutterFlash(false), 150)
 
     setRetakeError(null)
     setValidating(true)
@@ -61,44 +66,183 @@ export default function CameraCapture({ onCapture, loading }) {
     }
   }, [step, sideImage, onCapture])
 
-  const { instructions, buttonLabel } = STEPS[step]
+  const handleUserMedia = useCallback((stream) => {
+    streamRef.current = stream
+    const capabilities = stream.getVideoTracks()[0]?.getCapabilities?.() ?? {}
+    setTorchSupported(!!capabilities.torch)
+  }, [])
+
+  const toggleFlash = useCallback(async () => {
+    const track = streamRef.current?.getVideoTracks?.()[0]
+    if (!track) return
+    const next = !flashActive
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next }] })
+      setFlashActive(next)
+    } catch {
+      setTorchSupported(false)
+    }
+  }, [flashActive])
+
+  const toggleCamera = useCallback(() => {
+    setFlashActive(false)
+    setTorchSupported(false)
+    setFacingMode((mode) => (mode === 'environment' ? 'user' : 'environment'))
+  }, [])
+
+  const isSide = step === 'side'
+  const { instructions, shortLabel } = STEPS[step]
+  const isBusy = loading || validating
 
   return (
-    <div className="capture-card">
-      <p className="capture-step">Step {step === 'side' ? '1' : '2'} of 2</p>
-      <p className="capture-instructions">{instructions}</p>
-
-      {retakeError && <div className="camera-error">{retakeError}</div>}
-
-      <div className="webcam-frame">
+    <div className="cam-fullscreen">
+      {/* Live viewfinder background */}
+      <div className="cam-viewfinder">
         {cameraError ? (
-          <div className="camera-error">{cameraError}</div>
+          <div className="cam-viewfinder-error">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <line x1="2" y1="2" x2="22" y2="22" />
+            </svg>
+            <p>{cameraError}</p>
+          </div>
         ) : (
-          <>
-            <Webcam
-              ref={webcamRef}
-              audio={false}
-              screenshotFormat="image/jpeg"
-              videoConstraints={VIDEO_CONSTRAINTS}
-              onUserMediaError={() =>
-                setCameraError(
-                  'Camera access was blocked or unavailable. Check your browser permissions and reload.'
-                )
-              }
-            />
-            <div className="webcam-guide" />
-          </>
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{ facingMode }}
+            className="cam-video"
+            onUserMedia={handleUserMedia}
+            onUserMediaError={() =>
+              setCameraError(
+                'Camera access was blocked or unavailable. Check your browser permissions and reload.'
+              )
+            }
+          />
         )}
+        {/* Shutter flash overlay */}
+        {shutterFlash && <div className="cam-shutter-flash" />}
       </div>
 
-      <button
-        type="button"
-        className={`primary-btn ${loading || validating ? 'is-busy' : ''}`.trim()}
-        onClick={handleCapture}
-        disabled={loading || validating || !!cameraError}
-      >
-        {validating ? 'Checking photo…' : loading ? 'Analyzing…' : buttonLabel}
-      </button>
+      {/* Finger guide overlay */}
+      {!cameraError && (
+        <div className="cam-guide-overlay">
+          <div className={`cam-guide-ring ${isSide ? 'cam-guide-ring--landscape' : ''}`}>
+            <div className="cam-guide-corners">
+              <span /><span /><span /><span />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Top bar ─── */}
+      <header className="cam-top-bar">
+        <button
+          type="button"
+          className="cam-glass-btn"
+          aria-label="Close camera"
+          onClick={onClose}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="cam-step-center">
+          <span className="cam-step-label">{shortLabel}</span>
+          <div className="cam-progress-dots">
+            <span className={`cam-dot ${isSide ? 'cam-dot--active' : 'cam-dot--done'}`} />
+            <span className={`cam-dot ${!isSide ? 'cam-dot--active' : ''}`} />
+          </div>
+        </div>
+
+        <div className="cam-step-badge">
+          <span className="cam-step-num">{isSide ? '1' : '2'}</span>
+          <span className="cam-step-of">/2</span>
+        </div>
+      </header>
+
+      {/* ─── Instruction banner ─── */}
+      <div className="cam-instruction-banner">
+        <p>{instructions}</p>
+      </div>
+
+      {/* ─── Retake error toast ─── */}
+      {retakeError && (
+        <div className="cam-error-toast">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{retakeError}</span>
+          <button type="button" className="cam-toast-dismiss" onClick={() => setRetakeError(null)}>✕</button>
+        </div>
+      )}
+
+      {/* ─── Bottom controls ─── */}
+      <div className="cam-bottom-controls">
+        {/* Status text */}
+        {isBusy && (
+          <div className="cam-status-pill">
+            <span className="cam-status-spinner" />
+            {validating ? 'Checking photo…' : 'Analyzing…'}
+          </div>
+        )}
+
+        {/* Main controls row */}
+        <div className="cam-controls-row">
+          {/* Flash toggle (hidden when this camera has no controllable torch) */}
+          {torchSupported ? (
+            <button
+              type="button"
+              className={`cam-glass-btn cam-side-btn ${flashActive ? 'cam-glass-btn--active' : ''}`}
+              aria-label="Toggle flash"
+              onClick={toggleFlash}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={flashActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </button>
+          ) : (
+            <span className="cam-side-btn" aria-hidden="true" />
+          )}
+
+          {/* Shutter button */}
+          <button
+            type="button"
+            className={`cam-shutter ${isBusy ? 'cam-shutter--busy' : ''}`}
+            aria-label="Capture photo"
+            onClick={handleCapture}
+            disabled={isBusy || !!cameraError}
+          >
+            <span className="cam-shutter-ring">
+              <span className="cam-shutter-inner">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <circle cx="12" cy="13" r="3" />
+                </svg>
+              </span>
+            </span>
+          </button>
+
+          {/* Switch camera */}
+          <button
+            type="button"
+            className="cam-glass-btn cam-side-btn"
+            aria-label="Switch camera"
+            onClick={toggleCamera}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Home indicator pill */}
+        <div className="cam-home-pill" />
+      </div>
     </div>
   )
 }

@@ -7,6 +7,8 @@ numpy==1.26.4
 opencv-python==4.10.0.84
 pytest==8.3.3
 
-# Added when leukonychia/splinter hemorrhages/Terry's nails land (Track B classifier,
-# color/texture-based, needs a labeled dataset):
-# tensorflow==2.16.1
+# Trained-CNN track (ml/infer/classifier.py, weights in ml/models/). CPU build:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# Optional at runtime -- the geometry track works without these installed.
+torch==2.12.1
+torchvision==0.27.1

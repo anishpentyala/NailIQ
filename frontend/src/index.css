@@ -31,6 +31,49 @@ body {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* On wide viewports (desktop demo/presentation), frame the app like a phone
+   instead of stretching a 480px column across the page. Real phones never hit
+   this breakpoint, so the on-device experience is unchanged. */
+@media (min-width: 560px) {
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 0%, #2e3336, #15171a 70%);
+    padding: 48px 20px;
+  }
+
+  #root {
+    width: 390px;
+    height: 844px;
+    max-width: 390px;
+    min-height: 0;
+    border: 12px solid #0b0c0d;
+    border-radius: 54px;
+    box-shadow:
+      0 40px 80px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  }
+
+  #root::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130px;
+    height: 26px;
+    background: #0b0c0d;
+    border-radius: 0 0 18px 18px;
+    z-index: 999;
+    pointer-events: none;
+  }
 }
 
 h1, h2, h3 {

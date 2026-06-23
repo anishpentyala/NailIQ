@@ -19,13 +19,23 @@ const COPY = {
   },
 }
 
+const ML_LABELS = {
+  clubbing: 'clubbing-type appearance',
+  koilonychia: 'koilonychia-type (spoon) appearance',
+  healthy: 'a typical, healthy-looking nail',
+}
+
 function FindingCard({ finding, index }) {
   const copy = COPY[finding.verdict] ?? COPY.inconclusive
   const message =
     finding.verdict === 'inconclusive' ? failureReasonMessage(finding.failure_reason) : copy.message
 
+  const isMl = finding.track_used === 'ml'
+  const matchLabel = isMl && finding.predicted_label ? ML_LABELS[finding.predicted_label] : null
+
   return (
     <div className="finding-card" style={{ '--finding-delay': `${index * 70}ms` }}>
+      {isMl && <span className="track-badge">AI model</span>}
       <div className={`result-icon result-icon--${finding.verdict}`}>
         <Icon name={copy.icon} size={22} />
       </div>
@@ -37,6 +47,11 @@ function FindingCard({ finding, index }) {
         </div>
       )}
       <div className={`result-verdict ${finding.verdict}`}>{copy.label}</div>
+      {matchLabel && (
+        <p className="result-match">
+          Closest visual match: {matchLabel} · {Math.round(finding.confidence * 100)}% confidence
+        </p>
+      )}
       <p className="result-message">{message}</p>
     </div>
   )

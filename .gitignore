@@ -34,3 +34,4 @@ data/augmented/*
 ml/models/*.h5
 ml/models/*.pt
 ml/models/*.tflite
+ml/models/*.json

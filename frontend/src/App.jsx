@@ -38,6 +38,25 @@ function App() {
     setActiveTab('scan')
   }, [])
 
+  const closeScan = useCallback(() => {
+    setResult(null)
+    setError(null)
+    setActiveTab('home')
+  }, [])
+
+  // When camera is actively showing (scan tab, no result yet), go full-screen
+  const isCameraActive = activeTab === 'scan' && !result && !error
+
+  if (isCameraActive) {
+    return (
+      <CameraCapture
+        onCapture={handleCapture}
+        loading={loading}
+        onClose={closeScan}
+      />
+    )
+  }
+
   return (
     <div className="app">
       {activeTab !== 'home' && (
@@ -59,10 +78,8 @@ function App() {
         {activeTab === 'scan' && (
           <>
             {error && <div className="camera-error">{error}</div>}
-            {result ? (
+            {result && (
               <ResultView result={result} onReset={handleReset} />
-            ) : (
-              <CameraCapture onCapture={handleCapture} loading={loading} />
             )}
           </>
         )}

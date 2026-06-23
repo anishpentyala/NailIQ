@@ -16,6 +16,8 @@ const MESSAGES = {
     "We couldn't get a clear read on your nail shape. Try repositioning your finger and retaking the photo.",
   points_collinear:
     "We couldn't get a clear read on your nail shape. Try repositioning your finger and retaking the photo.",
+  low_confidence:
+    "The AI model wasn't confident enough about this photo to give a read. Try a clearer, well-lit shot of a single nail.",
 }
 
 const DEFAULT_MESSAGE =

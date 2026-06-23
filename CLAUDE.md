@@ -56,7 +56,14 @@ the contract on purpose so the capture flow and request shape don't need to chan
 again when color/texture-based findings (leukonychia, splinter hemorrhages, Terry's
 nails — all need a top-down view) get added later.
 
-The response is always `{ "findings": [...] }`, one entry per condition, each
+As of the ML track landing, `/analyze` runs **two tracks**: the geometry track
+(clubbing angle + koilonychia sagitta from the side photo) plus a trained-CNN
+track (`ml/infer/classifier.py`, MobileNetV3-Small) that classifies *both* photos
+as separate findings (`track_used: "ml"`, `label: "ml_side"|"ml_top"`). The ML
+track is optional — `classifier.is_available()` gates it, so the geometry response
+still works in a torch-free environment. See "The trained-CNN track" below.
+
+The response is always `{ "findings": [...] }`, one entry per condition/track, each
 independently `within` / `outside` / `inconclusive`:
 ```json
 {
@@ -93,9 +100,9 @@ apply to a top-down shot. `validate_photo()` and `analyze_side_profile()` are no
 both thin wrappers around `_extract()` — don't reintroduce duplicate
 decode/threshold/contour logic in either one.
 
-### `ml/infer/`: one shared geometry pipeline, multiple findings
+### `ml/infer/`: a geometry track + a trained-CNN track
 
-This is classical OpenCV contour analysis — **no trained model, no dataset**.
+The geometry track is classical OpenCV contour analysis — no trained model needed.
 MediaPipe Hands was deliberately dropped: it's trained on whole-hand poses, and
 this app's photo is a tight single-finger close-up, a framing it wasn't built for.
 
@@ -130,6 +137,31 @@ Adding a third geometric condition: reuse `preprocessing.py` and `keypoints.py`
 as-is, add a new `<condition>.py` with `build_finding()`/`inconclusive_finding()`
 following the existing pattern, and call it from `pipeline.py`.
 
+### The trained-CNN track (`ml/infer/classifier.py`)
+
+A MobileNetV3-Small (ImageNet transfer learning) classifies a photo as
+`clubbing` / `koilonychia` / `healthy`. Trained by `ml/train/train_classifier.py`
+on the NailCheck dataset (`data/raw/nailcheck-3xvkl`, downloaded via
+`scripts/download_data.py` from Roboflow Universe, CC BY 4.0). Weights live in
+`ml/models/nail_classifier.pt` + `nail_classifier_labels.json` (gitignored —
+regenerate by re-running training). Test accuracy ~88% on the dataset's held-out
+split — **NOT** on real phone photos; treat real-world accuracy as unknown/lower,
+and never present it as clinical-grade.
+
+Key facts:
+- **Lazy + optional.** torch/torchvision and the weights are only loaded on first
+  use; `classifier.is_available()` gates the whole track so `pipeline.analyze()`
+  silently omits ML findings (geometry still runs) if torch isn't installed or the
+  model isn't trained. Don't make the Flask app hard-depend on torch.
+- **Runs on both photos** as two findings (`label: "ml_side"|"ml_top"`). The model
+  was trained on top-down/frontal images, so the **side-view ML output is a domain
+  mismatch** and weaker than the top-down one — geometry is the authority on the
+  side profile. ML findings carry extra fields `predicted_label` and `probs`.
+- Verdict mapping: predicted `healthy` → `within`; any condition → `outside`; top
+  prob below `CONFIDENCE_THRESHOLD` (0.50) → `inconclusive` (`low_confidence`).
+- `pipeline.analyze(side, top)` is the full two-track entry point `/analyze` calls;
+  `analyze_side_profile(side)` remains the geometry-only path.
+
 ### Frontend component contract
 
 - `CameraCapture.jsx` owns the two-step capture flow internally and only calls
@@ -139,7 +171,8 @@ following the existing pattern, and call it from `pipeline.py`.
   `verdict` through a `COPY` lookup (`within` / `outside` / `inconclusive`) for
   icon/label/message. Any new finding type automatically gets card rendering for
   free as long as it follows the same `{label, display_name, value, unit, verdict,
-  confidence, failure_reason}` shape.
+  confidence, failure_reason}` shape. `track_used: "ml"` findings additionally show
+  an "AI model" badge and a "closest visual match" line from `predicted_label`.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
 
@@ -150,9 +183,13 @@ There's no database/history endpoint despite `flask-sqlalchemy` being listed in
 (SQLite + a `/history` endpoint + a Recharts angle-over-time view), not yet built.
 Don't assume scan results are stored anywhere; each `/analyze` call is stateless.
 
-### Data pipeline is unstarted
+### Data pipeline
 
-`data/{positive,negative,augmented,raw}/` exist as gitignored placeholders for a
-future trained classifier (e.g. leukonychia/splinter hemorrhages, which need
-color/texture rather than pure geometry). No collection/augmentation scripts exist
-yet. Don't assume any dataset is present when working in this area.
+`scripts/download_data.py` pulls nail-image datasets (Roboflow Universe, CC BY 4.0)
+into `data/raw/` — needs a free `ROBOFLOW_API_KEY`. `data/raw/nailcheck-3xvkl` is
+the classification set the CNN trains on (Clubbing/Koilonychia/Healthy + 5 more
+classes, already train/valid/test split). `data/raw/LICENSES.md` (generated) tracks
+attribution — CC BY 4.0 requires crediting each source in any submission/README.
+`data/raw/` is gitignored (don't commit the images/licensing); re-run the script to
+repopulate. The other detection datasets (`nail-clubbing`, etc.) are boxes, not
+class folders — not yet wired into training (would need a crop step).
