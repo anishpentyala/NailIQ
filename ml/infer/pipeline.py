@@ -1,6 +1,6 @@
 from . import classifier, clubbing, koilonychia
 from .keypoints import find_keypoints
-from .preprocessing import decode_base64_image, extract_best_contour
+from .preprocessing import BLUR_THRESHOLD, decode_base64_image, extract_best_contour, focus_score
 
 
 def _inconclusive_findings(failure_reason):
@@ -22,6 +22,9 @@ def _extract(image_b64, require_keypoints=True):
     image = decode_base64_image(image_b64)
     if image is None:
         return None, None, "invalid_image"
+
+    if focus_score(image) < BLUR_THRESHOLD:
+        return None, None, "too_blurry"
 
     contour, contour_validation = extract_best_contour(image)
     if not contour_validation["is_valid"]:

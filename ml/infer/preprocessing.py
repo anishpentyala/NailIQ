@@ -5,11 +5,36 @@ import numpy as np
 
 MIN_CONTOUR_AREA = 5000
 
+# Focus check: variance of the Laplacian is low for blurry images. Computed on a
+# size-normalized copy (below) so the threshold doesn't change with resolution.
+# Calibrated against real phone photos: sharp in-focus shots score ~60+, a mild
+# Gaussian blur drops to ~10-13, so 20 separates them with margin. Deliberately
+# conservative -- a plain-background single-finger shot (what the app asks for)
+# has little texture and scores lower even when sharp, so we'd rather pass a
+# slightly soft photo than falsely reject a good one. Rough starting estimate.
+BLUR_THRESHOLD = 20.0
+_BLUR_NORM_DIM = 512
+
 
 def decode_base64_image(b64_str):
     img_bytes = base64.b64decode(b64_str)
     arr = np.frombuffer(img_bytes, dtype=np.uint8)
     return cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+
+def focus_score(image_bgr):
+    """Sharpness metric (variance of Laplacian). Lower = blurrier.
+
+    The image is first scaled to a fixed max dimension so the score -- and thus
+    BLUR_THRESHOLD -- means the same thing for a small dataset image and a large
+    phone photo.
+    """
+    h, w = image_bgr.shape[:2]
+    scale = _BLUR_NORM_DIM / max(h, w)
+    if scale < 1.0:
+        image_bgr = cv2.resize(image_bgr, (int(w * scale), int(h * scale)))
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    return float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
 
 def preprocess_and_threshold(image_bgr, polarity="auto"):

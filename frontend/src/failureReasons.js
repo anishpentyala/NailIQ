@@ -1,5 +1,7 @@
 const MESSAGES = {
   invalid_image: "That photo couldn't be processed. Please try again.",
+  too_blurry:
+    "That photo looks blurry. Hold your hand and camera steady, let it focus, and retake the shot.",
   no_contour_found:
     "We couldn't find your finger in that photo. Make sure it fills the frame against a plain background.",
   contour_too_small:
