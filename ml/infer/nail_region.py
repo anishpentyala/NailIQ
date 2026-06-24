@@ -101,6 +101,11 @@ def compute_nail_region(image_bgr, contour):
     La = L_img[ys, xs]
     aa = a_img[ys, xs]
     ba = b_img[ys, xs]
+    # Un-white-balanced b* of the same finger pixels. Cyanosis is a *global* bluish
+    # cast, which white_balance is specifically designed to remove -- so measuring it
+    # on the balanced image erases the very sign. Every other color condition wants the
+    # WB-normalized color (robust to lighting); cyanosis alone reads this raw channel.
+    ba_raw = image_quality.lab_real(image_bgr)[2][ys, xs]
 
     # Decide which end of the finger holds the nail: the nail plate is less
     # saturated than skin, so the lower-saturation end is the nail end.
@@ -154,6 +159,7 @@ def compute_nail_region(image_bgr, contour):
         "skin_ita": skin_ita,
         "skin_lab_a": skin_lab_a,
         "skin_lab_b": skin_lab_b,
+        "nail_raw_lab_b": float(np.median(ba_raw[region])),
         "glare_frac": image_quality.glare_fraction(Vr),
         "region_px": region_px,
         "finger_px": finger_px,

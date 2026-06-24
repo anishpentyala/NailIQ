@@ -187,8 +187,11 @@ def part_b_threshold_sweep():
             "threshold": pallor.PALLOR_REDNESS_DROP_THRESHOLD,
         },
         "cyanosis": {
-            "metric_func": lambda r: cyanosis.measure(r)[1],  # bluer_than_skin
-            "threshold": cyanosis.CYANOSIS_BLUER_THAN_SKIN,
+            # measure() returns raw (pre-WB) nail b* where LOWER = bluer = cyanotic, but
+            # the sweep assumes value > threshold => positive. Negate so higher = bluer;
+            # the printed recommended threshold is therefore -(raw b* cutoff).
+            "metric_func": lambda r: -cyanosis.measure(r),
+            "threshold": -cyanosis.CYANOSIS_RAW_B_MAX,
         },
         "terrys_nails": {
             "metric_func": lambda r: terrys_nails.measure(r)[1],  # band_contrast
