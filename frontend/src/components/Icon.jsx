@@ -83,6 +83,23 @@ const PATHS = {
   chevronRight: <path d="M9 6l6 6-6 6" />,
   history: (
     <>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" />
+      <path d="M3.5 4.5V9H8" />
+      <path d="M12 8v4.3l3 1.8" />
+    </>
+  ),
+  droplet: <path d="M12 3.5c3.8 4.6 5.7 7.6 5.7 10A5.7 5.7 0 016 13.5c0-2.4 1.9-5.4 6-10z" />,
+  lines: <path d="M5 9h14M5 13h14M5 17h14" />,
+  dots: (
+    <>
+      <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="14.5" cy="9" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="14.5" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="15" r="1.5" fill="currentColor" stroke="none" />
+    </>
+  ),
+  history: (
+    <>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3.5 2" />
     </>

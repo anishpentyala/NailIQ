@@ -630,11 +630,9 @@ function ConditionSheet({ condition, onClose }) {
         <div className="sheet-body">
           {condition.lead && <p className="sheet-lead">{condition.lead}</p>}
 
-          {['clubbing', 'koilonychia'].includes(condition.key) && (
-            <div className="diagram-wrap">
-              <NailDiagram type={condition.key} />
-            </div>
-          )}
+          <div className="diagram-wrap">
+            <NailDiagram type={condition.key} />
+          </div>
 
           {condition.points.map((point) => (
             <div key={point.title} className="info-point">
@@ -653,30 +651,54 @@ function ConditionSheet({ condition, onClose }) {
   )
 }
 
+const GROUPS = [
+  { title: 'Shape & angle', keys: ['clubbing', 'koilonychia'] },
+  {
+    title: 'Color & shade',
+    keys: ['leukonychia', 'melanonychia', 'pallor', 'cyanosis', 'terrys_nails', 'lindsays_nails'],
+  },
+  {
+    title: 'Surface & markings',
+    keys: ['onycholysis', 'beaus_lines', 'muehrckes_lines', 'splinter_hemorrhages', 'pitting'],
+  },
+]
+
+const BY_KEY = Object.fromEntries(CONDITIONS.map((c) => [c.key, c]))
+
 export default function InfoSection() {
   const [openKey, setOpenKey] = useState(null)
-  const openCondition = CONDITIONS.find((c) => c.key === openKey) ?? null
+  const openCondition = openKey ? BY_KEY[openKey] : null
 
   return (
     <div className="info-section">
-      {CONDITIONS.map((condition) => (
-        <button
-          key={condition.key}
-          type="button"
-          className="info-card"
-          onClick={() => setOpenKey(condition.key)}
-        >
-          <span className="info-icon">
-            <Icon name={condition.icon} />
-          </span>
-          <span className="info-summary-text">
-            <span className="info-name">{condition.name}</span>
-            <span className="info-blurb">{condition.summary}</span>
-          </span>
-          <span className="info-chevron">
-            <Icon name="chevronRight" size={18} />
-          </span>
-        </button>
+      <p className="info-intro">
+        NailIQ screens every photo for all of these signs. Tap any one to learn what it looks
+        like, why it happens, and what your result means.
+      </p>
+
+      {GROUPS.map((group) => (
+        <div key={group.title} className="info-group">
+          <h2 className="info-group-title">{group.title}</h2>
+          {group.keys.map((key) => {
+            const condition = BY_KEY[key]
+            return (
+              <button
+                key={key}
+                type="button"
+                className="info-card"
+                onClick={() => setOpenKey(key)}
+              >
+                <span className="info-icon">
+                  <Icon name={condition.icon} />
+                </span>
+                <span className="info-name">{condition.name}</span>
+                <span className="info-chevron">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </button>
+            )
+          })}
+        </div>
       ))}
 
       {openCondition && (

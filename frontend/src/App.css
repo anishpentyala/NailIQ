@@ -397,7 +397,28 @@
 .info-section {
   display: flex;
   flex-direction: column;
+  gap: 18px;
+}
+
+.info-intro {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+}
+
+.info-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 2px 0;
 }
 
 .info-card {
@@ -409,7 +430,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px;
+  padding: 11px 14px;
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
@@ -449,21 +470,11 @@
   transition: transform 0.15s ease;
 }
 
-.info-summary-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .info-name {
+  flex: 1;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
-}
-
-.info-blurb {
-  font-size: 12px;
-  color: var(--text-muted);
 }
 
 .info-points {
@@ -714,6 +725,25 @@
   font-size: 11px;
   fill: var(--text-muted);
 }
+
+/* Top-down nail plate diagram */
+.plate-stroke {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.plate-healthy { fill: #f3d9cf; }
+.plate-pale { fill: #e9e2dd; }
+.plate-blue { fill: #c6d2e0; }
+.plate-white { fill: #f4efe9; }
+
+.mark-white { fill: #fbf7f3; }
+.mark-dark { fill: #463a32; }
+.mark-brown { fill: #b67d5f; }
+.mark-red { fill: #7d2b2b; }
+.mark-shadow { fill: #d6bdb1; }
+.mark-pit { fill: #caa893; }
 
 /* ═══════════════════════════════════════════════
    Full-screen immersive camera UI
