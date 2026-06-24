@@ -12,14 +12,52 @@ clubbing." Each finding is only ever "within typical range," "outside typical
 range," or "couldn't analyze this photo" — and always recommends following up with a
 doctor. Every screen carries this framing.
 
-## Status
+## How it analyzes a photo
 
-Real classical CV is wired in for two findings, both derived from a single
-side-profile photo: **clubbing** (Lovibond angle, via contour geometry + cosine
-rule) and **koilonychia** (nail-plate curvature, via contour sagitta). A second,
-top-down photo is captured and sent to the backend but not analyzed yet — reserved
-for color/texture-based findings (leukonychia, splinter hemorrhages, Terry's nails)
-planned for later. See `ml/infer/` for the pipeline.
+Each scan captures a **side-profile** and a **top-down** photo, and runs two
+independent computer-vision tracks that are **fused into one verdict per condition**:
+
+| Track | What it does | Owns |
+|-------|--------------|------|
+| **Geometry** (`ml/infer/`) | Classical OpenCV — Lovibond nail angle (cosine rule) + koilonychia sagitta from the finger contour. No trained model needed. | the **side profile** |
+| **Trained CNN** (`ml/infer/classifier.py`) | MobileNetV3-Large classifies the nail as clubbing / koilonychia / healthy (transfer learning). | the **top-down** photo |
+
+**Fusion** (`ml/infer/fusion.py`): when both tracks agree, confidence is boosted;
+when they disagree, the result is **inconclusive** rather than a guessed verdict.
+The CNN track is **optional** — torch and the weights load lazily, so the geometry
+track still works in a torch-free environment.
+
+What makes the CNN trustworthy instead of a raw softmax guess:
+
+- **ROI crop** — the finger is cropped out of the frame *before* classifying, so the
+  model keys on the nail, not the background (the biggest real-world fix).
+- **Test-time augmentation** — predictions averaged over the image + its flip.
+- **Temperature scaling** — logits calibrated on the validation set, so the
+  confidence floor that gates "couldn't analyze" actually means something.
+
+Grad-CAM (`ml/eval/grad_cam.py`) confirms the model attends to the nail, not the
+background.
+
+## Results
+
+Trained on the **NailCheck** dataset (Roboflow Universe, CC BY 4.0), restricted to
+clubbing / koilonychia / healthy. Last backbone blocks fine-tuned; class-weighted,
+label-smoothed, phone-realistic augmentation.
+
+**Held-out test split** (108 images) — *clean dataset images, not phone photos:*
+
+| Class | Precision | Recall | n |
+|-------|:---------:|:------:|:-:|
+| clubbing | 0.94 | 0.85 | 34 |
+| koilonychia | 0.83 | 1.00 | 38 |
+| healthy | 0.97 | 0.83 | 36 |
+
+**Overall accuracy 0.90.** Errors lean toward *over-flagging* conditions — the safe
+direction for a screener (a false "show a doctor" beats a missed sign).
+
+> ⚠️ This is dataset-split accuracy, **not** real-world phone-photo accuracy. Run
+> `ml/eval/eval_real.py` over labeled phone shots in `data/real_eval/<class>/` to
+> measure the latter. *(pending photo collection)*
 
 ## Repo layout
 
@@ -27,10 +65,13 @@ planned for later. See `ml/infer/` for the pipeline.
 frontend/   Vite + React. Mobile-first, two-step camera capture UI.
 backend/    Flask REST API. Single /analyze endpoint (base64 in, JSON out).
 ml/         Training scripts + inference modules for the CV models.
-  train/    Model training scripts (future: Track B classifier).
-  infer/    Classical CV pipeline (preprocessing, keypoints, per-condition
-            measurement, orchestrator) — no trained model, no dataset needed.
-  models/   Saved model weights (gitignored — large binaries; unused for now).
+  train/    CNN training (train_classifier.py: transfer learning + calibration).
+  infer/    Geometry pipeline (preprocessing, keypoints, per-condition
+            measurement), the trained-CNN classifier, and track fusion.
+  eval/     Diagnostics: grad_cam.py (attention check), eval_real.py (phone-photo
+            evaluation). Outputs gitignored.
+  models/   Saved CNN weights + labels/calibration JSON (gitignored — regenerate
+            by re-running training).
 data/       Dataset pipeline: positive/negative examples, augmentation.
   positive/    Clubbed-finger images (sourced + licensed).
   negative/    Normal-finger images (self/volunteer captured).
@@ -77,6 +118,18 @@ finding-card per condition.
 `getUserMedia`. `localhost` is fine for local dev; testing on a phone over LAN will
 need a tunnel (e.g. `ngrok`) or a dev cert.
 
+## Retraining / evaluating the model
+
+```bash
+# from the repo root, using the backend venv:
+backend/venv/Scripts/python.exe scripts/download_data.py      # needs ROBOFLOW_API_KEY
+backend/venv/Scripts/python.exe ml/train/train_classifier.py  # -> ml/models/*.pt + labels json
+backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # -> ml/eval/gradcam_out/
+backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
+```
+Datasets, weights, and eval outputs are gitignored. CC BY 4.0 requires crediting
+each dataset source — attribution is tracked in the generated `data/raw/LICENSES.md`.
+
 ## API contract
 
 `POST /analyze`
@@ -88,11 +141,10 @@ Request:
   "top_image": "<base64-encoded JPEG/PNG>"
 }
 ```
-`side_image` is analyzed now. `top_image` is required by the contract (so the
-capture flow doesn't need to change again) but is currently decoded and discarded —
-reserved for color/texture-based findings later.
+`side_image` drives the geometry track; `top_image` is classified by the CNN. The
+two are fused into one finding per condition.
 
-Response:
+Response (when the CNN track is available — findings are `track_used: "fused"`):
 ```json
 {
   "findings": [
@@ -103,28 +155,23 @@ Response:
       "unit": "deg",
       "verdict": "within" | "outside" | "inconclusive",
       "confidence": 0.7,
-      "track_used": "geometric",
-      "failure_reason": null
-    },
-    {
-      "label": "koilonychia",
-      "display_name": "Nail curvature (koilonychia)",
-      "value": null,
-      "unit": null,
-      "verdict": "within" | "outside" | "inconclusive",
-      "confidence": 0.7,
-      "track_used": "geometric",
+      "track_used": "fused",
+      "agreement": "agree" | "geometry_only" | "disagree" | "geometry_unavailable",
+      "geometry": { "verdict": "within", "value": 165.3, "confidence": 0.7 },
+      "ml": { "verdict": "within", "predicted_label": "healthy", "confidence": 0.9 },
       "failure_reason": null
     }
   ]
 }
 ```
-`inconclusive` means the contour/keypoint pipeline couldn't reliably locate the
-finger or its keypoints (bad lighting, busy background, finger cropped out of
-frame) — `failure_reason` names the specific check that failed. This is distinct
-from "within"/"outside": it never guesses a verdict it isn't confident in.
-`confidence` is a heuristic derived from keypoint-detection quality (tip
-sharpness, cuticle curvature clarity), not a statistically calibrated probability.
+Without torch/weights, findings fall back to plain geometry (`track_used:
+"geometric"`, no `agreement`/`geometry`/`ml` fields).
+
+`inconclusive` means a track couldn't produce a confident verdict — the geometry
+pipeline couldn't locate the finger/keypoints (`failure_reason` names the failed
+check), or the two tracks disagreed (`failure_reason: "tracks_disagree"`). It never
+guesses a verdict it isn't confident in. Geometry `confidence` is a heuristic from
+keypoint-detection quality; ML confidence is a temperature-calibrated probability.
 
 `POST /validate_photo`
 
@@ -176,3 +223,16 @@ reasonably decide yourself")
   round trip just to find out the first photo was unusable was a worse user
   experience than catching it right after each capture, while the user is still
   standing in the same position holding the same pose.
+- **Added a trained-CNN track and fused it with geometry** rather than relying on
+  geometry alone. Geometry is precise but brittle (needs a clean side-profile
+  contour); a CNN generalizes better to messy top-down photos. Fusing them — and
+  returning *inconclusive* when they disagree — is more honest than trusting either
+  in isolation, and never breaks the "never diagnose" rule.
+- **Crop to the finger ROI before the CNN classifies.** Feeding the whole frame let
+  the model key on background clutter; cropping with the same detector geometry uses
+  aligns train/inference and was the single biggest real-world robustness gain.
+- **Temperature-calibrated the CNN confidence** (fit on the validation set) so the
+  "couldn't analyze" threshold gates on a meaningful probability, not raw softmax —
+  important since over-confident wrong calls are exactly what a screener must avoid.
+- **The CNN track is optional (lazy-loaded).** The Flask app must not hard-depend on
+  torch; if weights/torch are absent the geometry track stands alone.
