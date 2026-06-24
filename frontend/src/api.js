@@ -17,3 +17,8 @@ export async function validatePhoto(base64Image, view) {
   })
   return res.data
 }
+
+export async function getHistory() {
+  const res = await axios.get(`${API_BASE}/history`)
+  return res.data
+}

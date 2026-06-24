@@ -81,6 +81,12 @@ const PATHS = {
   ),
   x: <path d="M6 6l12 12M18 6L6 18" />,
   chevronRight: <path d="M9 6l6 6-6 6" />,
+  history: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
+    </>
+  ),
   logo: (
     <>
       <path d="M12 3a9 9 0 100 18z" fill="currentColor" stroke="none" />

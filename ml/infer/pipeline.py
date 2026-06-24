@@ -1,6 +1,28 @@
-from . import classifier, clubbing, fusion, koilonychia
+from . import (
+    beaus_lines,
+    classifier,
+    clubbing,
+    fusion,
+    koilonychia,
+    leukonychia,
+    melanonychia,
+    nail_region,
+    pitting,
+    splinter_hemorrhages,
+    terrys_nails,
+)
 from .keypoints import find_keypoints
 from .preprocessing import BLUR_THRESHOLD, decode_base64_image, extract_best_contour, focus_score
+
+# Color/texture conditions measured from the top-down nail region, in display order.
+_COLOR_CONDITIONS = (
+    leukonychia,
+    melanonychia,
+    terrys_nails,
+    beaus_lines,
+    splinter_hemorrhages,
+    pitting,
+)
 
 
 def _inconclusive_findings(failure_reason):
@@ -8,6 +30,10 @@ def _inconclusive_findings(failure_reason):
         clubbing.inconclusive_finding(failure_reason),
         koilonychia.inconclusive_finding(failure_reason),
     ]
+
+
+def _color_inconclusive(failure_reason):
+    return [c.inconclusive_finding(failure_reason) for c in _COLOR_CONDITIONS]
 
 
 def _extract(image_b64, require_keypoints=True):
@@ -73,21 +99,48 @@ def _ml_finding(image_b64, view):
         return None
 
 
+def analyze_top_color(top_image_b64):
+    """Color/texture findings (see _COLOR_CONDITIONS) from the top-down photo.
+
+    Classical CV like the geometry track -- no trained model needed, so this runs
+    even in a torch-free environment. The top-down view is the right one for these:
+    they're about the nail plate's color, not its side-profile shape. On any photo
+    failure both color findings come back inconclusive with the same reason rather
+    than measuring color on a region that wasn't reliably located.
+    """
+    image = decode_base64_image(top_image_b64)
+    if image is None:
+        return _color_inconclusive("invalid_image")
+    if focus_score(image) < BLUR_THRESHOLD:
+        return _color_inconclusive("too_blurry")
+    contour, validation = extract_best_contour(image)
+    if not validation["is_valid"]:
+        return _color_inconclusive(validation["reason"])
+    region, reason = nail_region.compute_nail_region(image, contour)
+    if reason:
+        return _color_inconclusive(reason)
+    return [c.build_finding(region) for c in _COLOR_CONDITIONS]
+
+
 def analyze(side_image_b64, top_image_b64):
-    """Full response: geometry (side photo) fused with the trained-CNN track.
+    """Full response: geometry (side photo) fused with the trained-CNN track, plus
+    the color/texture track on the top-down photo.
 
     Geometry measures the side profile. The CNN classifies the top-down photo
     (its trained view), and fusion.fuse() combines the two into one finding per
-    condition: agreeing tracks boost confidence, disagreeing tracks return
-    inconclusive rather than asserting a split verdict.
+    geometry condition: agreeing tracks boost confidence, disagreeing tracks return
+    inconclusive rather than asserting a split verdict. The color track adds its own
+    standalone findings (leukonychia, melanonychia, Terry's nails, Beau's lines,
+    splinter hemorrhages, pitting) from the top-down photo.
 
-    If torch or the weights aren't present (classifier.is_available() is False),
-    the geometry findings stand on their own unchanged -- the app still works in
-    a torch-free environment.
+    If torch or the weights aren't present (classifier.is_available() is False), the
+    geometry findings stand on their own unchanged; the color track runs regardless
+    -- the app still works, with full color findings, in a torch-free environment.
     """
     geometry = analyze_side_profile(side_image_b64)["findings"]
+    color = analyze_top_color(top_image_b64)
     if not classifier.is_available():
-        return {"findings": geometry}
+        return {"findings": geometry + color}
 
     ml_top = _ml_finding(top_image_b64, "top")
-    return {"findings": fusion.fuse(geometry, ml_top)}
+    return {"findings": fusion.fuse(geometry, ml_top) + color}

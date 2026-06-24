@@ -39,6 +39,7 @@ function FindingCard({ finding, index }) {
 
   const isMl = finding.track_used === 'ml'
   const isFused = finding.track_used === 'fused'
+  const isColor = finding.track_used === 'color'
   const matchLabel = isMl && finding.predicted_label ? ML_LABELS[finding.predicted_label] : null
   const mlMatch = isFused && finding.ml?.predicted_label ? ML_LABELS[finding.ml.predicted_label] : null
   const agreementNote = isFused ? AGREEMENT_NOTE[finding.agreement] : null
@@ -47,6 +48,7 @@ function FindingCard({ finding, index }) {
     <div className="finding-card" style={{ '--finding-delay': `${index * 70}ms` }}>
       {isMl && <span className="track-badge">AI model</span>}
       {isFused && <span className="track-badge">Geometry + AI</span>}
+      {isColor && <span className="track-badge">Color check</span>}
       <div className={`result-icon result-icon--${finding.verdict}`}>
         <Icon name={copy.icon} size={22} />
       </div>

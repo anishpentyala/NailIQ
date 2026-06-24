@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-NailIQ: a precautionary screener for nail-based signs of systemic disease
-(currently digital clubbing and koilonychia/spoon nails). A user photographs their
-finger and gets a finding per condition, each one only ever "within typical range,"
+NailIQ: a precautionary screener for nail-based signs of systemic disease. It
+covers eight conditions across three tracks: digital clubbing and koilonychia/spoon
+nails (side-profile geometry), and leukonychia, melanonychia, Terry's nails, Beau's
+lines, splinter hemorrhages, and pitting (top-down color/texture). A user photographs
+their finger and gets a finding per condition, each one only ever "within typical range,"
 "outside typical range," or "couldn't analyze this photo" — **never** a named
 diagnosis. This framing is non-negotiable and must show up on every result screen,
 not just a footer disclaimer.
@@ -66,21 +68,27 @@ this was added after a stale Windows TCP listener got stuck on port 5000.
 The frontend captures **two photos per session** (`CameraCapture.jsx`, internal
 step state `'side' | 'top'`): a side-profile shot and a top-down shot. Both are
 POSTed to `/analyze` as `{ side_image, top_image }` (base64, no `data:` prefix).
-Only `side_image` is analyzed today — `top_image` is decoded and discarded, kept in
-the contract on purpose so the capture flow and request shape don't need to change
-again when color/texture-based findings (leukonychia, splinter hemorrhages, Terry's
-nails — all need a top-down view) get added later.
+**Both photos are now analyzed**: the side photo drives the geometry track, the
+top-down photo drives the trained-CNN track and the color/texture track. (The
+`top_image` field used to be decoded and discarded — it was kept in the contract on
+purpose precisely so the color/texture findings could be added without changing the
+capture flow or request shape, which is exactly what happened.)
 
-`/analyze` runs **two tracks and fuses them**: the geometry track (clubbing angle
-+ koilonychia sagitta from the side photo) and a trained-CNN track
-(`ml/infer/classifier.py`, MobileNetV3-Large) that classifies the top-down photo.
-`ml/infer/fusion.py` combines them into **one finding per condition**
-(`track_used: "fused"`): when both tracks agree the verdict's confidence is
-boosted; when they disagree the finding is `inconclusive` (`tracks_disagree`)
-rather than asserting a split call. The ML track is optional —
+`/analyze` runs **three tracks**: the geometry track (clubbing angle + koilonychia
+sagitta from the side photo), a trained-CNN track (`ml/infer/classifier.py`, a
+MobileNetV3-Large + EfficientNet-B0 ensemble) that classifies the top-down photo,
+and a color/texture track (`ml/infer/nail_region.py` + one module per condition)
+that measures the top-down photo's nail plate.
+
+The geometry and CNN tracks are **fused** by `ml/infer/fusion.py` into **one
+finding per geometry condition** (`track_used: "fused"`): when both tracks agree the
+verdict's confidence is boosted; when they disagree the finding is `inconclusive`
+(`tracks_disagree`) rather than asserting a split call. The CNN track is optional —
 `classifier.is_available()` gates it, so if torch/weights are absent the geometry
-findings are returned unchanged (`track_used: "geometric"`). See "The trained-CNN
-track" and "Fusing the two tracks" below.
+findings are returned unchanged (`track_used: "geometric"`). The color/texture track
+is **standalone** (`track_used: "color"`), classical CV that needs no trained model,
+so it always runs and appends its findings after the geometry/fused ones. See "The
+trained-CNN track", "Fusing the two tracks", and "The color/texture track" below.
 
 The response is always `{ "findings": [...] }`, one entry per condition, each
 independently `within` / `outside` / `inconclusive`. A fused finding adds
@@ -233,6 +241,49 @@ confidence (`"agree"`); tracks disagree → `inconclusive` (`tracks_disagree`,
 `"disagree"`). Only the **top-view** ML signal is used — side-view ML is a domain
 mismatch and is deliberately ignored here.
 
+### The color/texture track (`ml/infer/nail_region.py` + per-condition modules)
+
+A third track, parallel to geometry, that reads the **top-down** photo's nail plate
+and reports six color/texture conditions. It's **classical CV** like the geometry
+track — no trained model, no dataset — so it always runs (even torch-free) and its
+findings carry `track_used: "color"`. It is *not* fused with the CNN (the CNN only
+knows clubbing/koilonychia/healthy); these are standalone findings appended after
+the geometry/fused ones in `pipeline.analyze`.
+
+`nail_region.compute_nail_region(image, contour)` is the shared front-end (the
+top-down counterpart to `keypoints.py`). It does **not** do pixel-perfect nail
+segmentation — honestly, there's no model for that here. Using PCA on the finger
+silhouette it takes the distal ~45% of the finger length (the end whose skin is
+*least saturated* — i.e. the nail end) and its central 60% width, which lands on the
+nail plate while insetting away from the skin folds. It returns the region's
+per-pixel `S`/`V`/`across`/`along` arrays **and** a rectified `grid_v`/`grid_s`
+patch (`GRID_H`×`GRID_W`, rows proximal→distal, cols across, NaN where empty) so the
+texture conditions get a stable 2D image regardless of photo size/orientation. Too
+small / unclear a region → `nail_region_unclear`, and *all* color findings come back
+`inconclusive` rather than measuring color on pixels that weren't reliably located.
+
+Each condition is one module with `build_finding(region)` / `inconclusive_finding(reason)`
+(same finding shape as geometry), registered in `pipeline._COLOR_CONDITIONS` (which
+drives both the findings and the inconclusive list — add a condition there once):
+- `leukonychia.py` — fraction of the nail region that's white (high V, low S),
+  excluding the very brightest pixels as specular glare.
+- `melanonychia.py` — a dark *longitudinal* band: an internal across-bin much
+  darker than the rest of the plate (edge bins excluded as edge shadow).
+- `terrys_nails.py` — proximal plate mostly opaque-white **and** a darker distal
+  band (both gates must trip).
+- `beaus_lines.py` — a dark *transverse* groove: an internal `grid_v` row,
+  spanning the width, well below the baseline of interior rows.
+- `splinter_hemorrhages.py` — small vertically-elongated dark streaks
+  (cv2 connected components on a dark mask); needs ≥2 to flag.
+- `pitting.py` — multiple small roundish dark pits (same CC approach); needs ≥4.
+
+Every threshold here is a **rough starting estimate** (named module-level constant)
+— there's no labeled photo dataset to calibrate against yet, confidences are capped
+modestly via `nail_region.heuristic_confidence`, and the conditions lean toward
+`within`/`inconclusive` to limit false positives. Adding a seventh color condition:
+add `<condition>.py` following the pattern, build its metric off the `region` dict
+(reuse `grid_v`/`grid_s` for texture), and add it to `_COLOR_CONDITIONS`.
+
 ### Eval / diagnostics (`ml/eval/`)
 
 - `grad_cam.py` — Grad-CAM overlays (last conv block) on test images, written to
@@ -254,8 +305,9 @@ mismatch and is deliberately ignored here.
   free as long as it follows the same `{label, display_name, value, unit, verdict,
   confidence, failure_reason}` shape. `track_used: "fused"` findings show a
   "Geometry + AI" badge plus an agreement note (from `agreement`) and the model's
-  closest visual match (from `ml.predicted_label`); the legacy `track_used: "ml"`
-  badge path is still handled for standalone ML findings.
+  closest visual match (from `ml.predicted_label`); `track_used: "color"` findings
+  show a "Color check" badge; the legacy `track_used: "ml"` badge path is still
+  handled for standalone ML findings.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
 

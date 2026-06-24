@@ -3,6 +3,7 @@ import CameraCapture from './components/CameraCapture'
 import ResultView from './components/ResultView'
 import InfoSection from './components/InfoSection'
 import HomeScreen from './components/HomeScreen'
+import HistoryView from './components/HistoryView'
 import BottomNav from './components/BottomNav'
 import Icon from './components/Icon'
 import { analyzeImages } from './api'
@@ -83,6 +84,8 @@ function App() {
             )}
           </>
         )}
+
+        {activeTab === 'history' && <HistoryView />}
 
         {activeTab === 'learn' && <InfoSection />}
       </div>

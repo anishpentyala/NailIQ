@@ -133,6 +133,48 @@ export default function HomeScreen({ onStartScan }) {
               <p>Spoon-shaped curve of the nail plate.</p>
             </div>
           </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="sparkle" /></span>
+            <div>
+              <strong>Leukonychia</strong>
+              <p>White spots or discoloration on the nail.</p>
+            </div>
+          </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="pulse" /></span>
+            <div>
+              <strong>Melanonychia</strong>
+              <p>A dark band running down the nail.</p>
+            </div>
+          </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="eye" /></span>
+            <div>
+              <strong>Terry's nails</strong>
+              <p>Mostly-white nail with a darker band at the tip.</p>
+            </div>
+          </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="pulse" /></span>
+            <div>
+              <strong>Beau's lines</strong>
+              <p>Grooves running across the nail surface.</p>
+            </div>
+          </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="pulse" /></span>
+            <div>
+              <strong>Splinter hemorrhages</strong>
+              <p>Tiny dark streaks beneath the nail.</p>
+            </div>
+          </div>
+          <div className="screen-row">
+            <span className="screen-emoji"><Icon name="search" /></span>
+            <div>
+              <strong>Pitting</strong>
+              <p>Small dents or pinpricks in the nail surface.</p>
+            </div>
+          </div>
         </div>
       </section>
 

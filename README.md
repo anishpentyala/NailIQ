@@ -3,9 +3,11 @@
 A precautionary screener for nail-based signs of systemic disease. Digital clubbing
 is present in ~35% of non-small-cell lung cancer cases and is also linked to heart
 disease, COPD, and liver disease; koilonychia (spoon nails) is linked to iron
-deficiency anemia. Both develop slowly and are rarely self-noticed. NailIQ lets
-anyone photograph their finger and get a quick, honest read on whether their nail
-signs are worth mentioning to a doctor.
+deficiency anemia. NailIQ screens for **eight** such signs — clubbing and
+koilonychia from the side profile, plus leukonychia, melanonychia, Terry's nails,
+Beau's lines, splinter hemorrhages, and pitting from a top-down view. These develop
+slowly and are rarely self-noticed. NailIQ lets anyone photograph their finger and
+get a quick, honest read on whether their nail signs are worth mentioning to a doctor.
 
 **This is not a diagnostic tool.** It never names a disease or says "you have
 clubbing." Each finding is only ever "within typical range," "outside typical
@@ -14,18 +16,22 @@ doctor. Every screen carries this framing.
 
 ## How it analyzes a photo
 
-Each scan captures a **side-profile** and a **top-down** photo, and runs two
-independent computer-vision tracks that are **fused into one verdict per condition**:
+Each scan captures a **side-profile** and a **top-down** photo, and runs three
+independent computer-vision tracks:
 
 | Track | What it does | Owns |
 |-------|--------------|------|
 | **Geometry** (`ml/infer/`) | Classical OpenCV — Lovibond nail angle (cosine rule) + koilonychia sagitta from the finger contour. No trained model needed. | the **side profile** |
 | **Trained CNN** (`ml/infer/classifier.py`) | A 2-model ensemble (MobileNetV3-Large + EfficientNet-B0) classifies the nail as clubbing / koilonychia / healthy (transfer learning, averaged predictions). | the **top-down** photo |
+| **Color/texture** (`ml/infer/nail_region.py` + per-condition modules) | Classical OpenCV on the nail plate — leukonychia, melanonychia, Terry's nails, Beau's lines, splinter hemorrhages, pitting. No trained model needed. | the **top-down** photo |
 
-**Fusion** (`ml/infer/fusion.py`): when both tracks agree, confidence is boosted;
-when they disagree, the result is **inconclusive** rather than a guessed verdict.
-The CNN track is **optional** — torch and the weights load lazily, so the geometry
-track still works in a torch-free environment.
+**Fusion** (`ml/infer/fusion.py`): for the two geometry conditions, the geometry and
+CNN tracks are fused into one verdict each — when both agree, confidence is boosted;
+when they disagree, the result is **inconclusive** rather than a guessed verdict. The
+CNN track is **optional** — torch and the weights load lazily, so the geometry track
+still works in a torch-free environment. The **color/texture track is standalone**
+(no fusion, no model) and adds its six findings from the top-down photo; it always
+runs, even without torch.
 
 What makes the CNN trustworthy instead of a raw softmax guess:
 
@@ -160,10 +166,12 @@ Request:
   "top_image": "<base64-encoded JPEG/PNG>"
 }
 ```
-`side_image` drives the geometry track; `top_image` is classified by the CNN. The
-two are fused into one finding per condition.
+`side_image` drives the geometry track; `top_image` is classified by the CNN (fused
+with geometry into the two shape findings) and is measured by the color/texture track
+(six standalone findings). A scan returns **eight findings** in total.
 
-Response (when the CNN track is available — findings are `track_used: "fused"`):
+Response (the two geometry conditions come back `track_used: "fused"` when the CNN is
+available; the six color conditions come back `track_used: "color"`):
 ```json
 {
   "findings": [
@@ -179,12 +187,23 @@ Response (when the CNN track is available — findings are `track_used: "fused"`
       "geometry": { "verdict": "within", "value": 165.3, "confidence": 0.7 },
       "ml": { "verdict": "within", "predicted_label": "healthy", "confidence": 0.9 },
       "failure_reason": null
+    },
+    {
+      "label": "leukonychia",
+      "display_name": "Nail color (leukonychia)",
+      "value": null,
+      "unit": null,
+      "verdict": "within" | "outside" | "inconclusive",
+      "confidence": 0.55,
+      "track_used": "color",
+      "failure_reason": null
     }
   ]
 }
 ```
-Without torch/weights, findings fall back to plain geometry (`track_used:
-"geometric"`, no `agreement`/`geometry`/`ml` fields).
+Without torch/weights, the two shape findings fall back to plain geometry
+(`track_used: "geometric"`, no `agreement`/`geometry`/`ml` fields); the six
+color/texture findings are unaffected (they never needed torch).
 
 `inconclusive` means a track couldn't produce a confident verdict — the geometry
 pipeline couldn't locate the finger/keypoints (`failure_reason` names the failed
@@ -269,3 +288,15 @@ reasonably decide yourself")
   (single digits per class) to report a trustworthy recall — same eval set keeps
   the new numbers comparable to the old baseline instead of measuring against a
   different, easier or harder test.
+- **Added a standalone color/texture track on the top-down photo** (leukonychia,
+  melanonychia, Terry's nails, Beau's lines, splinter hemorrhages, pitting) rather
+  than only the two side-profile shape conditions. These are color/texture signs, so
+  geometry can't see them and the existing CNN doesn't know them — but they're
+  reachable with classical CV on the nail plate, which needs no labeled dataset and
+  runs even torch-free. A shared `nail_region.py` estimates the nail plate (PCA on
+  the finger silhouette → distal, low-saturation region) and rectifies it to a fixed
+  grid the texture conditions analyze. The nail-plate estimate is explicitly a
+  heuristic (not pixel-perfect segmentation — there's no model for that here) and the
+  thresholds are rough starting estimates with no labeled dataset yet, so confidences
+  are capped modestly and verdicts lean toward within/inconclusive to limit false
+  positives — same honesty caveat as koilonychia's threshold.
