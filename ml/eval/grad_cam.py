@@ -65,9 +65,10 @@ def main():
     if not classifier.is_available():
         raise SystemExit("Model not available (train it first / install torch).")
     s = classifier._load()
-    model, torch_ = s["model"], s["torch"]
+    torch_ = s["torch"]
+    model = s["members"][0][0]                  # explain the first ensemble member
     classes = s["meta"]["classes"]
-    target_layer = model.features[-1]          # last conv block of MobileNetV3
+    target_layer = model.features[-1]          # last conv block of the backbone
     tf = transforms.Compose([
         transforms.Resize(256, antialias=True),
         transforms.CenterCrop(s["meta"]["img_size"]),

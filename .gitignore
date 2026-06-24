@@ -44,3 +44,5 @@ data/real_eval/
 _train_log.txt
 _bt/
 _realtest/
+build.log
+build_output.log

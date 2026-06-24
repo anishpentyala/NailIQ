@@ -33,8 +33,12 @@ Run a single test:
 
 ### ML training / eval (needs torch + the downloaded dataset; from repo root)
 ```bash
-backend/venv/Scripts/python.exe scripts/download_data.py      # needs ROBOFLOW_API_KEY
-backend/venv/Scripts/python.exe ml/train/train_classifier.py  # -> ml/models/*.pt + labels json
+backend/venv/Scripts/python.exe scripts/download_data.py                # needs ROBOFLOW_API_KEY
+backend/venv/Scripts/python.exe scripts/build_classification_dataset.py # merge detection datasets into train
+backend/venv/Scripts/python.exe scripts/finalize_merged_eval.py         # restore clean eval split + dedup
+backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone mobilenet_v3_large
+backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone efficientnet_b0  # adds to ensemble
+backend/venv/Scripts/python.exe ml/eval/eval_ensemble.py      # ensemble accuracy (what ships)
 backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # attention overlays
 backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
 ```
@@ -156,27 +160,45 @@ following the existing pattern, and call it from `pipeline.py`.
 
 ### The trained-CNN track (`ml/infer/classifier.py`)
 
-A MobileNetV3-Large (ImageNet transfer learning) classifies a photo as
-`clubbing` / `koilonychia` / `healthy`. Trained by `ml/train/train_classifier.py`
-on the NailCheck dataset (`data/raw/nailcheck-3xvkl`, downloaded via
-`scripts/download_data.py` from Roboflow Universe, CC BY 4.0). Weights live in
-`ml/models/nail_classifier.pt` + `nail_classifier_labels.json` (gitignored —
-regenerate by re-running training; the JSON carries `backbone`, `img_size`,
-normalization, and the calibration `temperature`). Reported accuracy is on the
-dataset's held-out split — **NOT** on real phone photos; treat real-world accuracy
-as unknown/lower (measure it with `ml/eval/eval_real.py`) and never present it as
-clinical-grade.
+A **2-model ensemble** (MobileNetV3-Large + EfficientNet-B0, both ImageNet
+transfer learning) classifies a photo as `clubbing` / `koilonychia` / `healthy`,
+averaging each member's softmax. Trained by `ml/train/train_classifier.py
+--backbone <name>`, run once per backbone — each run appends its member to the
+ensemble rather than overwriting it. Training data is the **merged** dataset
+(`data/raw/merged`): the NailCheck dataset (`data/raw/nailcheck-3xvkl`,
+downloaded via `scripts/download_data.py` from Roboflow Universe, CC BY 4.0) plus
+two YOLO detection datasets cropped to the nail box and added to *train only* via
+`scripts/build_classification_dataset.py`; `scripts/finalize_merged_eval.py`
+then restores `merged/valid` and `merged/test` to the original, untouched
+NailCheck split (so eval numbers stay comparable to the old baseline) and drops
+any train image that's a near-duplicate (dHash, Hamming ≤5) of an eval image to
+prevent leakage. Weights live in `ml/models/nail_classifier__<backbone>.pt` +
+one shared `nail_classifier_labels.json` (gitignored — regenerate by re-running
+training for each backbone). The JSON's `"ensemble"` list carries each member's
+`backbone`, `weights_file`, and its own independently-fit calibration
+`temperature`; `classifier._members_from_meta()` falls back to the old
+single-backbone top-level format if `"ensemble"` is absent, so don't remove that
+fallback while any non-ensemble manifest might still be in the wild. Reported
+accuracy is on the dataset's held-out split — **NOT** on real phone photos; treat
+real-world accuracy as unknown/lower (measure it with `ml/eval/eval_real.py`) and
+never present it as clinical-grade.
 
 What makes the prediction more than a raw softmax guess (all in
 `classifier.classify_bgr`, mirrored in training so train/inference match):
+- **Ensemble.** Two diverse backbones vote and their probabilities are averaged;
+  a wrong call from one is usually outvoted by the other. `ml/eval/eval_ensemble.py`
+  is the only script that measures this averaged number (what actually ships) —
+  `train_classifier.py`'s printed accuracy is each backbone's *solo* number.
 - **ROI crop.** `preprocessing.crop_to_finger_roi` crops to the detected finger
   (same contour detector geometry uses) **before** classifying, so the CNN keys on
   the nail, not the background. This is the single biggest real-world robustness
   fix — feeding the whole frame let background clutter swing the prediction.
-- **TTA.** Predictions are averaged over the image + its horizontal flip.
-- **Temperature scaling.** Logits are divided by a temperature fit on the
-  validation set (`fit_temperature` in training) so the probability the
-  `CONFIDENCE_THRESHOLD` (0.50) gates on is calibrated, not over-confident.
+- **TTA.** Each member's prediction is averaged over the image + its horizontal
+  flip, independently, before the cross-member average.
+- **Temperature scaling.** Each member's logits are divided by its own
+  temperature (fit on the validation set, `fit_temperature` in training) so the
+  probability the `CONFIDENCE_THRESHOLD` (0.50) gates on is calibrated, not
+  over-confident.
 
 Key facts:
 - **Lazy + optional.** torch/torchvision and the weights are only loaded on first
@@ -192,10 +214,14 @@ Key facts:
   `analyze_side_profile(side)` remains the geometry-only path.
 
 Training (`ml/train/train_classifier.py`) fine-tunes the last few backbone blocks
-(not just the head) at a lower LR, with class weights + label smoothing for the
-mild imbalance and phone-realistic augmentation (perspective, blur). It prints a
-confusion matrix + per-class precision/recall — for a screener, **recall on the
-condition classes** (don't miss a real sign) is the metric to watch.
+(not just the head) at a lower LR, with AdamW + cosine LR schedule, EMA weights,
+early stopping, class weights + label smoothing for the mild imbalance, and
+phone-realistic augmentation (RandAugment, perspective, blur, RandomErasing,
+MixUp/CutMix). It prints a confusion matrix + per-class precision/recall for that
+one backbone — for a screener, **recall on the condition classes** (don't miss a
+real sign) is the metric to watch, but the number that matters for production is
+the ensemble's, from `ml/eval/eval_ensemble.py`: **0.935 overall test accuracy**
+(n=108), up from 0.898 for the prior single-backbone model on the same split.
 
 ### Fusing the two tracks (`ml/infer/fusion.py`)
 

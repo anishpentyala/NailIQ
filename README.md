@@ -20,7 +20,7 @@ independent computer-vision tracks that are **fused into one verdict per conditi
 | Track | What it does | Owns |
 |-------|--------------|------|
 | **Geometry** (`ml/infer/`) | Classical OpenCV — Lovibond nail angle (cosine rule) + koilonychia sagitta from the finger contour. No trained model needed. | the **side profile** |
-| **Trained CNN** (`ml/infer/classifier.py`) | MobileNetV3-Large classifies the nail as clubbing / koilonychia / healthy (transfer learning). | the **top-down** photo |
+| **Trained CNN** (`ml/infer/classifier.py`) | A 2-model ensemble (MobileNetV3-Large + EfficientNet-B0) classifies the nail as clubbing / koilonychia / healthy (transfer learning, averaged predictions). | the **top-down** photo |
 
 **Fusion** (`ml/infer/fusion.py`): when both tracks agree, confidence is boosted;
 when they disagree, the result is **inconclusive** rather than a guessed verdict.
@@ -31,29 +31,44 @@ What makes the CNN trustworthy instead of a raw softmax guess:
 
 - **ROI crop** — the finger is cropped out of the frame *before* classifying, so the
   model keys on the nail, not the background (the biggest real-world fix).
-- **Test-time augmentation** — predictions averaged over the image + its flip.
-- **Temperature scaling** — logits calibrated on the validation set, so the
-  confidence floor that gates "couldn't analyze" actually means something.
+- **Ensemble** — two diverse backbones vote; a wrong call by one is usually
+  outvoted by the other.
+- **Test-time augmentation** — each backbone's prediction is averaged over the
+  image + its flip.
+- **Temperature scaling** — each backbone's logits are calibrated on the
+  validation set independently, so the confidence floor that gates "couldn't
+  analyze" actually means something.
 
 Grad-CAM (`ml/eval/grad_cam.py`) confirms the model attends to the nail, not the
 background.
 
 ## Results
 
-Trained on the **NailCheck** dataset (Roboflow Universe, CC BY 4.0), restricted to
-clubbing / koilonychia / healthy. Last backbone blocks fine-tuned; class-weighted,
-label-smoothed, phone-realistic augmentation.
+Train set is the **NailCheck** dataset (Roboflow Universe, CC BY 4.0) merged with
+clubbing/koilonychia/healthy crops pulled from two YOLO-format detection datasets
+(box → padded crop, size/area filtered, perceptual-hash deduped, train-only class
+balancing — see `scripts/build_classification_dataset.py`), 2,831 images total.
+**Eval set is the original, untouched NailCheck valid/test split** (207/108) so
+results stay comparable to the earlier single-backbone baseline; train is
+leakage-checked against it (`scripts/finalize_merged_eval.py`). Last backbone
+blocks fine-tuned per model; class-weighted, label-smoothed, phone-realistic
+augmentation (RandAugment, RandomErasing, MixUp/CutMix), AdamW + cosine schedule,
+EMA weights, early stopping.
 
-**Held-out test split** (108 images) — *clean dataset images, not phone photos:*
+**Held-out test split** (108 images, clean dataset images, not phone photos) —
+**ensemble** of MobileNetV3-Large + EfficientNet-B0 (temperature-scaled, TTA'd,
+averaged — what `/analyze` actually runs):
 
 | Class | Precision | Recall | n |
 |-------|:---------:|:------:|:-:|
-| clubbing | 0.94 | 0.85 | 34 |
-| koilonychia | 0.83 | 1.00 | 38 |
-| healthy | 0.97 | 0.83 | 36 |
+| clubbing | 0.97 | 0.91 | 34 |
+| koilonychia | 0.90 | 0.97 | 38 |
+| healthy | 0.94 | 0.92 | 36 |
 
-**Overall accuracy 0.90.** Errors lean toward *over-flagging* conditions — the safe
-direction for a screener (a false "show a doctor" beats a missed sign).
+**Overall ensemble accuracy 0.935**, up from 0.90 for the prior single-backbone
+model on the same test set (solo backbones score 0.88 / 0.91 — the ensemble beats
+both). Errors lean toward *over-flagging* conditions — the safe direction for a
+screener (a false "show a doctor" beats a missed sign).
 
 > ⚠️ This is dataset-split accuracy, **not** real-world phone-photo accuracy. Run
 > `ml/eval/eval_real.py` over labeled phone shots in `data/real_eval/<class>/` to
@@ -122,8 +137,12 @@ need a tunnel (e.g. `ngrok`) or a dev cert.
 
 ```bash
 # from the repo root, using the backend venv:
-backend/venv/Scripts/python.exe scripts/download_data.py      # needs ROBOFLOW_API_KEY
-backend/venv/Scripts/python.exe ml/train/train_classifier.py  # -> ml/models/*.pt + labels json
+backend/venv/Scripts/python.exe scripts/download_data.py            # needs ROBOFLOW_API_KEY
+backend/venv/Scripts/python.exe scripts/build_classification_dataset.py  # merge detection datasets in
+backend/venv/Scripts/python.exe scripts/finalize_merged_eval.py     # restore clean eval split + dedup
+backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone mobilenet_v3_large
+backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone efficientnet_b0  # adds to ensemble
+backend/venv/Scripts/python.exe ml/eval/eval_ensemble.py      # ensemble accuracy (what ships)
 backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # -> ml/eval/gradcam_out/
 backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
 ```
@@ -236,3 +255,17 @@ reasonably decide yourself")
   important since over-confident wrong calls are exactly what a screener must avoid.
 - **The CNN track is optional (lazy-loaded).** The Flask app must not hard-depend on
   torch; if weights/torch are absent the geometry track stands alone.
+- **Switched the CNN to a 2-model ensemble** (MobileNetV3-Large + EfficientNet-B0)
+  rather than chasing a single bigger backbone. Diverse architectures making
+  independent mistakes is a more reliable accuracy gain for a small dataset than
+  one model's capacity; manifest format (`ensemble: [...]`) stays backward
+  compatible with the original single-backbone format.
+- **Expanded training data by cropping two YOLO-format detection datasets** into
+  classification crops rather than collecting new photos — they were already
+  downloaded for a possible future bounding-box approach and had thousands of
+  unused boxes. Train got the merged/balanced/deduped set; **valid/test were kept
+  as the original NailCheck split** rather than also merged in, because the
+  detection-set crops' own near-duplicate dedup left eval splits too small
+  (single digits per class) to report a trustworthy recall — same eval set keeps
+  the new numbers comparable to the old baseline instead of measuring against a
+  different, easier or harder test.
