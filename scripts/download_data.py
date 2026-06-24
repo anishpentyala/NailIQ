@@ -37,6 +37,13 @@ DATASETS = [
      "Nail Disease Detection (Clubbing, Onychogryphosis)"),
     ("mist-r9pt1", "terry-s-nail-cbo00", 1, "yolov8", "detection",
      "MIST Terry's Nail"),
+    # NOTE: tugas-akhir-kx2jl/nail-disease was pulled here once and DELIBERATELY removed.
+    # Despite its CC BY 4.0 tag, manual inspection found (a) its train split is Roboflow
+    # mosaic-augmented (4 tiled images + synthetic noise, unusable as real photos) and
+    # (b) several valid/test images are clearly scraped from Google Image Search
+    # (filenames embed `images_q-tbn_ANd9GcS...` thumbnail tokens) and at least one
+    # carries a third-party stock-photo watermark -- i.e. the uploader's relicense claim
+    # is not trustworthy. Don't re-add it. KNM (above) is the vetted multi-condition source.
 ]
 
 

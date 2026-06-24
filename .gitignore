@@ -40,6 +40,11 @@ ml/models/*.json
 ml/eval/gradcam_out/
 data/real_eval/
 
+# Color-calibration eval set: regenerable crops of CC BY 4.0 datasets
+# (rebuild with scripts/build_color_eval_set.py). Not committed -- same rationale
+# as data/raw/: don't redistribute the source images, just the script that fetches them.
+data/color_eval/
+
 # Scratch
 _train_log.txt
 _bt/

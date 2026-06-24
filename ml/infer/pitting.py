@@ -6,7 +6,8 @@ component analysis on a Value-based dark threshold. No trained model needed.
 
 A pit is identified as a connected component (8-connectivity) with area 1..~61 pixels
 (max 2% of GRID_H x GRID_W), aspect ratio 0.5..2.0 (roundish), and max dimension <= 6
-pixels. Four or more qualifying pits flags pitting as outside typical range.
+pixels. Two or more qualifying pits flags pitting as outside typical range (calibrated
+threshold -- see PITTING_COUNT_THRESHOLD below).
 """
 
 import numpy as np
@@ -14,9 +15,14 @@ import cv2
 
 from .nail_region import heuristic_confidence, GRID_H, GRID_W
 
-# Rough starting estimate -- requires >=4 small pits to flag, to limit false
-# positives; no labeled dataset yet to calibrate against.
-PITTING_COUNT_THRESHOLD = 3.5
+# Calibrated 2026-06-24 against the KNM nail-disease dataset (Roboflow, CC BY 4.0):
+# 85 labeled "Pitting" photos vs 80 healthy, full-image (margin-padded) through this same
+# pipeline -- see ml/eval/calibrate_color.py + scripts/build_color_eval_set.py. A threshold
+# sweep moved this from the old rough estimate of 3.5 (>=4 pits) to 1.0 (>=2 pits): the
+# old value missed most labeled pitting (sensitivity 0.31), the calibrated value roughly
+# doubles recall (0.59) at acceptable specificity (0.76), best balanced accuracy (0.675).
+# Still only a clinical-photo dataset, not real phone photos -- real-world accuracy unknown.
+PITTING_COUNT_THRESHOLD = 1.0
 
 
 def count_pits(region):

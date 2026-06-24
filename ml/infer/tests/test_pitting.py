@@ -59,11 +59,27 @@ def test_five_small_dark_pits_scattered():
     assert finding["confidence"] > 0.4
 
 
-def test_two_small_dark_pits_below_threshold():
-    """Two small dark pits (below the >=4 gate) -> within."""
+def test_single_dark_pit_within():
+    """A single dark pit (count 1, not > the calibrated 1.0 gate) -> within."""
     grid_v = np.full((64, 48), 0.6)
 
-    # Create only two 2x2 dark pits.
+    # Create only one 2x2 dark pit.
+    grid_v[10:12, 10:12] = 0.2
+
+    region = make_region(grid_v)
+
+    pit_count = count_pits(region)
+    assert pit_count == 1, f"Expected exactly 1 pit, got {pit_count}"
+
+    finding = build_finding(region)
+    assert finding["verdict"] == "within"
+
+
+def test_two_small_dark_pits_above_threshold():
+    """Two small dark pits -> outside (calibrated 2026-06-24: >=2 pits flags, was >=4)."""
+    grid_v = np.full((64, 48), 0.6)
+
+    # Create two 2x2 dark pits.
     pit_locations = [(10, 10), (40, 35)]
     for row, col in pit_locations:
         if row + 2 < 64 and col + 2 < 48:
@@ -72,11 +88,10 @@ def test_two_small_dark_pits_below_threshold():
     region = make_region(grid_v)
 
     pit_count = count_pits(region)
-    # Two pits, should be <= threshold (3.5).
-    assert pit_count <= 3, f"Expected at most 3 pits, got {pit_count}"
+    assert pit_count == 2, f"Expected exactly 2 pits, got {pit_count}"
 
     finding = build_finding(region)
-    assert finding["verdict"] == "within"
+    assert finding["verdict"] == "outside"
 
 
 def test_inconclusive_finding():
