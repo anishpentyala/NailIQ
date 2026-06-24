@@ -21,12 +21,23 @@ pip install -r requirements.txt
 python app.py                  # runs on :5000 (PORT env var overrides)
 ```
 
-Run the geometry unit tests (synthetic point sets — no camera, no dataset needed):
+Run the geometry unit tests (synthetic point sets — no camera, no dataset needed).
+**Run from the repo root, not `backend/`** — the tests import `ml.infer.*`, which
+needs the repo root on `sys.path`; running from `backend/` fails with
+`ModuleNotFoundError: No module named 'ml'`:
 ```bash
-cd backend && venv\Scripts\activate
-pytest ../ml/infer/tests/
+backend/venv/Scripts/python.exe -m pytest ml/infer/tests/
 ```
-Run a single test: `pytest ../ml/infer/tests/test_geometry.py::test_right_angle_concave`
+Run a single test:
+`backend/venv/Scripts/python.exe -m pytest ml/infer/tests/test_geometry.py::test_right_angle_concave`
+
+### ML training / eval (needs torch + the downloaded dataset; from repo root)
+```bash
+backend/venv/Scripts/python.exe scripts/download_data.py      # needs ROBOFLOW_API_KEY
+backend/venv/Scripts/python.exe ml/train/train_classifier.py  # -> ml/models/*.pt + labels json
+backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # attention overlays
+backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
+```
 
 ### Frontend (Vite + React)
 ```bash
