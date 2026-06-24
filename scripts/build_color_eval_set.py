@@ -27,10 +27,24 @@ Two deliberate departures from the box-crop pattern in build_classification_data
 2. ONLY pulls from valid/test splits, never train -- the original unaugmented exports
    (Roboflow can bake mosaic augmentation + synthetic noise into train at export time).
 
+PALLOR comes from a separate, properly-collected clinical source: the Ghana fingernail
+anemia dataset (Mendeley Data, doi:10.17632/2xx4j3kjg2.1, CC BY 4.0) -- 710 photos taken
+by lab personnel with blood-Hb ground truth, labeled anemic / non-anemic. We use anemic as
+pallor-positive and non-anemic as its own (case-control) negatives. NOTE: it ships as ~4260
+augmented PNGs (6-12 variants per patient); we keep one original per patient (no "(N)"
+suffix) to avoid augmentation leakage. It is also nail-ONLY crops (no surrounding skin), so
+it can't exercise the app's skin-relative pallor metric and is kept separate from the
+KNM-derived sets. Download + extract manually first (it's a .rar, not Roboflow):
+    curl -L -o data/raw/fingernails-ghana-anemia/Fingernails.rar \\
+      https://data.mendeley.com/public-files/datasets/2xx4j3kjg2/files/e3d97e08-0c09-45bc-bde6-68c30e98319b/file_downloaded
+    # sha256: 641ef99dd2b343eb00d0fc71b5062ba0a903046228440ab6b6311f81b0dc59ed
+    bsdtar -xf Fingernails.rar -C data/raw/fingernails-ghana-anemia/
+
 Usage (from repo root):
     backend/venv/Scripts/python.exe scripts/build_color_eval_set.py
 """
 
+import re
 import shutil
 from pathlib import Path
 
@@ -44,6 +58,9 @@ OUT = REPO / "data" / "color_eval"
 DATASETS = {
     "knm": RAW / "nail-disease-detection-mxoqy",
 }
+
+# Ghana anemia dataset (Mendeley, CC BY 4.0) -- pallor only; see module docstring.
+GHANA_ROOT = RAW / "fingernails-ghana-anemia" / "Fingernails"
 
 # condition -> [(dataset_key, class_name), ...]; multiple sources would be merged.
 # Only KNM-backed conditions are listed -- the four that depended solely on the dropped
@@ -113,6 +130,53 @@ def collect_full_images(dataset_key, class_name, dest_dir, tag):
     return written
 
 
+def _ghana_class(stem):
+    """anemic / non / None from a Ghana filename (naming is inconsistent + has typos)."""
+    s = stem.lower()
+    if s.startswith("non"):
+        return "non"
+    if "anemic" in s or "anmeic" in s:  # 'Anmeic' typo appears in the dataset
+        return "anemic"
+    return None
+
+
+def build_pallor_from_ghana():
+    """Write pallor positive (anemic) + its own negatives (non-anemic) from the Ghana set.
+
+    Keeps one ORIGINAL image per patient -- files without a '(N)' augmentation suffix or a
+    trailing ' N' manual-duplicate suffix -- so the ~6-12 augmented variants per patient
+    don't leak in and inflate n. Uses the dataset's own non-anemic photos as negatives
+    (same camera/population = a proper case-control comparison), written to
+    data/color_eval/pallor/negative so calibrate_color.py prefers them over the shared pool.
+    """
+    if not GHANA_ROOT.exists():
+        print(f"  Ghana dataset not found at {GHANA_ROOT} -- skipping pallor "
+              "(see module docstring for the manual download).")
+        return
+
+    def is_original(stem):
+        return "(" not in stem and not re.search(r" \d+$", stem)
+
+    pos_dir = OUT / "pallor" / "positive"
+    neg_dir = OUT / "pallor" / "negative"
+    pos_dir.mkdir(parents=True, exist_ok=True)
+    neg_dir.mkdir(parents=True, exist_ok=True)
+
+    n_pos = n_neg = 0
+    for f in GHANA_ROOT.glob("*.png"):
+        if not is_original(f.stem):
+            continue
+        cls = _ghana_class(f.stem)
+        if cls == "anemic":
+            shutil.copy(f, pos_dir / f"ghana__{f.name}")
+            n_pos += 1
+        elif cls == "non":
+            shutil.copy(f, neg_dir / f"ghana__{f.name}")
+            n_neg += 1
+    print(f"  pallor <- Ghana anemia (CC BY 4.0): {n_pos} anemic positives, "
+          f"{n_neg} non-anemic negatives (one original per patient)")
+
+
 def main():
     if OUT.exists():
         print(f"Removing existing {OUT}")
@@ -140,13 +204,17 @@ def main():
             total += n
         print(f"  {condition}: {total} positive\n")
 
+    print("\n=== Pallor (separate clinical source, own negatives) ===")
+    build_pallor_from_ghana()
+
     print("=" * 70)
     print(f"Done. Labeled eval sets written to {OUT}")
     print(f"Positives: {OUT}/<condition>/positive/")
-    print(f"Negatives (shared across all conditions): {neg_dir}")
+    print(f"Negatives: {neg_dir} (shared), or <condition>/negative/ when present (pallor)")
     print("Spot-check a sample of images for watermarks/quality before trusting results.")
     print("Run: backend/venv/Scripts/python.exe ml/eval/calibrate_color.py")
-    print("\nNOT covered (no real match in these sources): melanonychia")
+    print("\nNOT covered (no vetted source): melanonychia, leukonychia, onycholysis, "
+          "splinter_hemorrhages")
 
 
 if __name__ == "__main__":

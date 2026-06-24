@@ -18,9 +18,17 @@ from .nail_region import heuristic_confidence
 # redness. The skin-relative threshold catches "pale-for-this-person"; the
 # absolute threshold separates pallor from simply darker skin tones.
 
-# Rough starting estimate -- no labeled photo dataset yet to calibrate against.
-# Pallor screening from nail color needs a labeled dataset to validate, which
-# doesn't exist yet.
+# Rough starting estimate, still UNCALIBRATED. A calibration attempt on 2026-06-24
+# against the Ghana fingernail-anemia dataset (Mendeley, CC BY 4.0; 314 anemic vs 221
+# non-anemic, one original per patient -- see scripts/build_color_eval_set.py) did NOT
+# yield a usable threshold: best achievable balanced accuracy was ~0.57 (≈ chance). Two
+# reasons, both honest limitations rather than a tuning miss: (1) that dataset is nail-ONLY
+# crops with no surrounding skin, so this skin-relative metric can't actually be exercised
+# on it (and absolute nail color separated the classes no better); (2) nail-bed pallor from
+# anemia is a subtle, skin-tone-confounded sign that simple color statistics don't capture
+# -- the published work on that dataset uses CNNs and still reports only ~70-77%. So pallor
+# stays on these estimates and leans toward within/inconclusive. Real calibration needs
+# finger-with-skin photos labeled for visible pallor, which we don't have.
 PALLOR_REDNESS_DROP_THRESHOLD = 8.0
 PALLOR_ABS_A_MAX = 12.0
 

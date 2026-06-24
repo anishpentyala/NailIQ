@@ -223,52 +223,61 @@ def part_b_threshold_sweep():
         },
     }
 
-    # Negatives are shared across every condition (same healthy-nail crops), and
-    # region computation (contour + nail-plate localization) doesn't depend on which
-    # condition's metric we're about to read off it -- only metric_func does. So the
-    # expensive part (decode + contour + region) runs once per negative image total,
-    # not once per condition, and the cheap per-condition metric_func is applied to
-    # the cached region.
-    neg_dir = data_dir / "_shared_negative"
-    neg_images = (list(neg_dir.glob("*.jpg")) + list(neg_dir.glob("*.jpeg")) +
-                  list(neg_dir.glob("*.png"))) if neg_dir.exists() else []
-
-    neg_regions = []
-    neg_skipped = 0
-    if neg_images:
-        print(f"\nComputing nail regions for {len(neg_images)} shared negative images "
-              "(once, reused by every condition)...")
-        for image_path in neg_images:
+    def regions_from_dir(image_dir):
+        """Compute nail regions for every image in a dir. Returns (regions, n_skipped)."""
+        paths = (list(image_dir.glob("*.jpg")) + list(image_dir.glob("*.jpeg")) +
+                 list(image_dir.glob("*.png"))) if image_dir.exists() else []
+        regions, skipped = [], 0
+        for image_path in paths:
             try:
                 img = load_image_padded(image_path)
                 if img is None:
-                    neg_skipped += 1
+                    skipped += 1
                     continue
                 contour, val = preprocessing.extract_best_contour(img)
                 if not val["is_valid"]:
-                    neg_skipped += 1
+                    skipped += 1
                     continue
-                region, reason = nail_region.compute_nail_region(img, contour)
+                region, _ = nail_region.compute_nail_region(img, contour)
                 if region is None:
-                    neg_skipped += 1
+                    skipped += 1
                     continue
-                neg_regions.append(region)
+                regions.append(region)
             except Exception:
-                neg_skipped += 1
-        print(f"  {len(neg_regions)} usable, {neg_skipped} skipped")
+                skipped += 1
+        return regions, skipped
+
+    # Negatives are shared across every condition (same healthy-nail crops), and region
+    # computation doesn't depend on which condition's metric we read off it -- so the
+    # expensive part (decode + contour + region) runs once per shared-negative image total,
+    # not once per condition. A condition may override this with its own negative/ folder
+    # (e.g. pallor uses the Ghana non-anemic photos as a proper case-control control).
+    shared_neg_dir = data_dir / "_shared_negative"
+    print(f"\nComputing nail regions for the shared negative pool...")
+    shared_neg_regions, neg_skipped = regions_from_dir(shared_neg_dir)
+    print(f"  {len(shared_neg_regions)} usable, {neg_skipped} skipped")
 
     for cond_name, cond_info in conditions.items():
         cond_dir = data_dir / cond_name
         pos_dir = cond_dir / "positive"
+        own_neg_dir = cond_dir / "negative"
 
         pos_images = list(pos_dir.glob("*.jpg")) + list(pos_dir.glob("*.jpeg")) + list(pos_dir.glob("*.png")) if pos_dir.exists() else []
+
+        # Prefer a condition's own negatives (case-control) over the shared pool.
+        if own_neg_dir.exists() and any(own_neg_dir.iterdir()):
+            neg_regions, own_skip = regions_from_dir(own_neg_dir)
+            neg_source = f"own negative/ ({len(neg_regions)} usable, {own_skip} skipped)"
+        else:
+            neg_regions = shared_neg_regions
+            neg_source = "shared negative pool"
 
         if not pos_images or not neg_regions:
             print(f"\n{cond_name.upper()}:")
             if not pos_dir.exists() or not pos_images:
                 print(f"  No positive examples at {pos_dir}")
             if not neg_regions:
-                print(f"  No usable negative examples at {neg_dir}")
+                print(f"  No usable negative examples ({neg_source})")
             print(f"  Skipping threshold sweep (need both positive and negative photos).\n")
             continue
 
