@@ -13,13 +13,19 @@ width, which lands on the nail plate while insetting away from the skin folds at
 the sides. Callers treat a too-small / unclear region as inconclusive rather than
 guessing a verdict on skin pixels.
 
-compute_nail_region() returns the per-pixel S/V/position arrays of that region so
-each condition module computes its own metric from them (mirroring how clubbing.py
-and koilonychia.py each derive their own measure from the shared keypoints).
+compute_nail_region() white-balances the photo first (so absolute color is
+comparable across lighting), gates out glare/nail-polish photos, estimates skin
+tone (so tone-dependent conditions can adjust), and returns the per-pixel
+H/S/V/Lab/position arrays of the nail region plus a rectified grid and a bounding
+box for the result overlay. Each condition module computes its own metric from
+these (mirroring how clubbing.py and koilonychia.py each derive their own measure
+from the shared keypoints).
 """
 
 import cv2
 import numpy as np
+
+from . import image_quality
 
 # Below these the region is too small to trust -> inconclusive.
 MIN_REGION_PX = 400
@@ -52,13 +58,18 @@ def heuristic_confidence(value, threshold):
 
 def compute_nail_region(image_bgr, contour):
     """Return (region, reason). region is None and reason set when the nail region
-    can't be estimated reliably.
+    can't be estimated reliably or the photo is unfit for color analysis
+    (nail polish / heavy glare).
 
-    region = {"S","V","across","along","region_px","finger_px"} where S/V are the
-    HSV saturation/value (0..1) of the region's pixels and across/along are their
-    PCA coordinates (across in [-NAIL_WIDTH_FRAC, NAIL_WIDTH_FRAC], along in 0..1).
+    The photo is white-balanced first so absolute color is comparable across
+    lighting. region carries the nail pixels' H/S/V (0..1) and CIELab a*/b*, their
+    PCA coordinates (across in [-NAIL_WIDTH_FRAC, NAIL_WIDTH_FRAC], along in 0..1),
+    a rectified grid (grid_v/grid_s), the skin-tone ITA in degrees (skin_ita, or
+    None), and a bounding box (bbox in pixels, bbox_norm in 0..1) for the overlay.
     """
-    finger = _finger_mask(contour, image_bgr.shape)
+    balanced = image_quality.white_balance(image_bgr)
+
+    finger = _finger_mask(contour, balanced.shape)
     ys, xs = np.nonzero(finger)
     finger_px = int(xs.size)
     if finger_px < MIN_REGION_PX:
@@ -82,9 +93,14 @@ def compute_nail_region(image_bgr, contour):
     along = (proj_major - proj_major.min()) / span  # 0..1 along the finger
     across = proj_minor / minor_span                # -1..1 across the finger
 
-    hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(balanced, cv2.COLOR_BGR2HSV)
+    H = hsv[ys, xs, 0].astype(np.float64) / 179.0  # OpenCV hue is 0..179
     S = hsv[ys, xs, 1].astype(np.float64) / 255.0
     V = hsv[ys, xs, 2].astype(np.float64) / 255.0
+    L_img, a_img, b_img = image_quality.lab_real(balanced)
+    La = L_img[ys, xs]
+    aa = a_img[ys, xs]
+    ba = b_img[ys, xs]
 
     # Decide which end of the finger holds the nail: the nail plate is less
     # saturated than skin, so the lower-saturation end is the nail end.
@@ -100,19 +116,49 @@ def compute_nail_region(image_bgr, contour):
     if region_px < MIN_REGION_PX or region_px < MIN_REGION_FRAC * finger_px:
         return None, "nail_region_unclear"
 
-    Sr, Vr = S[region], V[region]
+    Hr, Sr, Vr = H[region], S[region], V[region]
+    ar_lab, br_lab = aa[region], ba[region]
+
+    # Reject photos where color can't be read off the plate at all.
+    quality = image_quality.quality_reason(Vr, Sr)
+    if quality:
+        return None, quality
+
+    # Skin tone + skin colour from the skin pixels (finger minus the nail region).
+    # The skin colour is the per-person reference pallor/cyanosis judge the nail
+    # against (an absolute colour threshold can't tell pale-for-this-person apart
+    # from simply darker skin).
+    skin = ~region
+    has_skin = skin.sum() > 200
+    skin_ita = image_quality.ita_degrees(La[skin], ba[skin]) if has_skin else None
+    skin_lab_a = float(np.median(aa[skin])) if has_skin else None
+    skin_lab_b = float(np.median(ba[skin])) if has_skin else None
+
     ar, cr = along[region], across[region]
     grid_v, grid_s = _rectify(ar, cr, Vr, Sr, nail_at_hi)
 
+    nx, ny = xs[region], ys[region]
+    x0, y0, x1, y1 = int(nx.min()), int(ny.min()), int(nx.max()), int(ny.max())
+    h_img, w_img = image_bgr.shape[:2]
+
     return {
+        "H": Hr,
         "S": Sr,
         "V": Vr,
+        "lab_a": ar_lab,
+        "lab_b": br_lab,
         "across": cr,
         "along": ar,
         "grid_v": grid_v,
         "grid_s": grid_s,
+        "skin_ita": skin_ita,
+        "skin_lab_a": skin_lab_a,
+        "skin_lab_b": skin_lab_b,
+        "glare_frac": image_quality.glare_fraction(Vr),
         "region_px": region_px,
         "finger_px": finger_px,
+        "bbox": (x0, y0, x1, y1),
+        "bbox_norm": (x0 / w_img, y0 / h_img, x1 / w_img, y1 / h_img),
     }, None
 
 

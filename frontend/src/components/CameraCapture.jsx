@@ -46,7 +46,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
     let validation
     try {
       validation = await validatePhoto(base64, step)
-    } catch (err) {
+    } catch {
       setValidating(false)
       setRetakeError("Couldn't check that photo. Is the backend running?")
       return

@@ -22,6 +22,10 @@ const MESSAGES = {
     "The AI model wasn't confident enough about this photo to give a read. Try a clearer, well-lit shot of a single nail.",
   nail_region_unclear:
     "We couldn't get a clear read on your nail plate from the top-down photo. Fill the frame with your nail in even lighting and retake it.",
+  nail_polish_detected:
+    "It looks like there's nail polish on. Color and surface signs can't be read through polish — remove it and retake the top-down photo.",
+  too_much_glare:
+    "There's too much glare on the nail to read its color. Tilt away from direct light or move to softer lighting, then retake the photo.",
   tracks_disagree:
     "Our two checks didn't agree on this one, so we're not calling it either way. Retake both photos in good lighting, and consider showing a doctor if you're concerned.",
 }

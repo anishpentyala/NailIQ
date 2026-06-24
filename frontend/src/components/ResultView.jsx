@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { failureReasonMessage } from '../failureReasons'
+import { submitFeedback } from '../api'
 import Icon from './Icon'
 
 const COPY = {
@@ -32,7 +34,34 @@ const AGREEMENT_NOTE = {
   geometry_only: 'Based on the shape measurement; the AI model wasn’t conclusive here.',
 }
 
-function FindingCard({ finding, index }) {
+// "Was this right?" -- the honest data path toward calibrating the heuristic
+// thresholds. Fire-and-forget; a failed send shouldn't bother the user.
+function FeedbackRow({ scanId, finding }) {
+  const [sent, setSent] = useState(false)
+  if (finding.verdict === 'inconclusive') return null
+
+  const send = (agreed) => {
+    setSent(true)
+    submitFeedback({
+      scanId,
+      label: finding.label,
+      shownVerdict: finding.verdict,
+      agreed,
+    }).catch(() => {})
+  }
+
+  if (sent) return <p className="finding-feedback finding-feedback--thanks">Thanks — that helps us improve.</p>
+
+  return (
+    <div className="finding-feedback">
+      <span className="finding-feedback-q">Does this match what you see?</span>
+      <button type="button" className="feedback-btn" onClick={() => send(true)}>Yes</button>
+      <button type="button" className="feedback-btn" onClick={() => send(false)}>No</button>
+    </div>
+  )
+}
+
+function FindingCard({ finding, index, scanId }) {
   const copy = COPY[finding.verdict] ?? COPY.inconclusive
   const message =
     finding.verdict === 'inconclusive' ? failureReasonMessage(finding.failure_reason) : copy.message
@@ -45,7 +74,7 @@ function FindingCard({ finding, index }) {
   const agreementNote = isFused ? AGREEMENT_NOTE[finding.agreement] : null
 
   return (
-    <div className="finding-card" style={{ '--finding-delay': `${index * 70}ms` }}>
+    <div className="finding-card" style={{ '--finding-delay': `${index * 50}ms` }}>
       {isMl && <span className="track-badge">AI model</span>}
       {isFused && <span className="track-badge">Geometry + AI</span>}
       {isColor && <span className="track-badge">Color check</span>}
@@ -70,28 +99,126 @@ function FindingCard({ finding, index }) {
         <p className="result-match">AI model’s closest visual match: {mlMatch}</p>
       )}
       <p className="result-message">{message}</p>
+      <FeedbackRow scanId={scanId} finding={finding} />
     </div>
   )
 }
 
-export default function ResultView({ result, onReset }) {
+// The box on the user's own photo showing exactly which nail area the color
+// checks measured -- transparency beats a number they can't see the basis for.
+function MeasuredOverlay({ topImage, bbox }) {
+  if (!topImage || !bbox) return null
+  const [x0, y0, x1, y1] = bbox
+  return (
+    <div className="measured-overlay">
+      <div className="measured-overlay-frame">
+        <img src={`data:image/jpeg;base64,${topImage}`} alt="Your top-down nail photo" />
+        <div
+          className="measured-box"
+          style={{
+            left: `${x0 * 100}%`,
+            top: `${y0 * 100}%`,
+            width: `${(x1 - x0) * 100}%`,
+            height: `${(y1 - y0) * 100}%`,
+          }}
+        />
+      </div>
+      <p className="measured-caption">The box shows the nail area the color checks measured.</p>
+    </div>
+  )
+}
+
+function ResultSummary({ outside, inconclusive }) {
+  let verdict = 'within'
+  let label = 'Everything looks within the typical range.'
+  if (outside.length > 0) {
+    verdict = 'outside'
+    label = `${outside.length} ${outside.length === 1 ? 'sign is' : 'signs are'} outside the typical range.`
+  } else if (inconclusive.length > 0 && inconclusive.length === outside.length + inconclusive.length) {
+    verdict = 'inconclusive'
+    label = "We couldn't analyze this scan — try retaking your photos."
+  }
+  return (
+    <div className={`result-summary result-summary--${verdict}`}>
+      <div className={`result-icon result-icon--${verdict}`}>
+        <Icon name={COPY[verdict].icon} size={22} />
+      </div>
+      <p className="result-summary-text">{label}</p>
+    </div>
+  )
+}
+
+export default function ResultView({ result, topImage, onReset }) {
   const findings = result.findings ?? []
+  const scanId = result.scan_id ?? null
+  const bbox = result.overlay?.top_bbox_norm ?? null
+
+  const outside = findings.filter((f) => f.verdict === 'outside')
+  const inconclusive = findings.filter((f) => f.verdict === 'inconclusive')
+  const within = findings.filter((f) => f.verdict === 'within')
+
+  let idx = 0
 
   return (
     <div className="result-card">
-      <div className="findings-list">
-        {findings.map((finding, index) => (
-          <FindingCard key={finding.label} finding={finding} index={index} />
-        ))}
-      </div>
+      <ResultSummary outside={outside} inconclusive={inconclusive} />
+      <MeasuredOverlay topImage={topImage} bbox={bbox} />
 
-      <button type="button" className="secondary-btn" onClick={onReset}>
-        Scan again
-      </button>
+      {outside.length > 0 && (
+        <section className="result-group">
+          <h3 className="result-group-title">Worth a closer look</h3>
+          <div className="findings-list">
+            {outside.map((f) => (
+              <FindingCard key={f.label} finding={f} index={idx++} scanId={scanId} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {inconclusive.length > 0 && (
+        <section className="result-group">
+          <h3 className="result-group-title">Couldn’t analyze</h3>
+          <div className="findings-list">
+            {inconclusive.map((f) => (
+              <FindingCard key={f.label} finding={f} index={idx++} scanId={scanId} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {within.length > 0 && (
+        <details className="within-group">
+          <summary className="within-summary">
+            <Icon name="checkCircle" size={18} />
+            {within.length} within typical range
+            <span className="within-chevron"><Icon name="chevronRight" size={16} /></span>
+          </summary>
+          <div className="findings-list">
+            {within.map((f) => (
+              <FindingCard key={f.label} finding={f} index={idx++} scanId={scanId} />
+            ))}
+          </div>
+        </details>
+      )}
+
+      <div className="result-actions">
+        <button type="button" className="secondary-btn" onClick={() => window.print()}>
+          Save / print report
+        </button>
+        <button type="button" className="secondary-btn" onClick={onReset}>
+          Scan again
+        </button>
+      </div>
 
       <p className="result-disclaimer">
         NailIQ is an educational screening tool, not a medical device. It does not
         diagnose any condition. Always consult a doctor about health concerns.
+      </p>
+      <p className="result-sources">
+        Method &amp; honesty: the clubbing-angle threshold follows Hsu et&nbsp;al. (2024);
+        the color and texture checks use uncalibrated heuristic thresholds and are
+        screening signals, not measurements. Color readings adjust for lighting and
+        skin tone, but real-world accuracy is unverified.
       </p>
     </div>
   )

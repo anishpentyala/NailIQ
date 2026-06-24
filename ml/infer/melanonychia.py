@@ -47,19 +47,35 @@ def band_contrast(region):
     return (region_med - darkest) / region_med
 
 
-def contrast_to_verdict(contrast):
-    return "outside" if contrast > BAND_CONTRAST_THRESHOLD else "within"
+# Darker skin (low ITA) commonly has benign longitudinal melanonychia, so we demand
+# a stronger band before flagging it -- judging it by the same threshold as light
+# skin would over-flag exactly the population in whom it's usually normal. ITA < 28
+# is the standard "tan and darker" boundary (Chardon 1991).
+DARK_SKIN_ITA = 28.0
+DARK_SKIN_THRESHOLD_BUMP = 0.20
+
+
+def tone_adjusted_threshold(skin_ita):
+    if skin_ita is not None and skin_ita < DARK_SKIN_ITA:
+        return BAND_CONTRAST_THRESHOLD + DARK_SKIN_THRESHOLD_BUMP
+    return BAND_CONTRAST_THRESHOLD
+
+
+def contrast_to_verdict(contrast, skin_ita=None):
+    return "outside" if contrast > tone_adjusted_threshold(skin_ita) else "within"
 
 
 def build_finding(region):
     contrast = band_contrast(region)
+    skin_ita = region.get("skin_ita")
+    threshold = tone_adjusted_threshold(skin_ita)
     return {
         "label": "melanonychia",
         "display_name": "Nail pigmentation (melanonychia)",
         "value": None,
         "unit": None,
-        "verdict": contrast_to_verdict(contrast),
-        "confidence": heuristic_confidence(contrast, BAND_CONTRAST_THRESHOLD),
+        "verdict": contrast_to_verdict(contrast, skin_ita),
+        "confidence": heuristic_confidence(contrast, threshold),
         "track_used": "color",
         "failure_reason": None,
     }

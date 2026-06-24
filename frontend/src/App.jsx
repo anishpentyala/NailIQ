@@ -12,16 +12,18 @@ import './App.css'
 function App() {
   const [activeTab, setActiveTab] = useState('home')
   const [result, setResult] = useState(null)
+  const [topImage, setTopImage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const handleCapture = useCallback(async ({ sideImage, topImage }) => {
     setLoading(true)
     setError(null)
+    setTopImage(topImage)
     try {
       const data = await analyzeImages({ sideImage, topImage })
       setResult(data)
-    } catch (err) {
+    } catch {
       setError("Couldn't reach the analysis server. Is the backend running?")
     } finally {
       setLoading(false)
@@ -30,6 +32,7 @@ function App() {
 
   const handleReset = useCallback(() => {
     setResult(null)
+    setTopImage(null)
     setError(null)
   }, [])
 
@@ -80,7 +83,7 @@ function App() {
           <>
             {error && <div className="camera-error">{error}</div>}
             {result && (
-              <ResultView result={result} onReset={handleReset} />
+              <ResultView result={result} topImage={topImage} onReset={handleReset} />
             )}
           </>
         )}

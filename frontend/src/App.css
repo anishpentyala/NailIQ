@@ -1339,3 +1339,116 @@
   border-top: 1px solid var(--border);
   padding-top: 12px;
 }
+
+/* ── Result: overall summary, grouping, overlay, feedback (multi-finding) ── */
+.result-card {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.result-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+.result-summary .result-icon { margin: 0; }
+.result-summary--outside { background: var(--warn-bg); border-color: var(--warn); }
+.result-summary--within { background: var(--primary-bg); border-color: var(--primary); }
+.result-summary--inconclusive { background: var(--border); }
+.result-summary-text { font-size: 15px; font-weight: 600; color: var(--text); }
+
+.measured-overlay { display: flex; flex-direction: column; gap: 6px; }
+.measured-overlay-frame {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.measured-overlay-frame img { display: block; width: 100%; height: auto; }
+.measured-box {
+  position: absolute;
+  border: 2.5px solid var(--primary);
+  border-radius: 6px;
+  box-shadow: 0 0 0 9999px rgba(31, 42, 46, 0.28);
+}
+.measured-caption { font-size: 12px; color: var(--text-muted); text-align: center; }
+
+.result-group { display: flex; flex-direction: column; gap: 14px; }
+.result-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.finding-card { text-align: center; }
+
+.within-group {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px 16px;
+}
+.within-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  list-style: none;
+  cursor: pointer;
+}
+.within-summary::-webkit-details-marker { display: none; }
+.within-chevron { margin-left: auto; transition: transform 0.2s ease; display: inline-flex; }
+.within-group[open] .within-chevron { transform: rotate(90deg); }
+.within-group[open] .within-summary { border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.within-group .findings-list { padding-bottom: 14px; }
+
+.finding-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.finding-feedback--thanks { color: var(--primary-dark); }
+.feedback-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.feedback-btn:hover { border-color: var(--primary); color: var(--primary-dark); }
+
+.result-actions { display: flex; gap: 10px; }
+.result-actions .secondary-btn { flex: 1; }
+
+.result-sources {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ── Print: a clean one-page report for showing a doctor ── */
+@media print {
+  .bottom-nav,
+  .disclaimer-banner,
+  .app-header,
+  .result-actions,
+  .finding-feedback,
+  .measured-box { display: none !important; }
+  #root { width: auto; height: auto; border: none; box-shadow: none; }
+  .within-group:not([open]) .findings-list { display: flex !important; }
+  .result-card { box-shadow: none; }
+}

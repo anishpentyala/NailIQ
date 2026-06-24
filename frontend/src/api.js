@@ -22,3 +22,14 @@ export async function getHistory() {
   const res = await axios.get(`${API_BASE}/history`)
   return res.data
 }
+
+export async function submitFeedback({ scanId, label, shownVerdict, agreed, note }) {
+  const res = await axios.post(`${API_BASE}/feedback`, {
+    scan_id: scanId ?? null,
+    label,
+    shown_verdict: shownVerdict,
+    agreed,
+    note: note ?? null,
+  })
+  return res.data
+}

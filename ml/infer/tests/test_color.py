@@ -1,7 +1,7 @@
 import numpy as np
 
 from ml.infer.leukonychia import fraction_to_verdict, white_fraction
-from ml.infer.melanonychia import band_contrast, contrast_to_verdict
+from ml.infer.melanonychia import band_contrast, contrast_to_verdict, tone_adjusted_threshold
 from ml.infer.nail_region import NAIL_WIDTH_FRAC, compute_nail_region
 
 
@@ -57,6 +57,20 @@ def test_melanonychia_dark_central_band_is_outside():
     region = _region(S=np.full(n, 0.4), V=V, across=across)
     assert band_contrast(region) > 0.40
     assert contrast_to_verdict(band_contrast(region)) == "outside"
+
+
+def test_melanonychia_dark_skin_needs_stronger_band():
+    # A moderate band that trips the default threshold should NOT flag on dark skin
+    # (low ITA), where benign longitudinal melanonychia is common.
+    assert tone_adjusted_threshold(None) < tone_adjusted_threshold(15.0)
+    n = 1100
+    across = np.linspace(-NAIL_WIDTH_FRAC, NAIL_WIDTH_FRAC, n)
+    V = np.full(n, 0.6)
+    V[np.abs(across) < 0.06] = 0.32  # moderate band: contrast ~0.47
+    region = _region(S=np.full(n, 0.4), V=V, across=across)
+    contrast = band_contrast(region)
+    assert contrast_to_verdict(contrast, skin_ita=60.0) == "outside"  # light skin
+    assert contrast_to_verdict(contrast, skin_ita=15.0) == "within"   # dark skin
 
 
 def test_melanonychia_edge_shadow_ignored():

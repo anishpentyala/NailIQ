@@ -46,3 +46,8 @@ _bt/
 _realtest/
 build.log
 build_output.log
+
+# Backend tests
+backend/nailiq.db
+.pytest_cache/
+backend/tests/__pycache__/

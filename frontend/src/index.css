@@ -17,6 +17,27 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Dark mode: follow the OS/browser preference. Every surface already uses these
+   CSS variables, so overriding them here themes the whole app. The verdict colors
+   stay distinct from each other (and are always paired with an icon + text label,
+   never color alone) so the result remains readable for color-vision deficiency. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1413;
+    --surface: #161d1c;
+    --text: #e7eeec;
+    --text-muted: #9fb0ad;
+    --primary: #4ea18b;
+    --primary-dark: #7cc7b1;
+    --primary-bg: rgba(78, 161, 139, 0.16);
+    --warn: #d6a35a;
+    --warn-bg: rgba(214, 163, 90, 0.18);
+    --border: #2a3432;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

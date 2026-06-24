@@ -2,11 +2,16 @@ from . import (
     beaus_lines,
     classifier,
     clubbing,
+    cyanosis,
     fusion,
     koilonychia,
     leukonychia,
+    lindsays_nails,
     melanonychia,
+    muehrckes_lines,
     nail_region,
+    onycholysis,
+    pallor,
     pitting,
     splinter_hemorrhages,
     terrys_nails,
@@ -14,12 +19,18 @@ from . import (
 from .keypoints import find_keypoints
 from .preprocessing import BLUR_THRESHOLD, decode_base64_image, extract_best_contour, focus_score
 
-# Color/texture conditions measured from the top-down nail region, in display order.
+# Color/texture conditions measured from the top-down nail region, in display order
+# (grouped: overall colour, then proximal/distal patterns, then surface markings).
 _COLOR_CONDITIONS = (
     leukonychia,
     melanonychia,
+    pallor,
+    cyanosis,
     terrys_nails,
+    lindsays_nails,
+    onycholysis,
     beaus_lines,
+    muehrckes_lines,
     splinter_hemorrhages,
     pitting,
 )
@@ -102,24 +113,31 @@ def _ml_finding(image_b64, view):
 def analyze_top_color(top_image_b64):
     """Color/texture findings (see _COLOR_CONDITIONS) from the top-down photo.
 
+    Returns (findings, overlay). overlay is {"top_bbox_norm": [x0,y0,x1,y1] in 0..1,
+    "skin_ita": float|None} when the nail region was located (so the UI can show
+    *what* was measured), else {"top_bbox_norm": None, "skin_ita": None}.
+
     Classical CV like the geometry track -- no trained model needed, so this runs
     even in a torch-free environment. The top-down view is the right one for these:
     they're about the nail plate's color, not its side-profile shape. On any photo
-    failure both color findings come back inconclusive with the same reason rather
+    failure the color findings come back inconclusive with the same reason rather
     than measuring color on a region that wasn't reliably located.
     """
+    no_overlay = {"top_bbox_norm": None, "skin_ita": None}
     image = decode_base64_image(top_image_b64)
     if image is None:
-        return _color_inconclusive("invalid_image")
+        return _color_inconclusive("invalid_image"), no_overlay
     if focus_score(image) < BLUR_THRESHOLD:
-        return _color_inconclusive("too_blurry")
+        return _color_inconclusive("too_blurry"), no_overlay
     contour, validation = extract_best_contour(image)
     if not validation["is_valid"]:
-        return _color_inconclusive(validation["reason"])
+        return _color_inconclusive(validation["reason"]), no_overlay
     region, reason = nail_region.compute_nail_region(image, contour)
     if reason:
-        return _color_inconclusive(reason)
-    return [c.build_finding(region) for c in _COLOR_CONDITIONS]
+        return _color_inconclusive(reason), no_overlay
+    findings = [c.build_finding(region) for c in _COLOR_CONDITIONS]
+    overlay = {"top_bbox_norm": list(region["bbox_norm"]), "skin_ita": region["skin_ita"]}
+    return findings, overlay
 
 
 def analyze(side_image_b64, top_image_b64):
@@ -138,9 +156,9 @@ def analyze(side_image_b64, top_image_b64):
     -- the app still works, with full color findings, in a torch-free environment.
     """
     geometry = analyze_side_profile(side_image_b64)["findings"]
-    color = analyze_top_color(top_image_b64)
+    color, overlay = analyze_top_color(top_image_b64)
     if not classifier.is_available():
-        return {"findings": geometry + color}
+        return {"findings": geometry + color, "overlay": overlay}
 
     ml_top = _ml_finding(top_image_b64, "top")
-    return {"findings": fusion.fuse(geometry, ml_top) + color}
+    return {"findings": fusion.fuse(geometry, ml_top) + color, "overlay": overlay}
