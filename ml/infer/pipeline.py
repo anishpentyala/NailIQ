@@ -2,6 +2,8 @@ from . import (
     beaus_lines,
     classifier,
     clubbing,
+    color_classifier,
+    color_fusion,
     cyanosis,
     fusion,
     koilonychia,
@@ -136,6 +138,17 @@ def analyze_top_color(top_image_b64):
     if reason:
         return _color_inconclusive(reason), no_overlay
     findings = [c.build_finding(region) for c in _COLOR_CONDITIONS]
+
+    # Optional trained-CNN second opinion: where it has a confident call on one of its
+    # covered conditions it leads, else the classical heuristic stands (see color_fusion).
+    # Gated by is_available() and wrapped so the CNN can never break the classical track.
+    if color_classifier.is_available():
+        try:
+            pred = color_classifier.predict_from_region(image, region)
+            findings = color_fusion.fuse(findings, pred, color_classifier.app_conditions())
+        except Exception:  # noqa: BLE001 -- ML must never break the color response
+            pass
+
     overlay = {"top_bbox_norm": list(region["bbox_norm"]), "skin_ita": region["skin_ita"]}
     return findings, overlay
 

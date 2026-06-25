@@ -41,6 +41,10 @@ backend/venv/Scripts/python.exe scripts/finalize_merged_eval.py         # restor
 backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone mobilenet_v3_large
 backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone efficientnet_b0  # adds to ensemble
 backend/venv/Scripts/python.exe ml/eval/eval_ensemble.py      # ensemble accuracy (what ships)
+backend/venv/Scripts/python.exe scripts/build_color_classification_dataset.py  # KNM box crops -> color CNN dataset
+backend/venv/Scripts/python.exe ml/train/train_color_classifier.py --backbone mobilenet_v3_large  # color-condition CNN
+backend/venv/Scripts/python.exe ml/train/train_color_classifier.py --backbone efficientnet_b0     # adds to color ensemble
+backend/venv/Scripts/python.exe ml/eval/eval_color_ensemble.py  # color ensemble accuracy (what ships)
 backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # attention overlays
 backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
 ```
@@ -245,10 +249,12 @@ mismatch and is deliberately ignored here.
 
 A third track, parallel to geometry, that reads the **top-down** photo's nail plate
 and reports six color/texture conditions. It's **classical CV** like the geometry
-track — no trained model, no dataset — so it always runs (even torch-free) and its
-findings carry `track_used: "color"`. It is *not* fused with the CNN (the CNN only
-knows clubbing/koilonychia/healthy); these are standalone findings appended after
-the geometry/fused ones in `pipeline.analyze`.
+track — no trained model, no dataset needed — so it always runs (even torch-free) and
+its findings carry `track_used: "color"`. When the **color-condition CNN** is trained
+and torch is present, five of these conditions are instead fused with it into
+`track_used: "color_fused"` findings (see "The color-condition CNN track" below); the
+rest stay standalone `"color"`. All are appended after the geometry/fused ones in
+`pipeline.analyze`.
 
 `nail_region.compute_nail_region(image, contour)` is the shared front-end (the
 top-down counterpart to `keypoints.py`). It does **not** do pixel-perfect nail
@@ -283,6 +289,49 @@ modestly via `nail_region.heuristic_confidence`, and the conditions lean toward
 `within`/`inconclusive` to limit false positives. Adding a seventh color condition:
 add `<condition>.py` following the pattern, build its metric off the `region` dict
 (reuse `grid_v`/`grid_s` for texture), and add it to `_COLOR_CONDITIONS`.
+
+### The color-condition CNN track (`ml/infer/color_classifier.py` + `color_fusion.py`)
+
+The classical color heuristics above are uncalibrated, and calibration on real labeled
+photos (`ml/eval/calibrate_color.py`) showed most separate positive from negative only
+a little better than chance. So there's a **second, independent CNN ensemble** (separate
+from the geometry `classifier.py`) that gives those heuristics a data-backed second
+opinion, trained on the data that was already on disk: the KNM dataset's labeled boxes.
+
+Pipeline:
+- `scripts/build_color_classification_dataset.py` crops every KNM box to its nail plate
+  (15% pad) into `data/raw/color_cls/{train,valid,test}/<slug>/`, keeping KNM's own
+  clean image-level split (no reshuffle, no leakage). It trains on **all 10 KNM classes
+  with data** (Lindsay's, 2 boxes, excluded) — including `melanoma`, `onychogryphosis`,
+  `clubbing`, `koilonychia`, which the app does **not** report — purely so the model
+  discriminates instead of forcing every nail into one of the five reported classes.
+  Note: box crops here are the *opposite* of `build_color_eval_set.py`'s full images —
+  the classical pipeline needs a whole finger silhouette, a CNN wants the tight nail crop.
+- `ml/train/train_color_classifier.py --backbone <name>` reuses the geometry trainer's
+  generic machinery (`train_classifier.py`'s EMA, MixUp/CutMix, temperature scaling, etc.)
+  but with these classes and **no ROI re-crop** (inputs are already nail crops). Writes
+  `ml/models/nail_color_classifier__<backbone>.pt` + a separate manifest
+  `nail_color_classifier_labels.json` (with an `app_conditions` list). Reports overall
+  accuracy *and* accuracy restricted to the app's conditions + healthy.
+- `ml/infer/color_classifier.py` — lazy + optional, same contract as `classifier.py`
+  (`is_available()` gates it). At inference it crops to **nail_region's detected bbox**
+  (the closest analogue to the training nail-box crop) and classifies; below
+  `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion."
+- `ml/infer/color_fusion.py` — fuses the CNN with the classical findings for its five
+  **app conditions** (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting).
+  **Deliberately different trust model from `fusion.py`:** geometry is a real measurement
+  so it's the authority there; here the heuristic is near-chance, so the **CNN is primary**
+  — when it has a confident call it sets the verdict, and the heuristic can only
+  corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
+  confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
+  (`"ml_primary"`). A confident prediction of a *different* condition is treated as "no
+  opinion" (single-label can't rule out a co-occurring sign). Uncovered conditions
+  (leukonychia, melanonychia, pallor, lindsays_nails, onycholysis, splinter) pass through
+  untouched. `ResultView.jsx` renders `color_fused` with a "Color + AI" badge.
+
+Same honesty caveats as the geometry CNN: trained on KNM **clinical** photos, not phone
+photos — real-world accuracy is unknown/lower and never clinical-grade; output stays
+within / outside / inconclusive, never a diagnosis.
 
 ### Eval / diagnostics (`ml/eval/`)
 
