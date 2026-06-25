@@ -651,18 +651,6 @@ function ConditionSheet({ condition, onClose }) {
   )
 }
 
-const GROUPS = [
-  { title: 'Shape & angle', keys: ['clubbing', 'koilonychia'] },
-  {
-    title: 'Color & shade',
-    keys: ['leukonychia', 'melanonychia', 'pallor', 'cyanosis', 'terrys_nails', 'lindsays_nails'],
-  },
-  {
-    title: 'Surface & markings',
-    keys: ['onycholysis', 'beaus_lines', 'muehrckes_lines', 'splinter_hemorrhages', 'pitting'],
-  },
-]
-
 const BY_KEY = Object.fromEntries(CONDITIONS.map((c) => [c.key, c]))
 
 export default function InfoSection() {
@@ -676,30 +664,24 @@ export default function InfoSection() {
         like, why it happens, and what your result means.
       </p>
 
-      {GROUPS.map((group) => (
-        <div key={group.title} className="info-group">
-          <h2 className="info-group-title">{group.title}</h2>
-          {group.keys.map((key) => {
-            const condition = BY_KEY[key]
-            return (
-              <button
-                key={key}
-                type="button"
-                className="info-card"
-                onClick={() => setOpenKey(key)}
-              >
-                <span className="info-icon">
-                  <Icon name={condition.icon} />
-                </span>
-                <span className="info-name">{condition.name}</span>
-                <span className="info-chevron">
-                  <Icon name="chevronRight" size={18} />
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      ))}
+      <div className="info-group">
+        {CONDITIONS.map((condition) => (
+          <button
+            key={condition.key}
+            type="button"
+            className="info-card"
+            onClick={() => setOpenKey(condition.key)}
+          >
+            <span className="info-icon">
+              <Icon name={condition.icon} />
+            </span>
+            <span className="info-name">{condition.name}</span>
+            <span className="info-chevron">
+              <Icon name="chevronRight" size={18} />
+            </span>
+          </button>
+        ))}
+      </div>
 
       {openCondition && (
         <ConditionSheet condition={openCondition} onClose={() => setOpenKey(null)} />
