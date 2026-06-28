@@ -61,7 +61,10 @@ _EXTS = {".jpg", ".jpeg", ".png"}
 # Of the trained classes, the ones the app actually screens for in the colour track.
 # (clubbing/koilonychia belong to the geometry track; melanoma/onychogryphosis aren't
 # app findings -- all three are kept as classes only so the model can tell them apart.)
-APP_CONDITIONS = ["cyanosis", "terrys_nails", "beaus_lines", "muehrckes_lines", "pitting"]
+# `pallor` is present only when the Ghana fingernail-anemia set has been ingested
+# (scripts/build_color_classification_dataset.py); discover_classes() decides what
+# actually trains, so listing it here is a no-op until that data is on disk.
+APP_CONDITIONS = ["cyanosis", "terrys_nails", "beaus_lines", "muehrckes_lines", "pitting", "pallor"]
 
 
 def discover_classes():

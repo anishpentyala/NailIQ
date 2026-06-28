@@ -31,6 +31,8 @@ Usage (from repo root):
     backend/venv/Scripts/python.exe scripts/build_color_classification_dataset.py
 """
 
+import hashlib
+import re
 import shutil
 from pathlib import Path
 
@@ -40,6 +42,16 @@ import yaml
 REPO = Path(__file__).resolve().parent.parent
 KNM = REPO / "data" / "raw" / "nail-disease-detection-mxoqy"
 OUT = REPO / "data" / "raw" / "color_cls"
+
+# Second source: the Ghana fingernail-anemia set (data/raw/fingernails-ghana-anemia),
+# 4,260 nail-plate crops from a Sub-Saharan (predominantly darker-skinned) cohort,
+# labelled anemic / non-anemic in the filename. ml/eval/audit_skin_tone.py showed the
+# KNM/NailCheck data is heavily light-skin-skewed, and the app's `pallor` condition has
+# no CNN backing at all -- this set fixes both at once: anemic nails -> a real `pallor`
+# class, non-anemic -> darker-cohort `healthy` examples, broadening the model's tone
+# exposure. These images are already tight nail crops (like the KNM box crops), so they
+# drop straight into the same classifier dataset with no box step.
+GHANA = REPO / "data" / "raw" / "fingernails-ghana-anemia" / "Fingernails"
 
 SPLITS = ["train", "valid", "test"]
 BOX_PAD_FRAC = 0.15        # pad each side of the box; a little nail-fold context helps
@@ -89,6 +101,65 @@ def crop_box(img, cx, cy, bw, bh):
     return crop if crop.size else None
 
 
+# --- Ghana fingernail-anemia ingestion --------------------------------------
+
+# Filenames look like "Anemic-FN-007 (2).png", "Non-Anrmic-FN-204.png",
+# "Anmeic-fn-12.png" -- anemic/non-anemic with assorted typos, a patient number,
+# and an optional (n) repeat index. We map anemic -> pallor, non-anemic -> healthy.
+_ANEMIC_TOKENS = ("anemic", "anmeic", "anrmic", "anemia")
+
+
+def ghana_label(name):
+    """Filename -> 'pallor' (anemic) | 'healthy' (non-anemic) | None (unparseable)."""
+    s = name.lower()
+    if s.startswith("non") or "non-" in s or "non " in s:
+        return "healthy"
+    if any(tok in s for tok in _ANEMIC_TOKENS):
+        return "pallor"
+    return None
+
+
+def ghana_patient_key(name, label):
+    """Group all photos of one finger so they never straddle a split (no leakage).
+    Key = label + first integer in the name (the patient/finger id); the trailing
+    (n) repeat index is ignored because it's never the first integer."""
+    m = re.search(r"\d+", name)
+    pid = m.group(0).lstrip("0") or "0" if m else "x"
+    return f"{label}-{pid}"
+
+
+def patient_split(key):
+    """Deterministic, patient-grouped 80/10/10 train/valid/test (md5 so it's stable
+    across runs, unlike Python's salted hash())."""
+    bucket = int(hashlib.md5(key.encode()).hexdigest(), 16) % 10
+    return "train" if bucket < 8 else "valid" if bucket == 8 else "test"
+
+
+def add_ghana(totals):
+    if not GHANA.exists():
+        print(f"  Ghana set not found at {GHANA} -- skipping (color CNN stays light-skin-skewed)")
+        return
+    added = {s: 0 for s in SPLITS}
+    skipped = 0
+    for img_path in sorted(GHANA.glob("*.png")):
+        label = ghana_label(img_path.name)
+        if label is None:
+            skipped += 1
+            continue
+        img = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
+        if img is None or min(img.shape[:2]) < MIN_CROP_PX:
+            skipped += 1
+            continue
+        split = patient_split(ghana_patient_key(img_path.name, label))
+        dst_dir = OUT / split / label
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        stem = re.sub(r"[^A-Za-z0-9]+", "_", img_path.stem)
+        cv2.imwrite(str(dst_dir / f"ghana__{stem}.jpg"), img)
+        added[split] += 1
+        totals[split] = totals.get(split, 0) + 1
+    print(f"  ghana: +{added}  (skipped {skipped})")
+
+
 def main():
     if not KNM.exists():
         raise SystemExit(f"KNM dataset not found at {KNM} -- run scripts/download_data.py first.")
@@ -134,6 +205,9 @@ def main():
                 n_written += 1
         totals[split] = n_written
         print(f"  {split}: {n_written} crops")
+
+    print("Adding Ghana fingernail-anemia crops (pallor / darker-cohort healthy)...")
+    add_ghana(totals)
 
     print("=" * 60)
     print(f"Done. Color-condition crops written to {OUT}")

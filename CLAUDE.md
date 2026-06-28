@@ -324,6 +324,14 @@ Pipeline:
   discriminates instead of forcing every nail into one of the five reported classes.
   Note: box crops here are the *opposite* of `build_color_eval_set.py`'s full images —
   the classical pipeline needs a whole finger silhouette, a CNN wants the tight nail crop.
+  It **also** ingests the Ghana fingernail-anemia set (`data/raw/fingernails-ghana-anemia`,
+  a darker-skinned cohort; see `data/DATASETS_DIVERSITY.md`): anemic crops → a new
+  `pallor` class (which the heuristic track couldn't calibrate and the CNN didn't cover),
+  non-anemic → darker-cohort `healthy`. These are split **patient-grouped** (by finger id,
+  not image) so no subject straddles splits. This is the fix for the light-skin skew
+  `ml/eval/audit_skin_tone.py` found — it broadens tone exposure and backs `pallor` with
+  data. `discover_classes()` picks up `pallor` automatically once the data is on disk;
+  retrain both backbones to make it a live signal.
 - `ml/train/train_color_classifier.py --backbone <name>` reuses the geometry trainer's
   generic machinery (`train_classifier.py`'s EMA, MixUp/CutMix, temperature scaling, etc.)
   but with these classes and **no ROI re-crop** (inputs are already nail crops). Writes
