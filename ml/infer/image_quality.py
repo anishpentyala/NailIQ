@@ -87,3 +87,41 @@ def quality_reason(V, S):
     if glare_fraction(V) > GLARE_FRAC_MAX:
         return "too_much_glare"
     return None
+
+
+# --- Per-photo quality score (for the result screen) -------------------------
+# Turns the raw signals above into one 0..100 number the UI can show. Like the
+# rest of this track it's an *uncalibrated heuristic*, not a calibrated measure:
+# the constants are reasonable starting points, not fit against a labelled set.
+
+# Laplacian variance at/above which focus counts as full marks. focus_score()
+# returns variance in the hundreds for a crisp phone macro; BLUR_THRESHOLD (20)
+# is the floor below which the photo is rejected outright, so "good" sits well above it.
+FOCUS_GOOD = 120.0
+QUALITY_GOOD_MIN = 70  # score >= this -> "good"
+QUALITY_FAIR_MIN = 40  # score >= this -> "fair", else "poor"
+
+
+def photo_quality(focus, glare_frac=None, polish_frac=None):
+    """0..100 photo-quality score + band + issue list, from already-computed signals.
+
+    Weakest-link scoring: the worst of focus/glare/polish caps the score, since any
+    one of them ruins the photo. glare_frac/polish_frac are None for the side photo
+    (no nail-region colour sampling happens there), so it's scored on focus alone.
+    """
+    focus_c = float(np.clip(focus / FOCUS_GOOD, 0.0, 1.0))
+    glare_c = 1.0 if glare_frac is None else float(np.clip(1.0 - glare_frac / GLARE_FRAC_MAX, 0.0, 1.0))
+    polish_c = 1.0 if polish_frac is None else float(np.clip(1.0 - polish_frac / POLISH_FRAC_MAX, 0.0, 1.0))
+
+    score = int(round(100 * min(focus_c, glare_c, polish_c)))
+
+    issues = []
+    if focus_c < 0.5:
+        issues.append("blurry")
+    if glare_c < 0.5:
+        issues.append("glare")
+    if polish_c < 0.5:
+        issues.append("polish")
+
+    band = "good" if score >= QUALITY_GOOD_MIN else "fair" if score >= QUALITY_FAIR_MIN else "poor"
+    return {"score": score, "band": band, "issues": issues}

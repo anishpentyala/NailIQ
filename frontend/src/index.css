@@ -8,6 +8,8 @@
   --primary-bg: rgba(47, 125, 107, 0.08);
   --warn: #b8893f;
   --warn-bg: rgba(184, 137, 63, 0.1);
+  --danger: #b4493f;
+  --danger-bg: rgba(180, 73, 63, 0.1);
   --border: #e1e8e6;
   --shadow: 0 4px 16px rgba(31, 42, 46, 0.06);
 

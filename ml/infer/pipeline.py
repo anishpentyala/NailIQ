@@ -6,6 +6,7 @@ from . import (
     color_fusion,
     cyanosis,
     fusion,
+    image_quality,
     koilonychia,
     leukonychia,
     lindsays_nails,
@@ -112,12 +113,21 @@ def _ml_finding(image_b64, view):
         return None
 
 
+def _photo_quality(image):
+    """Focus-only quality dict for a decoded photo, or a zero score if it won't decode."""
+    if image is None:
+        return {"score": 0, "band": "poor", "issues": []}
+    return image_quality.photo_quality(focus_score(image))
+
+
 def analyze_top_color(top_image_b64):
     """Color/texture findings (see _COLOR_CONDITIONS) from the top-down photo.
 
-    Returns (findings, overlay). overlay is {"top_bbox_norm": [x0,y0,x1,y1] in 0..1,
-    "skin_ita": float|None} when the nail region was located (so the UI can show
-    *what* was measured), else {"top_bbox_norm": None, "skin_ita": None}.
+    Returns (findings, overlay, quality). overlay is {"top_bbox_norm":
+    [x0,y0,x1,y1] in 0..1, "skin_ita": float|None} when the nail region was located
+    (so the UI can show *what* was measured), else {"top_bbox_norm": None,
+    "skin_ita": None}. quality is the top photo's photo_quality() dict -- focus-only
+    on the early-failure paths, focus+glare+polish once the nail region is sampled.
 
     Classical CV like the geometry track -- no trained model needed, so this runs
     even in a torch-free environment. The top-down view is the right one for these:
@@ -128,15 +138,22 @@ def analyze_top_color(top_image_b64):
     no_overlay = {"top_bbox_norm": None, "skin_ita": None}
     image = decode_base64_image(top_image_b64)
     if image is None:
-        return _color_inconclusive("invalid_image"), no_overlay
+        return _color_inconclusive("invalid_image"), no_overlay, _photo_quality(None)
+    quality = _photo_quality(image)
     if focus_score(image) < BLUR_THRESHOLD:
-        return _color_inconclusive("too_blurry"), no_overlay
+        return _color_inconclusive("too_blurry"), no_overlay, quality
     contour, validation = extract_best_contour(image)
     if not validation["is_valid"]:
-        return _color_inconclusive(validation["reason"]), no_overlay
+        return _color_inconclusive(validation["reason"]), no_overlay, quality
     region, reason = nail_region.compute_nail_region(image, contour)
     if reason:
-        return _color_inconclusive(reason), no_overlay
+        return _color_inconclusive(reason), no_overlay, quality
+    # Region located: refine quality with glare/polish measured on the actual nail plate.
+    quality = image_quality.photo_quality(
+        focus_score(image),
+        image_quality.glare_fraction(region["V"]),
+        image_quality.polish_fraction(region["S"]),
+    )
     findings = [c.build_finding(region) for c in _COLOR_CONDITIONS]
 
     # Optional trained-CNN second opinion: where it has a confident call on one of its
@@ -150,7 +167,7 @@ def analyze_top_color(top_image_b64):
             pass
 
     overlay = {"top_bbox_norm": list(region["bbox_norm"]), "skin_ita": region["skin_ita"]}
-    return findings, overlay
+    return findings, overlay, quality
 
 
 def analyze(side_image_b64, top_image_b64):
@@ -169,9 +186,16 @@ def analyze(side_image_b64, top_image_b64):
     -- the app still works, with full color findings, in a torch-free environment.
     """
     geometry = analyze_side_profile(side_image_b64)["findings"]
-    color, overlay = analyze_top_color(top_image_b64)
+    color, overlay, top_quality = analyze_top_color(top_image_b64)
+    side_quality = _photo_quality(decode_base64_image(side_image_b64))
+    image_quality_resp = {"side": side_quality, "top": top_quality}
+
     if not classifier.is_available():
-        return {"findings": geometry + color, "overlay": overlay}
+        return {"findings": geometry + color, "overlay": overlay, "image_quality": image_quality_resp}
 
     ml_top = _ml_finding(top_image_b64, "top")
-    return {"findings": fusion.fuse(geometry, ml_top) + color, "overlay": overlay}
+    return {
+        "findings": fusion.fuse(geometry, ml_top) + color,
+        "overlay": overlay,
+        "image_quality": image_quality_resp,
+    }

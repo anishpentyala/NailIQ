@@ -3,7 +3,7 @@ import { failureReasonMessage } from '../failureReasons'
 import { submitFeedback } from '../api'
 import Icon from './Icon'
 import NailDiagram from './NailDiagram'
-import { CONDITIONS_LOOKUP } from '../conditions'
+import { CONDITIONS_LOOKUP, NEXT_STEPS_LOOKUP } from '../conditions'
 
 const COPY = {
   within: {
@@ -167,6 +167,156 @@ function MeasuredOverlay({ topImage, bbox }) {
   )
 }
 
+// --- Top dashboard: scan confidence, attention level, image quality ----------
+
+const QUALITY_BAND = {
+  good: { label: 'Good', icon: 'checkCircle' },
+  fair: { label: 'Fair', icon: 'helpCircle' },
+  poor: { label: 'Poor', icon: 'alertTriangle' },
+}
+const QUALITY_ISSUE = { blurry: 'blurry', glare: 'glare', polish: 'nail polish' }
+const BAND_ORDER = { good: 2, fair: 1, poor: 0 }
+
+// Overall image quality = the worse of the two photos (a scan is only as good as
+// its weakest shot), with that photo's issues named.
+function combineQuality(imageQuality) {
+  if (!imageQuality) return null
+  const photos = [
+    { which: 'side photo', q: imageQuality.side },
+    { which: 'top-down photo', q: imageQuality.top },
+  ].filter((p) => p.q)
+  if (photos.length === 0) return null
+  const worst = photos.reduce((a, b) => (BAND_ORDER[b.q.band] < BAND_ORDER[a.q.band] ? b : a))
+  const issues = (worst.q.issues ?? []).map((i) => QUALITY_ISSUE[i] ?? i)
+  return { band: worst.q.band, which: worst.which, issues }
+}
+
+function ScanDashboard({ findings, imageQuality }) {
+  const conclusive = findings.filter((f) => f.verdict !== 'inconclusive')
+  const inconclusiveCount = findings.length - conclusive.length
+
+  // Scan confidence: mean per-finding confidence over findings we could actually
+  // analyze. Reuses the per-finding confidence; not a new model output.
+  const meanConf =
+    conclusive.length > 0
+      ? conclusive.reduce((s, f) => s + (f.confidence ?? 0), 0) / conclusive.length
+      : null
+
+  // Attention level (NOT a risk score): noisy-OR over outside findings so several
+  // signs accumulate but the total stays bounded at 100. We lead with a plain word
+  // (Low/Some/High) so the number is interpretable at a glance.
+  const outside = findings.filter((f) => f.verdict === 'outside')
+  const attention = Math.round(
+    100 * (1 - outside.reduce((prod, f) => prod * (1 - (f.confidence ?? 0)), 1)),
+  )
+  const attentionBand = attention >= 60 ? 'poor' : attention >= 30 ? 'fair' : 'good'
+  const attentionWord = attention >= 60 ? 'High' : attention >= 30 ? 'Some' : 'Low'
+
+  const quality = combineQuality(imageQuality)
+
+  return (
+    <div className="scan-dashboard">
+      <div className="dashboard-tile">
+        <span className="tile-label">How sure we are</span>
+        <span className="tile-value">{meanConf == null ? '—' : `${Math.round(meanConf * 100)}%`}</span>
+        <span className="tile-sub">
+          {conclusive.length === 0
+            ? 'No signs could be read'
+            : inconclusiveCount > 0
+              ? `${inconclusiveCount} sign${inconclusiveCount === 1 ? '' : 's'} couldn’t be read`
+              : 'in these readings'}
+        </span>
+      </div>
+
+      <div className="dashboard-tile">
+        <span className="tile-label">Worth following up</span>
+        <span className={`tile-value tile-value--${attentionBand}`}>
+          {attentionWord}<span className="tile-value-max">{attention}/100</span>
+        </span>
+        <div className={`attention-meter attention-meter--${attentionBand}`}>
+          <div className="attention-meter-fill" style={{ width: `${attention}%` }} />
+        </div>
+        <span className="meter-ends"><span>Low</span><span>High</span></span>
+        <span className="tile-sub">Not a diagnosis or risk score.</span>
+      </div>
+
+      <div className="dashboard-tile">
+        <span className="tile-label">Photo quality</span>
+        {quality ? (
+          <>
+            <span className={`tile-value tile-value--${quality.band}`}>
+              <Icon name={QUALITY_BAND[quality.band].icon} size={18} />
+              {QUALITY_BAND[quality.band].label}
+            </span>
+            <span className="tile-sub">
+              {quality.issues.length > 0
+                ? `${quality.which}: ${quality.issues.join(', ')}`
+                : 'Both photos were clear'}
+            </span>
+          </>
+        ) : (
+          <span className="tile-value">—</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Aggregated guidance, driven by what the scan actually found. Reuses the
+// per-condition "what to do" copy; invents no new medical wording.
+function NextSteps({ outside, inconclusive }) {
+  if (outside.length > 0) {
+    return (
+      <section className="next-steps next-steps--outside">
+        <h3 className="next-steps-title">
+          <Icon name="alertTriangle" size={18} /> Next steps
+        </h3>
+        <p className="next-steps-lead">
+          One or more signs came back outside the typical range. This isn’t a diagnosis — it’s worth
+          showing a doctor, especially if you’ve noticed other symptoms.
+        </p>
+        <ul className="next-steps-list">
+          {outside.map((f) => {
+            const text = NEXT_STEPS_LOOKUP[f.label]
+            return (
+              <li key={f.label}>
+                <strong>{f.display_name}:</strong> {text ?? 'Worth mentioning to a doctor.'}
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+    )
+  }
+
+  if (inconclusive.length > 0) {
+    return (
+      <section className="next-steps next-steps--inconclusive">
+        <h3 className="next-steps-title">
+          <Icon name="helpCircle" size={18} /> Next steps
+        </h3>
+        <p className="next-steps-lead">
+          We couldn’t analyze {inconclusive.length === 1 ? 'one sign' : `${inconclusive.length} signs`}{' '}
+          from these photos. Retaking them in brighter, even light with the nail filling the frame
+          usually fixes it.
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="next-steps next-steps--within">
+      <h3 className="next-steps-title">
+        <Icon name="checkCircle" size={18} /> Next steps
+      </h3>
+      <p className="next-steps-lead">
+        Everything looked within the typical range. Nothing to act on now — keep an eye on changes
+        over time, and follow up on any health concerns with a doctor.
+      </p>
+    </section>
+  )
+}
+
 function ResultSummary({ outside, inconclusive }) {
   let verdict = 'within'
   let label = 'Everything looks within the typical range.'
@@ -191,6 +341,7 @@ export default function ResultView({ result, topImage, onReset }) {
   const findings = result.findings ?? []
   const scanId = result.scan_id ?? null
   const bbox = result.overlay?.top_bbox_norm ?? null
+  const imageQuality = result.image_quality ?? null
 
   const outside = findings.filter((f) => f.verdict === 'outside')
   const inconclusive = findings.filter((f) => f.verdict === 'inconclusive')
@@ -205,6 +356,8 @@ export default function ResultView({ result, topImage, onReset }) {
         <p>{new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
       <ResultSummary outside={outside} inconclusive={inconclusive} />
+      <ScanDashboard findings={findings} imageQuality={imageQuality} />
+      <NextSteps outside={outside} inconclusive={inconclusive} />
       <MeasuredOverlay topImage={topImage} bbox={bbox} />
 
       {outside.length > 0 && (

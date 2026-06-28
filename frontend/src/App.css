@@ -1519,6 +1519,95 @@
   color: var(--text-muted);
 }
 
+/* ── Result: top dashboard (confidence, attention level, image quality) ── */
+.scan-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 380px) {
+  .scan-dashboard { grid-template-columns: 1fr; }
+}
+.dashboard-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  min-width: 0;
+}
+.tile-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+.tile-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.tile-value-max { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-left: 2px; }
+.meter-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+.tile-value--good { color: var(--primary); }
+.tile-value--fair { color: var(--warn); }
+.tile-value--poor { color: var(--danger); }
+.tile-sub { font-size: 11px; line-height: 1.35; color: var(--text-muted); }
+
+.attention-meter {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 2px 0;
+}
+.attention-meter-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.attention-meter--good .attention-meter-fill { background: var(--primary); }
+.attention-meter--fair .attention-meter-fill { background: var(--warn); }
+.attention-meter--poor .attention-meter-fill { background: var(--danger); }
+
+/* ── Result: aggregated Next steps block ── */
+.next-steps {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+.next-steps--outside { background: var(--warn-bg); border-color: var(--warn); }
+.next-steps--inconclusive { background: var(--border); }
+.next-steps--within { background: var(--primary-bg); border-color: var(--primary); }
+.next-steps-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.next-steps-lead { font-size: 13px; line-height: 1.45; color: var(--text); }
+.next-steps-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.next-steps-list li { font-size: 13px; line-height: 1.4; color: var(--text); }
+
 .print-only-header { display: none; }
 
 /* ── Print: a clean one-page report for showing a doctor ── */

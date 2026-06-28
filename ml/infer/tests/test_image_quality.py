@@ -1,10 +1,12 @@
 import numpy as np
 
 from ml.infer.image_quality import (
+    FOCUS_GOOD,
     GLARE_FRAC_MAX,
     POLISH_FRAC_MAX,
     glare_fraction,
     ita_degrees,
+    photo_quality,
     polish_fraction,
     quality_reason,
     white_balance,
@@ -61,3 +63,33 @@ def test_quality_reason_flags_polish_then_glare():
 def test_quality_thresholds_are_boundaries():
     assert POLISH_FRAC_MAX == 0.5
     assert GLARE_FRAC_MAX == 0.25
+
+
+def test_photo_quality_sharp_clean_is_good():
+    q = photo_quality(FOCUS_GOOD, glare_frac=0.0, polish_frac=0.0)
+    assert q["score"] == 100
+    assert q["band"] == "good"
+    assert q["issues"] == []
+
+
+def test_photo_quality_blurry_is_poor():
+    q = photo_quality(focus=10.0, glare_frac=0.0, polish_frac=0.0)
+    assert q["band"] == "poor"
+    assert "blurry" in q["issues"]
+
+
+def test_photo_quality_weakest_link_caps_score():
+    # Crisp focus, but heavy glare past its budget -> glare caps the score.
+    q = photo_quality(FOCUS_GOOD, glare_frac=GLARE_FRAC_MAX, polish_frac=0.0)
+    assert q["score"] == 0
+    assert "glare" in q["issues"]
+    # Polish over budget flags polish.
+    q = photo_quality(FOCUS_GOOD, glare_frac=0.0, polish_frac=POLISH_FRAC_MAX)
+    assert "polish" in q["issues"]
+
+
+def test_photo_quality_side_photo_focus_only():
+    # No colour sampling on the side view: glare/polish default to no penalty.
+    q = photo_quality(FOCUS_GOOD)
+    assert q["score"] == 100
+    assert q["issues"] == []

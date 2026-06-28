@@ -593,3 +593,12 @@ export const CONDITIONS = [
 // One-line plain-English descriptions, reused on result findings so a user (or
 // their doctor) sees what a condition looks like without leaving the result.
 export const CONDITIONS_LOOKUP = Object.fromEntries(CONDITIONS.map((c) => [c.key, c.summary]))
+
+// Per-condition "What to do with your result" copy (the checkCircle point), reused
+// on the result screen's aggregated Next steps block. No new wording is invented.
+export const NEXT_STEPS_LOOKUP = Object.fromEntries(
+  CONDITIONS.map((c) => {
+    const step = c.points.find((p) => p.title === 'What to do with your result')
+    return [c.key, step ? step.text : null]
+  }),
+)
