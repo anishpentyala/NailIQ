@@ -1,5 +1,14 @@
 import clubbingComparisonImg from '../assets/diagrams/clubbing-comparison.png'
 import koilonychiaComparisonImg from '../assets/diagrams/koilonychia-comparison.png'
+import leukonychiaComparisonImg from '../assets/diagrams/leukonychia-comparison.png'
+import melanonychiaComparisonImg from '../assets/diagrams/melanonychia-comparison.png'
+import pallorComparisonImg from '../assets/diagrams/pallor-comparison.png'
+import cyanosisComparisonImg from '../assets/diagrams/cyanosis-comparison.png'
+import terrysNailsComparisonImg from '../assets/diagrams/terrys_nails-comparison.png'
+import lindsaysNailsComparisonImg from '../assets/diagrams/lindsays_nails-comparison.png'
+import onycholysisComparisonImg from '../assets/diagrams/onycholysis-comparison.png'
+import beausLinesComparisonImg from '../assets/diagrams/beaus_lines-comparison.png'
+import muehrckesLinesComparisonImg from '../assets/diagrams/muehrckes_lines-comparison.png'
 
 function ClubbingDiagram() {
   return (
@@ -12,6 +21,69 @@ function KoilonychiaDiagram() {
   return (
     <img className="diagram" src={koilonychiaComparisonImg}
       alt="Side-by-side comparison of normal nails (flat or gently domed, convex cross-section) versus koilonychia (spoon-shaped nails that dip concave in the middle)" />
+  )
+}
+
+function LeukonychiaDiagram() {
+  return (
+    <img className="diagram" src={leukonychiaComparisonImg}
+      alt="Side-by-side comparison of normal nails versus leukonychia (scattered punctate white spots across the nail plate)" />
+  )
+}
+
+function MelanonychiaDiagram() {
+  return (
+    <img className="diagram" src={melanonychiaComparisonImg}
+      alt="Side-by-side comparison of normal nails versus melanonychia (a single dark brown-black longitudinal band running down the nail plate)" />
+  )
+}
+
+function PallorDiagram() {
+  return (
+    <img className="diagram" src={pallorComparisonImg}
+      alt="Side-by-side comparison of a normal pink nail bed versus pallor (a pale, washed-out nail bed)" />
+  )
+}
+
+function CyanosisDiagram() {
+  return (
+    <img className="diagram" src={cyanosisComparisonImg}
+      alt="Side-by-side comparison of a normal pink nail bed versus cyanosis (a bluish, dusky nail bed)" />
+  )
+}
+
+function TerrysNailsDiagram() {
+  return (
+    <img className="diagram" src={terrysNailsComparisonImg}
+      alt="Side-by-side comparison of normal nails versus Terry's nails (a mostly white, opaque nail plate with a narrow dark band at the tip)" />
+  )
+}
+
+function LindsaysNailsDiagram() {
+  return (
+    <img className="diagram" src={lindsaysNailsComparisonImg}
+      alt="Side-by-side comparison of normal nails versus Lindsay's (half-and-half) nails (a dull-white proximal half and a darker pink-brown distal half with a sharp dividing line)" />
+  )
+}
+
+function OnycholysisDiagram() {
+  return (
+    <img className="diagram" src={onycholysisComparisonImg}
+      alt="Side-by-side comparison of normal nails versus onycholysis (the nail plate separating and lifting from the nail bed at the distal free edge, leaving a white or yellow-white detached area)" />
+  )
+}
+
+function BeausLinesDiagram() {
+  return (
+    <img className="diagram" src={beausLinesComparisonImg}
+      alt="Side-by-side comparison of normal nails versus Beau's lines (a transverse groove or depression running across the nail plate)" />
+  )
+}
+
+function MuehrckesLinesDiagram() {
+  return (
+    <img className="diagram" src={muehrckesLinesComparisonImg}
+      alt="Side-by-side comparison of normal nails versus Muehrcke's lines (a pair of transverse white bands running across the nail plate)" />
   )
 }
 
@@ -126,5 +198,14 @@ function NailPlate({ pattern, sub }) {
 export default function NailDiagram({ type, sub }) {
   if (type === 'clubbing') return <ClubbingDiagram />
   if (type === 'koilonychia') return <KoilonychiaDiagram />
+  if (type === 'leukonychia') return <LeukonychiaDiagram />
+  if (type === 'melanonychia') return <MelanonychiaDiagram />
+  if (type === 'pallor') return <PallorDiagram />
+  if (type === 'cyanosis') return <CyanosisDiagram />
+  if (type === 'terrys_nails') return <TerrysNailsDiagram />
+  if (type === 'lindsays_nails') return <LindsaysNailsDiagram />
+  if (type === 'onycholysis') return <OnycholysisDiagram />
+  if (type === 'beaus_lines') return <BeausLinesDiagram />
+  if (type === 'muehrckes_lines') return <MuehrckesLinesDiagram />
   return <NailPlate pattern={type} sub={sub} />
 }

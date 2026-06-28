@@ -18,6 +18,7 @@ const STEPS = {
 
 export default function CameraCapture({ onCapture, loading, onClose }) {
   const webcamRef = useRef(null)
+  const fileInputRef = useRef(null)
   const [step, setStep] = useState('side')
   const [sideImage, setSideImage] = useState(null)
   const [cameraError, setCameraError] = useState(null)
@@ -29,18 +30,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
   const [shutterFlash, setShutterFlash] = useState(false)
   const streamRef = useRef(null)
 
-  const handleCapture = useCallback(async () => {
-    const screenshot = webcamRef.current?.getScreenshot()
-    if (!screenshot) {
-      setCameraError("Couldn't capture an image. Make sure your camera is allowed and try again.")
-      return
-    }
-    const base64 = screenshot.split(',')[1]
-
-    // Shutter flash animation
-    setShutterFlash(true)
-    setTimeout(() => setShutterFlash(false), 150)
-
+  const processImage = useCallback(async (base64) => {
     setRetakeError(null)
     setValidating(true)
     let validation
@@ -65,6 +55,41 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       onCapture({ sideImage, topImage: base64 })
     }
   }, [step, sideImage, onCapture])
+
+  const handleCapture = useCallback(async () => {
+    const screenshot = webcamRef.current?.getScreenshot()
+    if (!screenshot) {
+      setCameraError("Couldn't capture an image. Make sure your camera is allowed and try again.")
+      return
+    }
+    const base64 = screenshot.split(',')[1]
+
+    // Shutter flash animation
+    setShutterFlash(true)
+    setTimeout(() => setShutterFlash(false), 150)
+
+    await processImage(base64)
+  }, [processImage])
+
+  const handleUploadClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
+  const handleFileChange = useCallback((e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setCameraError(null)
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = String(reader.result).split(',')[1]
+      processImage(base64)
+    }
+    reader.onerror = () => {
+      setRetakeError("Couldn't read that file. Try a different photo.")
+    }
+    reader.readAsDataURL(file)
+  }, [processImage])
 
   const handleUserMedia = useCallback((stream) => {
     streamRef.current = stream
@@ -239,6 +264,28 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
             </svg>
           </button>
         </div>
+
+        {/* Upload existing photo instead */}
+        <button
+          type="button"
+          className="cam-upload-link"
+          onClick={handleUploadClick}
+          disabled={isBusy}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          Upload a photo instead
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
 
         {/* Home indicator pill */}
         <div className="cam-home-pill" />

@@ -1160,6 +1160,29 @@
   50%      { opacity: 0.9; }
 }
 
+/* ── Upload-instead link ── */
+.cam-upload-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cam-upload-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cam-upload-link:hover:not(:disabled) {
+  color: #fff;
+}
+
 /* ── Home indicator pill ── */
 .cam-home-pill {
   width: 120px;
@@ -1470,6 +1493,34 @@
   color: var(--text-muted);
 }
 
+/* A small visual reference shown only on outside/inconclusive findings, so a
+   user (or the doctor they share the printed report with) sees what the
+   condition looks like without leaving the result. */
+.finding-diagram-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: left;
+}
+.finding-diagram-section .diagram-wrap,
+.finding-diagram-section svg.diagram,
+.finding-diagram-section img.diagram {
+  flex-shrink: 0;
+  width: 100px;
+}
+.finding-summary {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.print-only-header { display: none; }
+
 /* ── Print: a clean one-page report for showing a doctor ── */
 @media print {
   .bottom-nav,
@@ -1481,4 +1532,11 @@
   #root { width: auto; height: auto; border: none; box-shadow: none; }
   .within-group:not([open]) .findings-list { display: flex !important; }
   .result-card { box-shadow: none; }
+  .print-only-header {
+    display: block;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .print-only-header h1 { font-size: 20px; margin: 0 0 4px; }
+  .print-only-header p { font-size: 13px; color: var(--text-muted); margin: 0; }
 }

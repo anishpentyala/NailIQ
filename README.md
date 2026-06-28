@@ -3,9 +3,10 @@
 A precautionary screener for nail-based signs of systemic disease. Digital clubbing
 is present in ~35% of non-small-cell lung cancer cases and is also linked to heart
 disease, COPD, and liver disease; koilonychia (spoon nails) is linked to iron
-deficiency anemia. NailIQ screens for **eight** such signs — clubbing and
-koilonychia from the side profile, plus leukonychia, melanonychia, Terry's nails,
-Beau's lines, splinter hemorrhages, and pitting from a top-down view. These develop
+deficiency anemia. NailIQ screens for **thirteen** such signs — clubbing and
+koilonychia from the side profile, plus eleven color/texture signs from a top-down
+view: leukonychia, melanonychia, pallor, cyanosis, Terry's nails, Lindsay's nails,
+onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages, and pitting. These develop
 slowly and are rarely self-noticed. NailIQ lets anyone photograph their finger and
 get a quick, honest read on whether their nail signs are worth mentioning to a doctor.
 
@@ -23,15 +24,17 @@ independent computer-vision tracks:
 |-------|--------------|------|
 | **Geometry** (`ml/infer/`) | Classical OpenCV — Lovibond nail angle (cosine rule) + koilonychia sagitta from the finger contour. No trained model needed. | the **side profile** |
 | **Trained CNN** (`ml/infer/classifier.py`) | A 2-model ensemble (MobileNetV3-Large + EfficientNet-B0) classifies the nail as clubbing / koilonychia / healthy (transfer learning, averaged predictions). | the **top-down** photo |
-| **Color/texture** (`ml/infer/nail_region.py` + per-condition modules) | Classical OpenCV on the nail plate — leukonychia, melanonychia, Terry's nails, Beau's lines, splinter hemorrhages, pitting. No trained model needed. | the **top-down** photo |
+| **Color/texture** (`ml/infer/nail_region.py` + per-condition modules) | Classical OpenCV on the nail plate — all eleven color/texture conditions. No trained model needed. | the **top-down** photo |
+| **Color CNN** (`ml/infer/color_classifier.py`) | A second CNN ensemble trained on clinical nail-plate crops, fused with the classical heuristic for five conditions (cyanosis, Terry's nails, Beau's lines, Muehrcke's lines, pitting) — the CNN leads since the heuristic alone is near-chance on real photos. | the **top-down** photo |
 
 **Fusion** (`ml/infer/fusion.py`): for the two geometry conditions, the geometry and
 CNN tracks are fused into one verdict each — when both agree, confidence is boosted;
 when they disagree, the result is **inconclusive** rather than a guessed verdict. The
 CNN track is **optional** — torch and the weights load lazily, so the geometry track
-still works in a torch-free environment. The **color/texture track is standalone**
-(no fusion, no model) and adds its six findings from the top-down photo; it always
-runs, even without torch.
+still works in a torch-free environment. The **color/texture track always runs**
+(no torch needed) and adds its eleven findings from the top-down photo; when the
+color CNN is also available, five of those eleven are further fused with it
+(`track_used: "color_fused"`), the remaining six stay standalone (`track_used: "color"`).
 
 What makes the CNN trustworthy instead of a raw softmax guess:
 
@@ -168,7 +171,7 @@ Request:
 ```
 `side_image` drives the geometry track; `top_image` is classified by the CNN (fused
 with geometry into the two shape findings) and is measured by the color/texture track
-(six standalone findings). A scan returns **eight findings** in total.
+(eleven standalone or color-CNN-fused findings). A scan returns **thirteen findings** in total.
 
 Response (the two geometry conditions come back `track_used: "fused"` when the CNN is
 available; the six color conditions come back `track_used: "color"`):

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { failureReasonMessage } from '../failureReasons'
 import { submitFeedback } from '../api'
 import Icon from './Icon'
+import NailDiagram from './NailDiagram'
+import { CONDITIONS_LOOKUP } from '../conditions'
 
 const COPY = {
   within: {
@@ -97,6 +99,12 @@ function FindingCard({ finding, index, scanId }) {
       ? COLOR_AGREEMENT_NOTE[finding.agreement]
       : null
 
+  // A visual reference for what the condition looks like, shown only when there's
+  // something worth a closer look -- a "within" card doesn't need it, and showing
+  // it there would just be clutter on the common case.
+  const showDiagram = finding.verdict === 'outside' || finding.verdict === 'inconclusive'
+  const conditionSummary = CONDITIONS_LOOKUP[finding.label]
+
   return (
     <div className="finding-card" style={{ '--finding-delay': `${index * 50}ms` }}>
       {isMl && <span className="track-badge">AI model</span>}
@@ -124,6 +132,12 @@ function FindingCard({ finding, index, scanId }) {
         <p className="result-match">AI model’s closest visual match: {mlMatch}</p>
       )}
       <p className="result-message">{message}</p>
+      {showDiagram && conditionSummary && (
+        <div className="finding-diagram-section">
+          <NailDiagram type={finding.label} />
+          <p className="finding-summary">{conditionSummary}</p>
+        </div>
+      )}
       <FeedbackRow scanId={scanId} finding={finding} />
     </div>
   )
@@ -186,6 +200,10 @@ export default function ResultView({ result, topImage, onReset }) {
 
   return (
     <div className="result-card">
+      <div className="print-only-header">
+        <h1>NailIQ Nail Health Screening Report</h1>
+        <p>{new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
       <ResultSummary outside={outside} inconclusive={inconclusive} />
       <MeasuredOverlay topImage={topImage} bbox={bbox} />
 

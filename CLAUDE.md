@@ -5,9 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 NailIQ: a precautionary screener for nail-based signs of systemic disease. It
-covers eight conditions across three tracks: digital clubbing and koilonychia/spoon
-nails (side-profile geometry), and leukonychia, melanonychia, Terry's nails, Beau's
-lines, splinter hemorrhages, and pitting (top-down color/texture). A user photographs
+covers thirteen conditions across four tracks: digital clubbing and koilonychia/spoon
+nails (side-profile geometry, fused with a top-down CNN), and eleven top-down
+color/texture signs — leukonychia, melanonychia, pallor, cyanosis, Terry's nails,
+Lindsay's nails, onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages,
+and pitting — five of which (cyanosis, Terry's nails, Beau's lines, Muehrcke's
+lines, pitting) are further fused with a second color-condition CNN ensemble.
+A user photographs
 their finger and gets a finding per condition, each one only ever "within typical range,"
 "outside typical range," or "couldn't analyze this photo" — **never** a named
 diagnosis. This framing is non-negotiable and must show up on every result screen,
@@ -360,12 +364,25 @@ within / outside / inconclusive, never a diagnosis.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
 
-### No persistence yet
+### Scan history
 
-There's no database/history endpoint despite `flask-sqlalchemy` being listed in
-`backend/requirements.txt` — that's reserved for a planned scan-history feature
-(SQLite + a `/history` endpoint + a Recharts angle-over-time view), not yet built.
-Don't assume scan results are stored anywhere; each `/analyze` call is stateless.
+`/analyze` persists every scan: `backend/models.py`'s `ScanRecord` (SQLite via
+flask-sqlalchemy, `findings_json` + `created_at`) is written after analysis runs
+(`backend/app.py`'s `/analyze`), and the response includes `scan_id`. A DB write
+failure is swallowed (rolled back) rather than failing the request — history
+logging must never block a result. `GET /history` returns all `ScanRecord`s
+newest-first. `Feedback` (also in `models.py`) records a user's "does this match
+what you see?" response per finding (`scan_id` FK, `label`, `shown_verdict`,
+`agreed`, optional `note`) via `POST /feedback` — the honest data path toward
+calibrating the uncalibrated color/geometry thresholds later. Neither model
+stores images, only findings/labels.
+
+`frontend/src/components/HistoryView.jsx` calls `getHistory()` (`api.js`) and
+renders each scan as a card (per-finding verdict rows, an overall status, a
+"Changed" badge when a finding's verdict flipped vs. the previous scan) plus an
+`AngleTrend` Recharts line chart tracking the `clubbing` finding's `value` across
+scans (renders only once ≥2 scans have that finding). No image is ever shown in
+history, only findings.
 
 ### Data pipeline
 
