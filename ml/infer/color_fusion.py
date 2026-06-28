@@ -10,13 +10,15 @@ because the two situations aren't symmetric:
     (ml/eval/calibrate_color.py). Letting that veto a CNN trained on the same labels
     would throw away the whole reason the CNN exists.
 
-So for the five colour conditions the CNN was trained on (cyanosis, terrys_nails,
-beaus_lines, muehrckes_lines, pitting) the CNN is PRIMARY: when it has a confident
-call, it sets the verdict; the heuristic can only corroborate it (boosting confidence
-on agreement), never overturn it. When the CNN has no confident call, the heuristic
-stands alone, exactly as before. Conditions the CNN doesn't cover (leukonychia,
-melanonychia, pallor, lindsays_nails, onycholysis, splinter_hemorrhages) pass through
-untouched.
+So for the colour conditions the CNN was trained on (cyanosis, terrys_nails,
+beaus_lines, muehrckes_lines, pitting, and -- once the Ghana fingernail-anemia set was
+folded in, see data/DATASETS_DIVERSITY.md -- pallor) the CNN is PRIMARY: when it has a
+confident call, it sets the verdict; the heuristic can only corroborate it (boosting
+confidence on agreement), never overturn it. When the CNN has no confident call, the
+heuristic stands alone, exactly as before. Conditions the CNN doesn't cover
+(leukonychia, melanonychia, lindsays_nails, onycholysis, splinter_hemorrhages) pass
+through untouched. Which labels are "covered" is read from the model's own manifest
+(color_classifier.app_conditions()), not hardcoded here -- see pipeline.py's call site.
 
 The single-label CNN can name only one condition per nail, so a confident prediction of
 some OTHER condition is treated as "no opinion" on C (it can't rule out a co-occurring

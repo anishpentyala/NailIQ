@@ -341,9 +341,18 @@ Pipeline:
 - `ml/infer/color_classifier.py` — lazy + optional, same contract as `classifier.py`
   (`is_available()` gates it). At inference it crops to **nail_region's detected bbox**
   (the closest analogue to the training nail-box crop) and classifies; below
-  `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion."
-- `ml/infer/color_fusion.py` — fuses the CNN with the classical findings for its five
-  **app conditions** (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting).
+  `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion." `CLASS_CONFIDENCE_THRESHOLD`
+  overrides that floor per class — `pallor` needs 0.65: at 0.45 its test-set precision
+  is only 0.688 (anemic-vs-non-anemic nail colour is a genuinely subtle call, and the
+  errors concentrate entirely within the Ghana-sourced images, not a leakage artifact),
+  and confidence is a real precision signal for it (0.65 -> 0.792P/0.678R), so the
+  higher floor trades some recall for a false-positive rate low enough to show a user.
+  Re-measure (`ml/eval/eval_color_ensemble.py` + a manual precision-by-cutoff sweep) if
+  the dataset changes.
+- `ml/infer/color_fusion.py` — fuses the CNN with the classical findings for its six
+  **app conditions** (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting,
+  pallor — the last added when the Ghana fingernail-anemia set was folded into the
+  color-CNN's training data; see `data/DATASETS_DIVERSITY.md`).
   **Deliberately different trust model from `fusion.py`:** geometry is a real measurement
   so it's the authority there; here the heuristic is near-chance, so the **CNN is primary**
   — when it has a confident call it sets the verdict, and the heuristic can only
