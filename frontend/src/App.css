@@ -1393,6 +1393,25 @@
   padding-top: 12px;
 }
 
+/* Skin-tone coverage caveat: this color reading is less validated for the
+   user's tone. Honest fairness disclosure, styled as a warning note. */
+.result-tone-caveat {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.result-tone-caveat svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 /* ── Result: overall summary, grouping, overlay, feedback (multi-finding) ── */
 .result-card {
   text-align: left;

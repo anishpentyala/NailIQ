@@ -294,6 +294,19 @@ modestly via `nail_region.heuristic_confidence`, and the conditions lean toward
 add `<condition>.py` following the pattern, build its metric off the `region` dict
 (reuse `grid_v`/`grid_s` for texture), and add it to `_COLOR_CONDITIONS`.
 
+**Skin-tone coverage gating (`ml/infer/skin_tone.py`).** `ml/eval/audit_skin_tone.py`
+runs the production nail-region path over the datasets and bins each photo's ITA
+(`skin_ita`) into tone bands; it found coverage heavily skewed to light skin (of the
+~430 images where a skin region is even measurable, ~59% are the lightest band, darker
+bands thin/noisy). So the color findings are **largely unvalidated on darker tones**.
+Rather than fake a per-tone calibration, `skin_tone.apply_coverage` classifies each
+scan's tone into a coverage tier (`well`/`limited`/`minimal`) and, on under-represented
+tones, **caps each color finding's confidence and attaches a `tone_caveat` +
+`skin_tone_band`** the UI surfaces (`ResultView.jsx`, `.result-tone-caveat`); the
+response overlay also carries a `skin_tone` summary. `well`/unmeasurable tones pass
+through untouched, and the cap only ever lowers confidence. Re-derive the band→tier
+table in `skin_tone.py` from the audit if the dataset grows.
+
 ### The color-condition CNN track (`ml/infer/color_classifier.py` + `color_fusion.py`)
 
 The classical color heuristics above are uncalibrated, and calibration on real labeled

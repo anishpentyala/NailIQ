@@ -16,6 +16,7 @@ from . import (
     onycholysis,
     pallor,
     pitting,
+    skin_tone,
     splinter_hemorrhages,
     terrys_nails,
 )
@@ -166,7 +167,16 @@ def analyze_top_color(top_image_b64):
         except Exception:  # noqa: BLE001 -- ML must never break the color response
             pass
 
-    overlay = {"top_bbox_norm": list(region["bbox_norm"]), "skin_ita": region["skin_ita"]}
+    # Honest skin-tone gating: the color findings are largely unvalidated on darker
+    # tones (see ml/eval/audit_skin_tone.py), so cap confidence + attach a caveat
+    # when this scan's skin tone is under-represented in our data.
+    findings = skin_tone.apply_coverage(findings, region["skin_ita"])
+
+    overlay = {
+        "top_bbox_norm": list(region["bbox_norm"]),
+        "skin_ita": region["skin_ita"],
+        "skin_tone": skin_tone.skin_tone_summary(region["skin_ita"]),
+    }
     return findings, overlay, quality
 
 

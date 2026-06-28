@@ -132,6 +132,12 @@ function FindingCard({ finding, index, scanId }) {
         <p className="result-match">AI model’s closest visual match: {mlMatch}</p>
       )}
       <p className="result-message">{message}</p>
+      {finding.tone_caveat && finding.verdict !== 'inconclusive' && (
+        <p className="result-tone-caveat">
+          <Icon name="info" size={14} />
+          {finding.tone_caveat}
+        </p>
+      )}
       {showDiagram && conditionSummary && (
         <div className="finding-diagram-section">
           <NailDiagram type={finding.label} />
