@@ -4,33 +4,20 @@ import {
 } from 'recharts'
 import Icon from './Icon'
 import { getHistory } from '../api'
+import { overallStatus, relativeTime } from '../scanStatus'
+import { failureReasonMessage } from '../failureReasons'
+import { PLACEHOLDER_SCANS } from '../placeholderScans'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
 const VERDICT_TEXT = { within: 'Within range', outside: 'Outside range', inconclusive: 'Inconclusive' }
 
-function relativeTime(isoString) {
-  const minutes = Math.round((Date.now() - new Date(isoString).getTime()) / 60_000)
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.round(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.round(hours / 24)
-  if (days === 1) return 'Yesterday'
-  if (days < 7) return `${days}d ago`
-  return new Date(isoString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
+// Rough starting-estimate thresholds from ml/infer -- only clubbing carries a
+// numeric value+unit worth captioning; other geometric findings report no value.
+const THRESHOLD_CAPTION = { clubbing: '> 180° threshold' }
 
-// One status for the whole scan: worst verdict wins, but it's still only ever
-// within/outside/inconclusive -- never a named condition or a risk score.
-function overallStatus(findings) {
-  const outsideCount = findings.filter((f) => f.verdict === 'outside').length
-  if (outsideCount > 0) {
-    return { verdict: 'outside', label: `${outsideCount} outside typical range` }
-  }
-  if (findings.some((f) => f.verdict === 'within')) {
-    return { verdict: 'within', label: 'All within typical range' }
-  }
-  return { verdict: 'inconclusive', label: "Couldn't analyze this scan" }
+const TRACK_NOTE = {
+  fused: 'Result fused from multiple analysis models for higher accuracy.',
+  color_fused: 'Result fused from a color check and an AI model for higher accuracy.',
 }
 
 // Labels whose verdict flipped vs. the previous (older) scan -- this is the
@@ -44,6 +31,53 @@ function changedLabels(scan, previousScan) {
     if (prevVerdict && prevVerdict !== f.verdict) changed.add(f.label)
   }
   return changed
+}
+
+// Click a past finding to expand it into the same measured-value / confidence
+// / fused-note shape the result screen uses, so history isn't just a verdict list.
+function FindingDetail({ finding }) {
+  const note = TRACK_NOTE[finding.track_used]
+  const isInconclusive = finding.verdict === 'inconclusive'
+
+  return (
+    <div className="history-finding-body">
+      {isInconclusive ? (
+        <p className="history-detail-message">{failureReasonMessage(finding.failure_reason)}</p>
+      ) : (
+        <div className="history-detail-grid">
+          {finding.value != null && (
+            <div className="dashboard-tile">
+              <span className="tile-label">{finding.unit === 'deg' ? 'Measured angle' : 'Measured value'}</span>
+              <span className={`tile-value history-tile-value--${finding.verdict}`}>
+                {finding.value.toFixed(1)}
+                {finding.unit === 'deg' ? '°' : ''}
+              </span>
+              {THRESHOLD_CAPTION[finding.label] && (
+                <span className="tile-sub">{THRESHOLD_CAPTION[finding.label]}</span>
+              )}
+            </div>
+          )}
+          {finding.confidence != null && (
+            <div className="dashboard-tile">
+              <span className="tile-label">Confidence score</span>
+              <div className={`attention-meter history-meter--${finding.verdict}`}>
+                <div className="attention-meter-fill" style={{ width: `${Math.round(finding.confidence * 100)}%` }} />
+              </div>
+              <span className={`tile-value history-tile-value--${finding.verdict}`}>
+                {Math.round(finding.confidence * 100)}%
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      {note && (
+        <p className="history-detail-note">
+          <Icon name="sparkle" size={14} />
+          {note}
+        </p>
+      )}
+    </div>
+  )
 }
 
 function ScanCard({ scan, previousScan }) {
@@ -60,21 +94,26 @@ function ScanCard({ scan, previousScan }) {
           <span className="history-card-status">{status.label}</span>
           <span className="history-card-time">{relativeTime(scan.created_at)}</span>
         </div>
+        {scan.isPlaceholder && <span className="history-example-badge">Example</span>}
         {changed.size > 0 && <span className="history-changed-badge">Changed</span>}
       </div>
 
       <div className="history-card-body">
         {scan.findings.map((f) => (
-          <div key={f.label} className="history-finding-row">
-            <span className={`history-finding-dot history-finding-dot--${f.verdict}`} />
-            <span className="history-finding-name">{f.display_name}</span>
-            <span className={`history-finding-verdict history-finding-verdict--${f.verdict}`}>
-              {VERDICT_TEXT[f.verdict]}
-            </span>
-            {changed.has(f.label) && (
-              <span className="history-finding-changed-dot" aria-label="Changed since last scan" title="Changed since last scan" />
-            )}
-          </div>
+          <details key={f.label} className="history-finding-detail">
+            <summary className="history-finding-row">
+              <span className={`history-finding-dot history-finding-dot--${f.verdict}`} />
+              <span className="history-finding-name">{f.display_name}</span>
+              <span className={`history-finding-verdict history-finding-verdict--${f.verdict}`}>
+                {VERDICT_TEXT[f.verdict]}
+              </span>
+              {changed.has(f.label) && (
+                <span className="history-finding-changed-dot" aria-label="Changed since last scan" title="Changed since last scan" />
+              )}
+              <span className="history-finding-chevron"><Icon name="chevronRight" size={14} /></span>
+            </summary>
+            <FindingDetail finding={f} />
+          </details>
         ))}
       </div>
     </div>
@@ -128,7 +167,11 @@ export default function HistoryView() {
   useEffect(() => {
     let cancelled = false
     getHistory()
-      .then((data) => { if (!cancelled) setScans(data.scans) })
+      .then((data) => {
+        if (cancelled) return
+        // No real scans yet -- show examples so the history view isn't just empty.
+        setScans(data.scans.length > 0 ? data.scans : PLACEHOLDER_SCANS)
+      })
       .catch(() => { if (!cancelled) setError("Couldn't load your scan history. Is the backend running?") })
     return () => { cancelled = true }
   }, [])
@@ -152,6 +195,11 @@ export default function HistoryView() {
 
       {!error && scans && scans.length > 0 && (
         <>
+          {scans[0].isPlaceholder && (
+            <p className="history-placeholder-note">
+              Showing example scans. Take your first scan to replace these with real results.
+            </p>
+          )}
           <AngleTrend scans={scans} />
           <div className="history-list">
             {scans.map((scan, i) => (

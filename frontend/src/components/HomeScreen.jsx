@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
 import Icon from './Icon'
+import { getHistory } from '../api'
+import { overallStatus, relativeTime } from '../scanStatus'
 
 const TIPS = [
   'Good lighting and a plain background make your scan far more accurate.',
@@ -66,22 +69,110 @@ function HeroArt() {
   )
 }
 
-export default function HomeScreen({ onStartScan }) {
+const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
+
+// The home-screen analogue of "today's UV index": a glanceable status from your
+// most recent scan, pulled from the same /history data HistoryView already
+// renders, so it costs no new backend work. Fails quietly (no card) on error --
+// this is a nice-to-have on the landing screen, not something worth an error banner.
+function LastScanCard({ onViewHistory }) {
+  const [scans, setScans] = useState(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    getHistory()
+      .then((data) => { if (!cancelled) setScans(data.scans) })
+      .catch(() => { if (!cancelled) setFailed(true) })
+    return () => { cancelled = true }
+  }, [])
+
+  if (failed || scans === null) return null
+
+  if (scans.length === 0) {
+    return (
+      <button type="button" className="home-card home-last-scan home-last-scan--empty" onClick={onViewHistory}>
+        <span className="home-card-icon"><Icon name="clipboard" /></span>
+        <div className="home-last-scan-info">
+          <span className="home-last-scan-status">No scans yet</span>
+          <span className="home-last-scan-time">Your first result will show up here.</span>
+        </div>
+      </button>
+    )
+  }
+
+  const latest = scans[0]
+  const findings = latest.findings
+  const status = overallStatus(findings)
+
+  const conclusive = findings.filter((f) => f.verdict !== 'inconclusive')
+  const meanConf =
+    conclusive.length > 0
+      ? conclusive.reduce((s, f) => s + (f.confidence ?? 0), 0) / conclusive.length
+      : null
+
+  // The two most tell-tale measured values, if we have them -- prefer the
+  // geometry findings (they carry a real number, not just a verdict).
+  const stats = findings.filter((f) => f.value != null).slice(0, 2)
+
+  return (
+    <button type="button" className="home-assessment" onClick={onViewHistory}>
+      <div className="home-assessment-head">
+        <span className="home-assessment-eyebrow">Latest assessment</span>
+        {meanConf != null && (
+          <span className={`home-assessment-confidence home-assessment-confidence--${status.verdict}`}>
+            {Math.round(meanConf * 100)}% confidence
+          </span>
+        )}
+      </div>
+
+      <div className="home-assessment-status">
+        <span className={`result-icon result-icon--${status.verdict} home-assessment-icon`}>
+          <Icon name={VERDICT_ICON[status.verdict]} size={18} />
+        </span>
+        {status.label}
+      </div>
+
+      {stats.length > 0 && (
+        <div className="home-assessment-stats">
+          {stats.map((f) => (
+            <div className="home-assessment-stat" key={f.label}>
+              <span className="home-assessment-stat-label">{f.display_name}</span>
+              <span className="home-assessment-stat-value">
+                {f.value.toFixed(1)}
+                {f.unit === 'deg' ? '°' : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="home-assessment-footer">
+        <span><Icon name="clipboard" size={13} /> Scan ID: NIQ-{latest.id}</span>
+        <span>{relativeTime(latest.created_at)}</span>
+      </div>
+    </button>
+  )
+}
+
+export default function HomeScreen({ onStartScan, onViewHistory }) {
   return (
     <div className="home">
       <h1 className="home-title">Home</h1>
 
       <section className="home-hero">
         <HeroArt />
-        <h2 className="home-hero-title">Check your nail health in 30 seconds</h2>
+        <h2 className="home-hero-title">Spot nail changes worth a doctor&rsquo;s look</h2>
         <p className="home-hero-text">
-          Two quick photos. NailIQ looks for early, easy-to-miss nail signs and tells you
-          whether they fall within the typical range.
+          Some nail signs of anemia, heart, lung, and liver conditions show up early &mdash; but
+          develop too slowly to notice on your own. Two quick photos check for thirteen of them.
         </p>
         <button type="button" className="primary-btn home-cta" onClick={onStartScan}>
           Start a scan
         </button>
       </section>
+
+      <LastScanCard onViewHistory={onViewHistory} />
 
       <section className="home-card">
         <div className="home-card-head">

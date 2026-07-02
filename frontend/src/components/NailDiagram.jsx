@@ -9,6 +9,7 @@ import lindsaysNailsComparisonImg from '../assets/diagrams/lindsays_nails-compar
 import onycholysisComparisonImg from '../assets/diagrams/onycholysis-comparison.png'
 import beausLinesComparisonImg from '../assets/diagrams/beaus_lines-comparison.png'
 import muehrckesLinesComparisonImg from '../assets/diagrams/muehrckes_lines-comparison.png'
+import splinterHemorrhagesComparisonImg from '../assets/diagrams/splinter_hemorrhages-comparison.png'
 
 function ClubbingDiagram() {
   return (
@@ -84,6 +85,13 @@ function MuehrckesLinesDiagram() {
   return (
     <img className="diagram" src={muehrckesLinesComparisonImg}
       alt="Side-by-side comparison of normal nails versus Muehrcke's lines (a pair of transverse white bands running across the nail plate)" />
+  )
+}
+
+function SplinterHemorrhagesDiagram() {
+  return (
+    <img className="diagram" src={splinterHemorrhagesComparisonImg}
+      alt="Comparison of normal nails versus typical and severe splinter hemorrhages (small, thin, reddish-brown vertical lines under the nail)" />
   )
 }
 
@@ -207,5 +215,6 @@ export default function NailDiagram({ type, sub }) {
   if (type === 'onycholysis') return <OnycholysisDiagram />
   if (type === 'beaus_lines') return <BeausLinesDiagram />
   if (type === 'muehrckes_lines') return <MuehrckesLinesDiagram />
+  if (type === 'splinter_hemorrhages') return <SplinterHemorrhagesDiagram />
   return <NailPlate pattern={type} sub={sub} />
 }

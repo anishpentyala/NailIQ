@@ -77,7 +77,9 @@ function App() {
       </p>
 
       <div className="tab-fade" key={activeTab}>
-        {activeTab === 'home' && <HomeScreen onStartScan={startScan} />}
+        {activeTab === 'home' && (
+          <HomeScreen onStartScan={startScan} onViewHistory={() => setActiveTab('history')} />
+        )}
 
         {activeTab === 'scan' && (
           <>
