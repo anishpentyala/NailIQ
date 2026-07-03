@@ -51,6 +51,7 @@ _bt/
 _realtest/
 build.log
 build_output.log
+phone-preview*.log
 
 # Backend tests
 backend/nailiq.db
