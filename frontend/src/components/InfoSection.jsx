@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import Icon from './Icon'
 import NailDiagram from './NailDiagram'
 
-import { CONDITIONS } from '../conditions'
+import { getConditions } from '../conditions'
+import { useI18n } from '../i18n'
 
 function ConditionSheet({ condition, onClose }) {
+  const { t } = useI18n()
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose()
@@ -13,7 +16,11 @@ function ConditionSheet({ condition, onClose }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  return (
+  // Portal to #root so the overlay's containing block is the app viewport, not
+  // the transformed `.tab-fade` tab wrapper (its `animation: ... both` pins a
+  // `transform`, which would otherwise trap this absolute overlay to the padded
+  // tab box and leave the app's edges uncovered).
+  return createPortal(
     <div className="sheet-overlay" onClick={onClose}>
       <div
         className="sheet"
@@ -32,7 +39,7 @@ function ConditionSheet({ condition, onClose }) {
             <h2 className="sheet-title">{condition.name}</h2>
             <p className="sheet-subtitle">{condition.summary}</p>
           </div>
-          <button type="button" className="sheet-close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet-close" onClick={onClose} aria-label={t('info.close')}>
             <Icon name="x" size={22} />
           </button>
         </header>
@@ -57,25 +64,23 @@ function ConditionSheet({ condition, onClose }) {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.getElementById('root'),
   )
 }
 
-const BY_KEY = Object.fromEntries(CONDITIONS.map((c) => [c.key, c]))
-
 export default function InfoSection() {
+  const { t } = useI18n()
+  const conditions = useMemo(() => getConditions(t), [t])
   const [openKey, setOpenKey] = useState(null)
-  const openCondition = openKey ? BY_KEY[openKey] : null
+  const openCondition = openKey ? conditions.find((c) => c.key === openKey) : null
 
   return (
     <div className="info-section">
-      <p className="info-intro">
-        NailIQ screens every photo for all of these signs. Tap any one to learn what it looks
-        like, why it happens, and what your result means.
-      </p>
+      <p className="info-intro">{t('info.intro')}</p>
 
       <div className="info-group">
-        {CONDITIONS.map((condition) => (
+        {conditions.map((condition) => (
           <button
             key={condition.key}
             type="button"

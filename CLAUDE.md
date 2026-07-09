@@ -393,6 +393,20 @@ within / outside / inconclusive, never a diagnosis.
   handled for standalone ML findings.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
+- **i18n + accessibility (`frontend/src/i18n/`)**: every user-facing string lives
+  in the locale dictionaries (`en.js` is the master/fallback, `es.js` mirrors it) —
+  don't hardcode UI copy in components; use `useI18n()`'s `t('dot.path', {params})`.
+  Adding a language = one new dictionary file registered in `i18n/index.jsx`.
+  Condition copy lives under `conditions.<key>` in the dictionaries;
+  `conditions.js` only holds structure (keys/icons) and localized getters.
+  Backend findings arrive with English `display_name`; the UI renames by `label`
+  via `findingName()` (`findingNames` in the dictionaries) so the API contract is
+  untouched — backend-generated strings like `tone_caveat` are the one thing that
+  stays English in other languages. `SettingsProvider` (wraps App in `main.jsx`)
+  also persists high-contrast / large-text / reduce-motion prefs to localStorage
+  and reflects them as `a11y-*` classes on `<html>`; App.css font sizes are rem
+  on purpose so the large-text root font-size bump scales type — don't add new
+  `font-size: ...px` rules.
 
 ### Scan history
 

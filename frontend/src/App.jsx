@@ -5,16 +5,20 @@ import InfoSection from './components/InfoSection'
 import HomeScreen from './components/HomeScreen'
 import HistoryView from './components/HistoryView'
 import BottomNav from './components/BottomNav'
+import SettingsSheet from './components/SettingsSheet'
 import Icon from './components/Icon'
 import { analyzeImages } from './api'
+import { useI18n } from './i18n'
 import './App.css'
 
 function App() {
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState('home')
   const [result, setResult] = useState(null)
   const [topImage, setTopImage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleCapture = useCallback(async ({ sideImage, topImage }) => {
     setLoading(true)
@@ -24,11 +28,11 @@ function App() {
       const data = await analyzeImages({ sideImage, topImage })
       setResult(data)
     } catch {
-      setError("Couldn't reach the analysis server. Is the backend running?")
+      setError(t('app.serverError'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   const handleReset = useCallback(() => {
     setResult(null)
@@ -63,17 +67,26 @@ function App() {
 
   return (
     <div className="app">
+      <button
+        type="button"
+        className="settings-fab"
+        aria-label={t('settings.open')}
+        onClick={() => setSettingsOpen(true)}
+      >
+        <Icon name="settings" size={20} />
+      </button>
+
       {activeTab !== 'home' && (
         <header className="app-header">
           <span className="brand-icon"><Icon name="logo" size={28} /></span>
           <h1 className="brand">NailIQ</h1>
-          <p className="tagline">A precautionary nail-health screener</p>
+          <p className="tagline">{t('app.tagline')}</p>
         </header>
       )}
 
       <p className="disclaimer-banner">
-        <Icon name="info" size={16} className="disclaimer-icon" /> This is an educational screening tool, not a
-        diagnosis. It only flags whether your nail signs are typical or worth a doctor's look.
+        <Icon name="info" size={16} className="disclaimer-icon" />
+        <span>{t('app.disclaimer')}</span>
       </p>
 
       <div className="tab-fade" key={activeTab}>
@@ -83,7 +96,7 @@ function App() {
 
         {activeTab === 'scan' && (
           <>
-            {error && <div className="camera-error">{error}</div>}
+            {error && <div className="camera-error" role="alert">{error}</div>}
             {result && (
               <ResultView result={result} topImage={topImage} onReset={handleReset} />
             )}
@@ -96,6 +109,8 @@ function App() {
       </div>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
+
+      {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
     </div>
   )
 }

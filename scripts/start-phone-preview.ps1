@@ -77,10 +77,22 @@ if (-not $browserPath) {
   throw "Chrome or Edge was not found."
 }
 
+# --window-size / --window-position are only honored when Chrome/Edge launches a
+# *fresh* browser process. If the user already has the browser open, an --app
+# window reuses that process and ignores the sizing flags, opening at the default
+# ~600px width — which trips the >=560px "desktop phone-frame" breakpoint in
+# index.css and leaves a bezel/gap instead of filling the window. Launching with a
+# dedicated --user-data-dir forces a separate process so the sizing actually applies
+# and the app renders edge-to-edge like a phone.
+$previewProfile = Join-Path $env:TEMP "niq-phone-preview-profile"
+
 Start-Process `
   -FilePath $browserPath `
   -ArgumentList @(
     "--app=$previewUrl",
+    "--user-data-dir=$previewProfile",
+    "--no-first-run",
+    "--no-default-browser-check",
     "--window-size=430,932",
     "--window-position=80,80"
   )

@@ -1,3 +1,4 @@
+/* global process -- vite.config runs in Node, not the browser eslint env */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

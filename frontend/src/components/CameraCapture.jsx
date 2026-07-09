@@ -2,21 +2,10 @@ import { useRef, useState, useCallback } from 'react'
 import Webcam from 'react-webcam'
 import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
-
-const STEPS = {
-  side: {
-    instructions:
-      'Hold your finger sideways (profile view) against a plain background, nail facing the camera.',
-    shortLabel: 'Side Profile',
-  },
-  top: {
-    instructions:
-      'Now photograph your finger from above, nail facing the camera, against a plain background.',
-    shortLabel: 'Top Down',
-  },
-}
+import { useI18n } from '../i18n'
 
 export default function CameraCapture({ onCapture, loading, onClose }) {
+  const { t } = useI18n()
   const webcamRef = useRef(null)
   const fileInputRef = useRef(null)
   const [step, setStep] = useState('side')
@@ -38,13 +27,13 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       validation = await validatePhoto(base64, step)
     } catch {
       setValidating(false)
-      setRetakeError("Couldn't check that photo. Is the backend running?")
+      setRetakeError(t('camera.checkFailed'))
       return
     }
     setValidating(false)
 
     if (!validation.ok) {
-      setRetakeError(failureReasonMessage(validation.failure_reason))
+      setRetakeError(failureReasonMessage(t, validation.failure_reason))
       return
     }
 
@@ -54,12 +43,12 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
     } else {
       onCapture({ sideImage, topImage: base64 })
     }
-  }, [step, sideImage, onCapture])
+  }, [step, sideImage, onCapture, t])
 
   const handleCapture = useCallback(async () => {
     const screenshot = webcamRef.current?.getScreenshot()
     if (!screenshot) {
-      setCameraError("Couldn't capture an image. Make sure your camera is allowed and try again.")
+      setCameraError(t('camera.captureFailed'))
       return
     }
     const base64 = screenshot.split(',')[1]
@@ -69,7 +58,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
     setTimeout(() => setShutterFlash(false), 150)
 
     await processImage(base64)
-  }, [processImage])
+  }, [processImage, t])
 
   const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -86,10 +75,10 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       processImage(base64)
     }
     reader.onerror = () => {
-      setRetakeError("Couldn't read that file. Try a different photo.")
+      setRetakeError(t('camera.fileFailed'))
     }
     reader.readAsDataURL(file)
-  }, [processImage])
+  }, [processImage, t])
 
   const handleUserMedia = useCallback((stream) => {
     streamRef.current = stream
@@ -116,7 +105,6 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
   }, [])
 
   const isSide = step === 'side'
-  const { instructions, shortLabel } = STEPS[step]
   const isBusy = loading || validating
 
   return (
@@ -124,8 +112,8 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       {/* Live viewfinder background */}
       <div className="cam-viewfinder">
         {cameraError ? (
-          <div className="cam-viewfinder-error">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="cam-viewfinder-error" role="alert">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <line x1="2" y1="2" x2="22" y2="22" />
             </svg>
@@ -139,11 +127,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
             videoConstraints={{ facingMode }}
             className="cam-video"
             onUserMedia={handleUserMedia}
-            onUserMediaError={() =>
-              setCameraError(
-                'Camera access was blocked or unavailable. Check your browser permissions and reload.'
-              )
-            }
+            onUserMediaError={() => setCameraError(t('camera.cameraBlocked'))}
           />
         )}
         {/* Shutter flash overlay */}
@@ -166,43 +150,43 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
         <button
           type="button"
           className="cam-glass-btn"
-          aria-label="Close camera"
+          aria-label={t('camera.close')}
           onClick={onClose}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         <div className="cam-step-center">
-          <span className="cam-step-label">{shortLabel}</span>
-          <div className="cam-progress-dots">
+          <span className="cam-step-label">{t(`camera.steps.${step}.shortLabel`)}</span>
+          <div className="cam-progress-dots" aria-hidden="true">
             <span className={`cam-dot ${isSide ? 'cam-dot--active' : 'cam-dot--done'}`} />
             <span className={`cam-dot ${!isSide ? 'cam-dot--active' : ''}`} />
           </div>
         </div>
 
-        <div className="cam-step-badge">
-          <span className="cam-step-num">{isSide ? '1' : '2'}</span>
-          <span className="cam-step-of">/2</span>
+        <div className="cam-step-badge" aria-label={t('camera.stepOf', { n: isSide ? 1 : 2 })}>
+          <span className="cam-step-num" aria-hidden="true">{isSide ? '1' : '2'}</span>
+          <span className="cam-step-of" aria-hidden="true">/2</span>
         </div>
       </header>
 
       {/* ─── Instruction banner ─── */}
-      <div className="cam-instruction-banner">
-        <p>{instructions}</p>
+      <div className="cam-instruction-banner" aria-live="polite">
+        <p>{t(`camera.steps.${step}.instructions`)}</p>
       </div>
 
       {/* ─── Retake error toast ─── */}
       {retakeError && (
-        <div className="cam-error-toast">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="cam-error-toast" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <span>{retakeError}</span>
-          <button type="button" className="cam-toast-dismiss" onClick={() => setRetakeError(null)}>✕</button>
+          <button type="button" className="cam-toast-dismiss" aria-label={t('camera.dismiss')} onClick={() => setRetakeError(null)}>✕</button>
         </div>
       )}
 
@@ -210,9 +194,9 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       <div className="cam-bottom-controls">
         {/* Status text */}
         {isBusy && (
-          <div className="cam-status-pill">
-            <span className="cam-status-spinner" />
-            {validating ? 'Checking photo…' : 'Analyzing…'}
+          <div className="cam-status-pill" role="status">
+            <span className="cam-status-spinner" aria-hidden="true" />
+            {validating ? t('camera.checking') : t('camera.analyzing')}
           </div>
         )}
 
@@ -223,10 +207,11 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
             <button
               type="button"
               className={`cam-glass-btn cam-side-btn ${flashActive ? 'cam-glass-btn--active' : ''}`}
-              aria-label="Toggle flash"
+              aria-label={t('camera.flash')}
+              aria-pressed={flashActive}
               onClick={toggleFlash}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill={flashActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={flashActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </button>
@@ -238,13 +223,13 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
           <button
             type="button"
             className={`cam-shutter ${isBusy ? 'cam-shutter--busy' : ''}`}
-            aria-label="Capture photo"
+            aria-label={t('camera.capture')}
             onClick={handleCapture}
             disabled={isBusy || !!cameraError}
           >
             <span className="cam-shutter-ring">
               <span className="cam-shutter-inner">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <circle cx="12" cy="13" r="3" />
                 </svg>
@@ -256,10 +241,10 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
           <button
             type="button"
             className="cam-glass-btn cam-side-btn"
-            aria-label="Switch camera"
+            aria-label={t('camera.switchCam')}
             onClick={toggleCamera}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
@@ -272,12 +257,12 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
           onClick={handleUploadClick}
           disabled={isBusy}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <path d="M21 15l-5-5L5 21" />
           </svg>
-          Upload a photo instead
+          {t('camera.upload')}
         </button>
         <input
           ref={fileInputRef}

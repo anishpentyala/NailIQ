@@ -7,18 +7,16 @@ import { getHistory } from '../api'
 import { overallStatus, relativeTime } from '../scanStatus'
 import { failureReasonMessage } from '../failureReasons'
 import { PLACEHOLDER_SCANS } from '../placeholderScans'
+import { useI18n, findingName } from '../i18n'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
-const VERDICT_TEXT = { within: 'Within range', outside: 'Outside range', inconclusive: 'Inconclusive' }
-
-// Rough starting-estimate thresholds from ml/infer -- only clubbing carries a
-// numeric value+unit worth captioning; other geometric findings report no value.
-const THRESHOLD_CAPTION = { clubbing: '> 180° threshold' }
-
-const TRACK_NOTE = {
-  fused: 'Result fused from multiple analysis models for higher accuracy.',
-  color_fused: 'Result fused from a color check and an AI model for higher accuracy.',
+const VERDICT_TEXT_KEY = {
+  within: 'history.withinRange',
+  outside: 'history.outsideRange',
+  inconclusive: 'history.inconclusive',
 }
+
+const TRACK_NOTE_KEY = { fused: 'history.fusedNote', color_fused: 'history.colorFusedNote' }
 
 // Labels whose verdict flipped vs. the previous (older) scan -- this is the
 // "any new differences" signal the history view exists to surface.
@@ -36,30 +34,33 @@ function changedLabels(scan, previousScan) {
 // Click a past finding to expand it into the same measured-value / confidence
 // / fused-note shape the result screen uses, so history isn't just a verdict list.
 function FindingDetail({ finding }) {
-  const note = TRACK_NOTE[finding.track_used]
+  const { t } = useI18n()
+  const noteKey = TRACK_NOTE_KEY[finding.track_used]
   const isInconclusive = finding.verdict === 'inconclusive'
 
   return (
     <div className="history-finding-body">
       {isInconclusive ? (
-        <p className="history-detail-message">{failureReasonMessage(finding.failure_reason)}</p>
+        <p className="history-detail-message">{failureReasonMessage(t, finding.failure_reason)}</p>
       ) : (
         <div className="history-detail-grid">
           {finding.value != null && (
             <div className="dashboard-tile">
-              <span className="tile-label">{finding.unit === 'deg' ? 'Measured angle' : 'Measured value'}</span>
+              <span className="tile-label">
+                {finding.unit === 'deg' ? t('history.measuredAngle') : t('history.measuredValue')}
+              </span>
               <span className={`tile-value history-tile-value--${finding.verdict}`}>
                 {finding.value.toFixed(1)}
                 {finding.unit === 'deg' ? '°' : ''}
               </span>
-              {THRESHOLD_CAPTION[finding.label] && (
-                <span className="tile-sub">{THRESHOLD_CAPTION[finding.label]}</span>
+              {finding.label === 'clubbing' && (
+                <span className="tile-sub">{t('history.clubbingThreshold')}</span>
               )}
             </div>
           )}
           {finding.confidence != null && (
             <div className="dashboard-tile">
-              <span className="tile-label">Confidence score</span>
+              <span className="tile-label">{t('history.confidenceScore')}</span>
               <div className={`attention-meter history-meter--${finding.verdict}`}>
                 <div className="attention-meter-fill" style={{ width: `${Math.round(finding.confidence * 100)}%` }} />
               </div>
@@ -70,10 +71,10 @@ function FindingDetail({ finding }) {
           )}
         </div>
       )}
-      {note && (
+      {noteKey && (
         <p className="history-detail-note">
           <Icon name="sparkle" size={14} />
-          {note}
+          {t(noteKey)}
         </p>
       )}
     </div>
@@ -81,7 +82,8 @@ function FindingDetail({ finding }) {
 }
 
 function ScanCard({ scan, previousScan }) {
-  const status = overallStatus(scan.findings)
+  const { t, lang } = useI18n()
+  const status = overallStatus(scan.findings, t)
   const changed = changedLabels(scan, previousScan)
 
   return (
@@ -92,10 +94,10 @@ function ScanCard({ scan, previousScan }) {
         </div>
         <div className="history-card-info">
           <span className="history-card-status">{status.label}</span>
-          <span className="history-card-time">{relativeTime(scan.created_at)}</span>
+          <span className="history-card-time">{relativeTime(scan.created_at, t, lang)}</span>
         </div>
-        {scan.isPlaceholder && <span className="history-example-badge">Example</span>}
-        {changed.size > 0 && <span className="history-changed-badge">Changed</span>}
+        {scan.isPlaceholder && <span className="history-example-badge">{t('history.example')}</span>}
+        {changed.size > 0 && <span className="history-changed-badge">{t('history.changed')}</span>}
       </div>
 
       <div className="history-card-body">
@@ -103,12 +105,17 @@ function ScanCard({ scan, previousScan }) {
           <details key={f.label} className="history-finding-detail">
             <summary className="history-finding-row">
               <span className={`history-finding-dot history-finding-dot--${f.verdict}`} />
-              <span className="history-finding-name">{f.display_name}</span>
+              <span className="history-finding-name">{findingName(t, f)}</span>
               <span className={`history-finding-verdict history-finding-verdict--${f.verdict}`}>
-                {VERDICT_TEXT[f.verdict]}
+                {t(VERDICT_TEXT_KEY[f.verdict])}
               </span>
               {changed.has(f.label) && (
-                <span className="history-finding-changed-dot" aria-label="Changed since last scan" title="Changed since last scan" />
+                <span
+                  className="history-finding-changed-dot"
+                  role="img"
+                  aria-label={t('history.changedSinceLast')}
+                  title={t('history.changedSinceLast')}
+                />
               )}
               <span className="history-finding-chevron"><Icon name="chevronRight" size={14} /></span>
             </summary>
@@ -121,11 +128,12 @@ function ScanCard({ scan, previousScan }) {
 }
 
 function AngleTrend({ scans }) {
+  const { t, lang } = useI18n()
   const points = scans
     .map((scan) => ({ scan, finding: scan.findings.find((f) => f.label === 'clubbing' && f.value != null) }))
     .filter(({ finding }) => finding)
     .map(({ scan, finding }) => ({
-      date: new Date(scan.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      date: new Date(scan.created_at).toLocaleDateString(lang, { month: 'short', day: 'numeric' }),
       angle: Math.round(finding.value * 10) / 10,
     }))
     .reverse() // scans arrive newest-first; the trend reads left-to-right oldest-first
@@ -136,7 +144,7 @@ function AngleTrend({ scans }) {
     <section className="home-card history-trend-card">
       <div className="home-card-head">
         <span className="home-card-icon"><Icon name="sparkle" /></span>
-        <h3 className="home-card-title">Clubbing angle over time</h3>
+        <h3 className="home-card-title">{t('history.trendTitle')}</h3>
       </div>
       <div className="history-trend-chart">
         <ResponsiveContainer width="100%" height={160}>
@@ -145,24 +153,22 @@ function AngleTrend({ scans }) {
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={36} />
             <Tooltip
-              formatter={(value) => [`${value}°`, 'Angle']}
+              formatter={(value) => [`${value}°`, t('history.trendAngle')]}
               contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 13 }}
             />
             <Line type="monotone" dataKey="angle" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="history-trend-note">
-        This tracks the measured angle only, not a diagnosis. Share this trend with a
-        doctor if you have concerns.
-      </p>
+      <p className="history-trend-note">{t('history.trendNote')}</p>
     </section>
   )
 }
 
 export default function HistoryView() {
+  const { t } = useI18n()
   const [scans, setScans] = useState(null)
-  const [error, setError] = useState(null)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -172,33 +178,29 @@ export default function HistoryView() {
         // No real scans yet -- show examples so the history view isn't just empty.
         setScans(data.scans.length > 0 ? data.scans : PLACEHOLDER_SCANS)
       })
-      .catch(() => { if (!cancelled) setError("Couldn't load your scan history. Is the backend running?") })
+      .catch(() => { if (!cancelled) setFailed(true) })
     return () => { cancelled = true }
   }, [])
 
   return (
     <div className="home">
-      <h1 className="home-title">History</h1>
+      <h1 className="home-title">{t('history.title')}</h1>
 
-      {error && <p className="camera-error">{error}</p>}
+      {failed && <p className="camera-error" role="alert">{t('history.error')}</p>}
 
-      {!error && !scans && <p className="result-message">Loading your past scans…</p>}
+      {!failed && !scans && <p className="result-message" role="status">{t('history.loading')}</p>}
 
-      {!error && scans && scans.length === 0 && (
+      {!failed && scans && scans.length === 0 && (
         <section className="home-card history-empty">
           <span className="home-card-icon"><Icon name="clipboard" /></span>
-          <p className="result-message">
-            No scans yet. Your past results will show up here so you can track changes over time.
-          </p>
+          <p className="result-message">{t('history.empty')}</p>
         </section>
       )}
 
-      {!error && scans && scans.length > 0 && (
+      {!failed && scans && scans.length > 0 && (
         <>
           {scans[0].isPlaceholder && (
-            <p className="history-placeholder-note">
-              Showing example scans. Take your first scan to replace these with real results.
-            </p>
+            <p className="history-placeholder-note">{t('history.placeholderNote')}</p>
           )}
           <AngleTrend scans={scans} />
           <div className="history-list">

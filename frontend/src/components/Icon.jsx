@@ -104,6 +104,12 @@ const PATHS = {
       <circle cx="12" cy="12" r="9" fill="none" />
     </>
   ),
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1" />
+    </>
+  ),
 }
 
 export default function Icon({ name, size = 20, className = '' }) {

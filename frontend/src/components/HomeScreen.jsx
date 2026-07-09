@@ -2,30 +2,21 @@ import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { getHistory } from '../api'
 import { overallStatus, relativeTime } from '../scanStatus'
+import { useI18n, findingName } from '../i18n'
 
-const TIPS = [
-  'Good lighting and a plain background make your scan far more accurate.',
-  'Healthy nails are usually smooth, with a slight even curve and no deep grooves.',
-  'Nail changes develop slowly — checking now and then helps you notice a trend.',
-  'Rest your finger against an edge to keep the side-profile photo steady and sharp.',
-  'Remove nail polish before scanning so the nail surface is visible.',
-  'One odd-looking nail is rarely a concern on its own — patterns across nails matter more.',
-  'Frame just one finger, filling most of the frame, for the clearest read.',
-]
-
-function tipOfTheDay() {
+function tipOfTheDay(tips) {
   const start = new Date(new Date().getFullYear(), 0, 0)
   const dayOfYear = Math.floor((Date.now() - start) / 86_400_000)
-  return TIPS[dayOfYear % TIPS.length]
+  return tips[dayOfYear % tips.length]
 }
 
-function HeroArt() {
+function HeroArt({ label }) {
   return (
     <svg
       className="hero-art"
       viewBox="0 0 320 190"
       role="img"
-      aria-label="Illustration of a phone scanning a fingernail"
+      aria-label={label}
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -76,6 +67,7 @@ const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclu
 // renders, so it costs no new backend work. Fails quietly (no card) on error --
 // this is a nice-to-have on the landing screen, not something worth an error banner.
 function LastScanCard({ onViewHistory }) {
+  const { t, lang } = useI18n()
   const [scans, setScans] = useState(null)
   const [failed, setFailed] = useState(false)
 
@@ -94,8 +86,8 @@ function LastScanCard({ onViewHistory }) {
       <button type="button" className="home-card home-last-scan home-last-scan--empty" onClick={onViewHistory}>
         <span className="home-card-icon"><Icon name="clipboard" /></span>
         <div className="home-last-scan-info">
-          <span className="home-last-scan-status">No scans yet</span>
-          <span className="home-last-scan-time">Your first result will show up here.</span>
+          <span className="home-last-scan-status">{t('home.noScans')}</span>
+          <span className="home-last-scan-time">{t('home.firstResult')}</span>
         </div>
       </button>
     )
@@ -103,7 +95,7 @@ function LastScanCard({ onViewHistory }) {
 
   const latest = scans[0]
   const findings = latest.findings
-  const status = overallStatus(findings)
+  const status = overallStatus(findings, t)
 
   const conclusive = findings.filter((f) => f.verdict !== 'inconclusive')
   const meanConf =
@@ -118,10 +110,10 @@ function LastScanCard({ onViewHistory }) {
   return (
     <button type="button" className="home-assessment" onClick={onViewHistory}>
       <div className="home-assessment-head">
-        <span className="home-assessment-eyebrow">Latest assessment</span>
+        <span className="home-assessment-eyebrow">{t('home.latestAssessment')}</span>
         {meanConf != null && (
           <span className={`home-assessment-confidence home-assessment-confidence--${status.verdict}`}>
-            {Math.round(meanConf * 100)}% confidence
+            {t('home.confidencePct', { pct: Math.round(meanConf * 100) })}
           </span>
         )}
       </div>
@@ -137,7 +129,7 @@ function LastScanCard({ onViewHistory }) {
         <div className="home-assessment-stats">
           {stats.map((f) => (
             <div className="home-assessment-stat" key={f.label}>
-              <span className="home-assessment-stat-label">{f.display_name}</span>
+              <span className="home-assessment-stat-label">{findingName(t, f)}</span>
               <span className="home-assessment-stat-value">
                 {f.value.toFixed(1)}
                 {f.unit === 'deg' ? '°' : ''}
@@ -148,27 +140,36 @@ function LastScanCard({ onViewHistory }) {
       )}
 
       <div className="home-assessment-footer">
-        <span><Icon name="clipboard" size={13} /> Scan ID: NIQ-{latest.id}</span>
-        <span>{relativeTime(latest.created_at)}</span>
+        <span><Icon name="clipboard" size={13} /> {t('home.scanId')}: NIQ-{latest.id}</span>
+        <span>{relativeTime(latest.created_at, t, lang)}</span>
       </div>
     </button>
   )
 }
 
+const SCREEN_ROWS = [
+  { key: 'clubbing', icon: 'finger' },
+  { key: 'koilonychia', icon: 'spoon' },
+  { key: 'leukonychia', icon: 'sparkle' },
+  { key: 'melanonychia', icon: 'pulse' },
+  { key: 'terrys_nails', icon: 'eye' },
+  { key: 'beaus_lines', icon: 'pulse' },
+  { key: 'splinter_hemorrhages', icon: 'pulse' },
+  { key: 'pitting', icon: 'search' },
+]
+
 export default function HomeScreen({ onStartScan, onViewHistory }) {
+  const { t } = useI18n()
   return (
     <div className="home">
-      <h1 className="home-title">Home</h1>
+      <h1 className="home-title">{t('home.title')}</h1>
 
       <section className="home-hero">
-        <HeroArt />
-        <h2 className="home-hero-title">Spot nail changes worth a doctor&rsquo;s look</h2>
-        <p className="home-hero-text">
-          Some nail signs of anemia, heart, lung, and liver conditions show up early &mdash; but
-          develop too slowly to notice on your own. Two quick photos check for thirteen of them.
-        </p>
+        <HeroArt label={t('home.heroAlt')} />
+        <h2 className="home-hero-title">{t('home.heroTitle')}</h2>
+        <p className="home-hero-text">{t('home.heroText')}</p>
         <button type="button" className="primary-btn home-cta" onClick={onStartScan}>
-          Start a scan
+          {t('home.cta')}
         </button>
       </section>
 
@@ -177,104 +178,45 @@ export default function HomeScreen({ onStartScan, onViewHistory }) {
       <section className="home-card">
         <div className="home-card-head">
           <span className="home-card-icon"><Icon name="clipboard" /></span>
-          <h3 className="home-card-title">How it works</h3>
+          <h3 className="home-card-title">{t('home.howItWorks')}</h3>
         </div>
         <ol className="home-steps">
-          <li>
-            <span className="step-num">1</span>
-            <div>
-              <strong>Side profile</strong>
-              <p>Finger sideways, nail facing the camera.</p>
-            </div>
-          </li>
-          <li>
-            <span className="step-num">2</span>
-            <div>
-              <strong>Top down</strong>
-              <p>Look straight down at the nail surface.</p>
-            </div>
-          </li>
-          <li>
-            <span className="step-num">3</span>
-            <div>
-              <strong>Get your read</strong>
-              <p>A clear, non-diagnostic result for each sign.</p>
-            </div>
-          </li>
+          {['side', 'top', 'read'].map((step, i) => (
+            <li key={step}>
+              <span className="step-num">{i + 1}</span>
+              <div>
+                <strong>{t(`home.steps.${step}.title`)}</strong>
+                <p>{t(`home.steps.${step}.text`)}</p>
+              </div>
+            </li>
+          ))}
         </ol>
       </section>
 
       <section className="home-card">
         <div className="home-card-head">
           <span className="home-card-icon"><Icon name="search" /></span>
-          <h3 className="home-card-title">What NailIQ screens for</h3>
+          <h3 className="home-card-title">{t('home.screensFor')}</h3>
         </div>
         <div className="home-screen-rows">
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="finger" /></span>
-            <div>
-              <strong>Digital clubbing</strong>
-              <p>The angle where the nail meets the skin.</p>
+          {SCREEN_ROWS.map(({ key, icon }) => (
+            <div className="screen-row" key={key}>
+              <span className="screen-emoji"><Icon name={icon} /></span>
+              <div>
+                <strong>{t(`home.rows.${key}.name`)}</strong>
+                <p>{t(`home.rows.${key}.text`)}</p>
+              </div>
             </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="spoon" /></span>
-            <div>
-              <strong>Koilonychia</strong>
-              <p>Spoon-shaped curve of the nail plate.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="sparkle" /></span>
-            <div>
-              <strong>Leukonychia</strong>
-              <p>White spots or discoloration on the nail.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="pulse" /></span>
-            <div>
-              <strong>Melanonychia</strong>
-              <p>A dark band running down the nail.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="eye" /></span>
-            <div>
-              <strong>Terry's nails</strong>
-              <p>Mostly-white nail with a darker band at the tip.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="pulse" /></span>
-            <div>
-              <strong>Beau's lines</strong>
-              <p>Grooves running across the nail surface.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="pulse" /></span>
-            <div>
-              <strong>Splinter hemorrhages</strong>
-              <p>Tiny dark streaks beneath the nail.</p>
-            </div>
-          </div>
-          <div className="screen-row">
-            <span className="screen-emoji"><Icon name="search" /></span>
-            <div>
-              <strong>Pitting</strong>
-              <p>Small dents or pinpricks in the nail surface.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
       <section className="home-card home-tip">
         <div className="home-card-head">
           <span className="home-card-icon home-card-icon--accent"><Icon name="sparkle" /></span>
-          <h3 className="home-card-title">Daily tip</h3>
+          <h3 className="home-card-title">{t('home.dailyTip')}</h3>
         </div>
-        <p className="home-tip-text">{tipOfTheDay()}</p>
+        <p className="home-tip-text">{tipOfTheDay(t('home.tips'))}</p>
       </section>
     </div>
   )

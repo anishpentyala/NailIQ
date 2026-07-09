@@ -10,89 +10,23 @@ import onycholysisComparisonImg from '../assets/diagrams/onycholysis-comparison.
 import beausLinesComparisonImg from '../assets/diagrams/beaus_lines-comparison.png'
 import muehrckesLinesComparisonImg from '../assets/diagrams/muehrckes_lines-comparison.png'
 import splinterHemorrhagesComparisonImg from '../assets/diagrams/splinter_hemorrhages-comparison.png'
+import { useI18n } from '../i18n'
 
-function ClubbingDiagram() {
-  return (
-    <img className="diagram" src={clubbingComparisonImg}
-      alt="Side-by-side comparison of a clubbed finger (enlarged bulbous tip, downward-curving nail, wider nail bed) versus a normal finger (tapered tip, flatter nail, narrower nail bed)" />
-  )
-}
-
-function KoilonychiaDiagram() {
-  return (
-    <img className="diagram" src={koilonychiaComparisonImg}
-      alt="Side-by-side comparison of normal nails (flat or gently domed, convex cross-section) versus koilonychia (spoon-shaped nails that dip concave in the middle)" />
-  )
-}
-
-function LeukonychiaDiagram() {
-  return (
-    <img className="diagram" src={leukonychiaComparisonImg}
-      alt="Side-by-side comparison of normal nails versus leukonychia (scattered punctate white spots across the nail plate)" />
-  )
-}
-
-function MelanonychiaDiagram() {
-  return (
-    <img className="diagram" src={melanonychiaComparisonImg}
-      alt="Side-by-side comparison of normal nails versus melanonychia (a single dark brown-black longitudinal band running down the nail plate)" />
-  )
-}
-
-function PallorDiagram() {
-  return (
-    <img className="diagram" src={pallorComparisonImg}
-      alt="Side-by-side comparison of a normal pink nail bed versus pallor (a pale, washed-out nail bed)" />
-  )
-}
-
-function CyanosisDiagram() {
-  return (
-    <img className="diagram" src={cyanosisComparisonImg}
-      alt="Side-by-side comparison of a normal pink nail bed versus cyanosis (a bluish, dusky nail bed)" />
-  )
-}
-
-function TerrysNailsDiagram() {
-  return (
-    <img className="diagram" src={terrysNailsComparisonImg}
-      alt="Side-by-side comparison of normal nails versus Terry's nails (a mostly white, opaque nail plate with a narrow dark band at the tip)" />
-  )
-}
-
-function LindsaysNailsDiagram() {
-  return (
-    <img className="diagram" src={lindsaysNailsComparisonImg}
-      alt="Side-by-side comparison of normal nails versus Lindsay's (half-and-half) nails (a dull-white proximal half and a darker pink-brown distal half with a sharp dividing line)" />
-  )
-}
-
-function OnycholysisDiagram() {
-  return (
-    <img className="diagram" src={onycholysisComparisonImg}
-      alt="Side-by-side comparison of normal nails versus onycholysis (the nail plate separating and lifting from the nail bed at the distal free edge, leaving a white or yellow-white detached area)" />
-  )
-}
-
-function BeausLinesDiagram() {
-  return (
-    <img className="diagram" src={beausLinesComparisonImg}
-      alt="Side-by-side comparison of normal nails versus Beau's lines (a transverse groove or depression running across the nail plate)" />
-  )
-}
-
-function MuehrckesLinesDiagram() {
-  return (
-    <img className="diagram" src={muehrckesLinesComparisonImg}
-      alt="Side-by-side comparison of normal nails versus Muehrcke's lines (a pair of transverse white bands running across the nail plate)" />
-  )
-}
-
-function SplinterHemorrhagesDiagram() {
-  return (
-    <img className="diagram" src={splinterHemorrhagesComparisonImg}
-      alt="Comparison of normal nails versus typical and severe splinter hemorrhages (small, thin, reddish-brown vertical lines under the nail)" />
-  )
+// Conditions with a real comparison illustration; their alt text lives in the
+// locale dictionaries under diagram.imgAlts so it translates with the UI.
+const COMPARISON_IMAGES = {
+  clubbing: clubbingComparisonImg,
+  koilonychia: koilonychiaComparisonImg,
+  leukonychia: leukonychiaComparisonImg,
+  melanonychia: melanonychiaComparisonImg,
+  pallor: pallorComparisonImg,
+  cyanosis: cyanosisComparisonImg,
+  terrys_nails: terrysNailsComparisonImg,
+  lindsays_nails: lindsaysNailsComparisonImg,
+  onycholysis: onycholysisComparisonImg,
+  beaus_lines: beausLinesComparisonImg,
+  muehrckes_lines: muehrckesLinesComparisonImg,
+  splinter_hemorrhages: splinterHemorrhagesComparisonImg,
 }
 
 /* ---- Top-down nail plate, for the color / surface conditions ---- */
@@ -159,28 +93,17 @@ function plateOverlay(pattern) {
   }
 }
 
-const PLATE_SUB = {
-  leukonychia: 'white spots',
-  melanonychia: 'dark band',
-  pallor: 'pale',
-  cyanosis: 'bluish',
-  terrys_nails: 'white, dark tip',
-  lindsays_nails: 'half & half',
-  onycholysis: 'tip lifted',
-  beaus_lines: 'groove across',
-  muehrckes_lines: 'white bands',
-  splinter_hemorrhages: 'tiny streaks',
-  pitting: 'small pits',
-}
-
 function NailPlate({ pattern, sub }) {
+  const { t } = useI18n()
   const clip = `nailclip-${pattern}`
   const baseClass = PLATE_BASE[pattern] ?? 'plate-healthy'
-  const label = sub ?? PLATE_SUB[pattern] ?? 'a sign'
+  const subKey = `diagram.subs.${pattern}`
+  const localizedSub = t(subKey)
+  const label = sub ?? (localizedSub !== subKey ? localizedSub : t('diagram.fallbackSub'))
 
   return (
     <svg className="diagram" viewBox="0 0 296 182" role="img"
-      aria-label={`Top view of a typical nail versus one showing ${sub}`}>
+      aria-label={t('diagram.alt', { sub: label })}>
       <defs>
         <clipPath id={clip}>
           <rect x="188" y="40" width="64" height="92" rx="18" />
@@ -190,31 +113,24 @@ function NailPlate({ pattern, sub }) {
       {/* Typical */}
       <rect className="plate-healthy" x="44" y="40" width="64" height="92" rx="18" />
       <rect className="plate-stroke" x="44" y="40" width="64" height="92" rx="18" />
-      <text className="diagram-cap" x="76" y="152" textAnchor="middle">Typical</text>
-      <text className="diagram-sub" x="76" y="168" textAnchor="middle">even, smooth</text>
+      <text className="diagram-cap" x="76" y="152" textAnchor="middle">{t('diagram.typical')}</text>
+      <text className="diagram-sub" x="76" y="168" textAnchor="middle">{t('diagram.typicalSub')}</text>
 
       {/* Affected */}
       <rect className={baseClass} x="188" y="40" width="64" height="92" rx="18" />
       <g clipPath={`url(#${clip})`}>{plateOverlay(pattern)}</g>
       <rect className="plate-stroke" x="188" y="40" width="64" height="92" rx="18" />
-      <text className="diagram-cap" x="220" y="152" textAnchor="middle">Sign</text>
+      <text className="diagram-cap" x="220" y="152" textAnchor="middle">{t('diagram.sign')}</text>
       <text className="diagram-sub" x="220" y="168" textAnchor="middle">{label}</text>
     </svg>
   )
 }
 
 export default function NailDiagram({ type, sub }) {
-  if (type === 'clubbing') return <ClubbingDiagram />
-  if (type === 'koilonychia') return <KoilonychiaDiagram />
-  if (type === 'leukonychia') return <LeukonychiaDiagram />
-  if (type === 'melanonychia') return <MelanonychiaDiagram />
-  if (type === 'pallor') return <PallorDiagram />
-  if (type === 'cyanosis') return <CyanosisDiagram />
-  if (type === 'terrys_nails') return <TerrysNailsDiagram />
-  if (type === 'lindsays_nails') return <LindsaysNailsDiagram />
-  if (type === 'onycholysis') return <OnycholysisDiagram />
-  if (type === 'beaus_lines') return <BeausLinesDiagram />
-  if (type === 'muehrckes_lines') return <MuehrckesLinesDiagram />
-  if (type === 'splinter_hemorrhages') return <SplinterHemorrhagesDiagram />
+  const { t } = useI18n()
+  const img = COMPARISON_IMAGES[type]
+  if (img) {
+    return <img className="diagram" src={img} alt={t(`diagram.imgAlts.${type}`)} />
+  }
   return <NailPlate pattern={type} sub={sub} />
 }
