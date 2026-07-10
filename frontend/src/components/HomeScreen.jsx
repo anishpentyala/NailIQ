@@ -248,6 +248,11 @@ export default function HomeScreen({ onStartScan, onViewHistory }) {
         </div>
         <p className="home-tip-text">{tipOfTheDay(t('home.tips'))}</p>
       </section>
+
+      <p className="disclaimer-banner">
+        <Icon name="info" size={16} className="disclaimer-icon" />
+        <span>{t('app.disclaimer')}</span>
+      </p>
     </div>
   )
 }

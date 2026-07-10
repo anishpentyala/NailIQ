@@ -84,11 +84,6 @@ function App() {
         </header>
       )}
 
-      <p className="disclaimer-banner">
-        <Icon name="info" size={16} className="disclaimer-icon" />
-        <span>{t('app.disclaimer')}</span>
-      </p>
-
       <div className="tab-fade" key={activeTab}>
         {activeTab === 'home' && (
           <HomeScreen onStartScan={startScan} onViewHistory={() => setActiveTab('history')} />
