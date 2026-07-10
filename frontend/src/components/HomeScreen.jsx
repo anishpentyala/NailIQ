@@ -147,13 +147,24 @@ function LastScanCard({ onViewHistory }) {
   )
 }
 
+const WHY_ROWS = [
+  { key: 'anemia', icon: 'droplet' },
+  { key: 'organs', icon: 'pulse' },
+  { key: 'baseline', icon: 'history' },
+]
+
 const SCREEN_ROWS = [
   { key: 'clubbing', icon: 'finger' },
   { key: 'koilonychia', icon: 'spoon' },
   { key: 'leukonychia', icon: 'sparkle' },
   { key: 'melanonychia', icon: 'pulse' },
+  { key: 'pallor', icon: 'info' },
+  { key: 'cyanosis', icon: 'sparkle' },
   { key: 'terrys_nails', icon: 'eye' },
+  { key: 'lindsays_nails', icon: 'clipboard' },
+  { key: 'onycholysis', icon: 'finger' },
   { key: 'beaus_lines', icon: 'pulse' },
+  { key: 'muehrckes_lines', icon: 'clipboard' },
   { key: 'splinter_hemorrhages', icon: 'pulse' },
   { key: 'pitting', icon: 'search' },
 ]
@@ -171,6 +182,25 @@ export default function HomeScreen({ onStartScan, onViewHistory }) {
         <button type="button" className="primary-btn home-cta" onClick={onStartScan}>
           {t('home.cta')}
         </button>
+      </section>
+
+      <section className="home-card">
+        <div className="home-card-head">
+          <span className="home-card-icon"><Icon name="info" /></span>
+          <h3 className="home-card-title">{t('home.whyTitle')}</h3>
+        </div>
+        <div className="home-screen-rows">
+          {WHY_ROWS.map(({ key, icon }) => (
+            <div className="screen-row" key={key}>
+              <span className="screen-emoji"><Icon name={icon} /></span>
+              <div>
+                <strong>{t(`home.whyRows.${key}.name`)}</strong>
+                <p>{t(`home.whyRows.${key}.text`)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="home-who-for">{t('home.whoFor')}</p>
       </section>
 
       <LastScanCard onViewHistory={onViewHistory} />

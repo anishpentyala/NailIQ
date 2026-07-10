@@ -26,6 +26,23 @@ export default {
     heroText:
       'Some nail signs of anemia, heart, lung, and liver conditions show up early — but develop too slowly to notice on your own. Two quick photos check for thirteen of them.',
     cta: 'Start a scan',
+    whyTitle: 'Why it matters',
+    whyRows: {
+      anemia: {
+        name: 'Anemia',
+        text: 'Affects roughly 2 billion people worldwide — pale or spoon-shaped nails are among its earliest visible signs.',
+      },
+      organs: {
+        name: 'Heart, lung & liver conditions',
+        text: 'Clubbing and nail-color changes can appear months before these conditions are diagnosed.',
+      },
+      baseline: {
+        name: 'Too slow to notice',
+        text: 'These signs develop over months, so almost no one catches them in the mirror. A photo baseline makes the trend visible.',
+      },
+    },
+    whoFor:
+      'Built as a free first look for anyone who does not get regular checkups — never a replacement for one.',
     latestAssessment: 'Latest assessment',
     confidencePct: '{pct}% confidence',
     noScans: 'No scans yet',
@@ -43,8 +60,13 @@ export default {
       koilonychia: { name: 'Koilonychia', text: 'Spoon-shaped curve of the nail plate.' },
       leukonychia: { name: 'Leukonychia', text: 'White spots or discoloration on the nail.' },
       melanonychia: { name: 'Melanonychia', text: 'A dark band running down the nail.' },
+      pallor: { name: 'Pallor', text: 'A pale, washed-out nail bed color.' },
+      cyanosis: { name: 'Cyanosis', text: 'A bluish or dusky tint to the nail bed.' },
       terrys_nails: { name: "Terry's nails", text: 'Mostly-white nail with a darker band at the tip.' },
+      lindsays_nails: { name: "Lindsay's nails", text: 'Half-white, half-pink coloring split across the nail.' },
+      onycholysis: { name: 'Onycholysis', text: 'The nail lifting away from the nail bed at the tip.' },
       beaus_lines: { name: "Beau's lines", text: 'Grooves running across the nail surface.' },
+      muehrckes_lines: { name: "Muehrcke's lines", text: 'Pale bands running across the nail bed.' },
       splinter_hemorrhages: { name: 'Splinter hemorrhages', text: 'Tiny dark streaks beneath the nail.' },
       pitting: { name: 'Pitting', text: 'Small dents or pinpricks in the nail surface.' },
     },
@@ -133,6 +155,8 @@ export default {
     nextStepsOutside:
       "One or more signs came back outside the typical range. This isn't a diagnosis — it's worth showing a doctor, especially if you've noticed other symptoms.",
     nextStepsFallback: 'Worth mentioning to a doctor.',
+    nextStepsDoctor:
+      'A primary-care doctor or dermatologist is the right person to show this to. Use "Save / print report" below to bring a copy — the measured values are more useful than a description from memory.',
     nextStepsInconclusiveOne:
       "We couldn't analyze one sign from these photos. Retaking them in brighter, even light with the nail filling the frame usually fixes it.",
     nextStepsInconclusive:
@@ -141,6 +165,10 @@ export default {
       'Everything looked within the typical range. Nothing to act on now — keep an eye on changes over time, and follow up on any health concerns with a doctor.',
     groupCloserLook: 'Worth a closer look',
     groupCouldntAnalyze: "Couldn't analyze",
+    diagramOverviewAlt: 'Illustration showing where each sign from this scan was found',
+    diagramOverviewNote: 'A simplified illustration of where these signs show up — not to scale, not a photo of your nail.',
+    diagramClubbing: 'Clubbing',
+    diagramKoilonychia: 'Koilonychia',
     withinCount: '{n} within typical range',
     closestMatch: 'Closest visual match: {label} · {pct}% confidence',
     mlClosestMatch: "AI model's closest visual match: {label}",
@@ -152,6 +180,10 @@ export default {
       'Method & honesty: the clubbing-angle threshold follows Hsu et al. (2024); the color and texture checks use uncalibrated heuristic thresholds and are screening signals, not measurements. Color readings adjust for lighting and skin tone, but real-world accuracy is unverified.',
     measuredCaption: 'The box shows the nail area the color checks measured.',
     photoAlt: 'Your top-down nail photo',
+    measuredToggle: 'Measured area',
+    gradcamToggle: 'AI attention',
+    gradcamCaption: "Warmer colors show where the AI model's prediction came from.",
+    gradcamAlt: "Heatmap showing which part of your nail the AI model's prediction was based on",
     badgeMl: 'AI model',
     badgeFused: 'Geometry + AI',
     badgeColor: 'Color check',
@@ -160,6 +192,13 @@ export default {
     feedbackYes: 'Yes',
     feedbackNo: 'No',
     feedbackThanks: 'Thanks — that helps us improve.',
+    feedbackImpact: 'Your answers help calibrate future results.',
+    toneCaveat: {
+      limited:
+        'This skin tone is under-represented in our test data, so this color reading is less validated for you — treat it as a weaker signal.',
+      minimal:
+        "We have very little validation data for darker skin tones, so this color reading may be unreliable for you. Don't read much into it.",
+    },
     agreement: {
       agree: 'The shape measurement and the AI model agree on this.',
       geometry_only: "Based on the shape measurement; the AI model wasn't conclusive here.",
@@ -187,6 +226,8 @@ export default {
     loading: 'Loading your past scans…',
     error: "Couldn't load your scan history. Is the backend running?",
     empty: 'No scans yet. Your past results will show up here so you can track changes over time.',
+    rescanNote:
+      'Nails grow about 3 mm per month, so these signs change slowly. A monthly rescan makes a trend visible long before it is obvious in the mirror.',
     placeholderNote: 'Showing example scans. Take your first scan to replace these with real results.',
     example: 'Example',
     changed: 'Changed',
@@ -209,6 +250,9 @@ export default {
   info: {
     intro:
       'NailIQ screens every photo for all of these signs. Tap any one to learn what it looks like, why it happens, and what your result means.',
+    equityTitle: 'Honest across skin tones',
+    equityText:
+      'Most nail-analysis datasets skew toward lighter skin. We measured ours, added a darker-skinned cohort to the training data, and where coverage for a skin tone is still limited, the app lowers its confidence and says so on the result — it never pretends.',
     close: 'Close',
   },
 

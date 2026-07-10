@@ -25,6 +25,22 @@ export default {
     heroText:
       '贫血以及心脏、肺部和肝脏疾病的一些征象会较早出现在指甲上——但变化太缓慢，靠自己很难察觉。拍两张照片即可检查其中十三种征象。',
     cta: '开始扫描',
+    whyTitle: '为什么重要',
+    whyRows: {
+      anemia: {
+        name: '贫血',
+        text: '全球约有 20 亿人受贫血影响——指甲苍白或呈匙状是其最早可见的征象之一。',
+      },
+      organs: {
+        name: '心脏、肺部和肝脏疾病',
+        text: '杵状指和指甲颜色变化可能在这些疾病确诊前数月就已出现。',
+      },
+      baseline: {
+        name: '变化太慢，难以察觉',
+        text: '这些征象在数月间缓慢形成，几乎没有人能在镜子里发现。一张基准照片能让趋势清晰可见。',
+      },
+    },
+    whoFor: '为没有定期体检的人打造的免费初步检查——绝不能替代体检。',
     latestAssessment: '最新评估',
     confidencePct: '置信度 {pct}%',
     noScans: '还没有扫描记录',
@@ -42,8 +58,13 @@ export default {
       koilonychia: { name: '匙状甲', text: '甲板呈匙状凹陷。' },
       leukonychia: { name: '白甲', text: '指甲上的白点或变色。' },
       melanonychia: { name: '黑甲', text: '沿指甲纵向的深色条带。' },
+      pallor: { name: '苍白', text: '甲床颜色苍白、缺乏血色。' },
+      cyanosis: { name: '发绀', text: '甲床呈蓝色或暗紫色调。' },
       terrys_nails: { name: '特里氏甲', text: '指甲大部分发白，甲尖有一条深色带。' },
+      lindsays_nails: { name: '半半甲', text: '指甲呈白色与粉色对半分色。' },
+      onycholysis: { name: '甲剥离', text: '指甲尖端与甲床分离抬起。' },
       beaus_lines: { name: '博氏线', text: '横贯指甲表面的凹槽。' },
+      muehrckes_lines: { name: '米尔克氏线', text: '横贯甲床的苍白条带。' },
       splinter_hemorrhages: { name: '裂片形出血', text: '甲下细小的深色条纹。' },
       pitting: { name: '甲凹点', text: '指甲表面的小凹坑或针刺样小点。' },
     },
@@ -129,6 +150,8 @@ export default {
     nextStepsOutside:
       '有一项或多项征象超出典型范围。这不是诊断——值得请医生查看，尤其是如果您还注意到其他症状。',
     nextStepsFallback: '值得向医生提及。',
+    nextStepsDoctor:
+      '全科医生或皮肤科医生是合适的咨询对象。使用下方的"保存 / 打印报告"带一份副本——测得的数值比凭记忆的描述更有用。',
     nextStepsInconclusiveOne:
       '这些照片中有一项征象无法分析。在更明亮、均匀的光线下重拍，并让指甲占满画面，通常可以解决。',
     nextStepsInconclusive:
@@ -136,6 +159,10 @@ export default {
     nextStepsWithin:
       '一切看起来都在典型范围内。目前无需采取行动——持续留意随时间的变化，任何健康疑虑都应咨询医生。',
     groupCloserLook: '值得进一步查看',
+    diagramOverviewAlt: '显示本次扫描中每个体征出现位置的示意图',
+    diagramOverviewNote: '这是一个简化示意图，显示这些体征出现的位置——非等比例，也不是您指甲的照片。',
+    diagramClubbing: '杵状指',
+    diagramKoilonychia: '匙状甲',
     groupCouldntAnalyze: '无法分析',
     withinCount: '{n} 项在典型范围内',
     closestMatch: '最接近的视觉匹配：{label} · 置信度 {pct}%',
@@ -147,6 +174,10 @@ export default {
     sources:
       '方法与诚实说明：杵状指角度阈值依据 Hsu 等人（2024）；颜色与纹理检查使用未经校准的启发式阈值，只是筛查信号而非测量。颜色读取会根据光线和肤色调整，但真实环境下的准确性尚未验证。',
     measuredCaption: '方框显示颜色检查所测量的指甲区域。',
+    measuredToggle: '测量区域',
+    gradcamToggle: 'AI 关注区域',
+    gradcamCaption: '颜色越暖，表示 AI 模型的判断越依赖该区域。',
+    gradcamAlt: '热力图，显示 AI 模型的判断所依据的指甲区域',
     photoAlt: '您的俯视指甲照片',
     badgeMl: 'AI 模型',
     badgeFused: '几何 + AI',
@@ -156,6 +187,11 @@ export default {
     feedbackYes: '相符',
     feedbackNo: '不符',
     feedbackThanks: '谢谢——这有助于我们改进。',
+    feedbackImpact: '您的回答有助于校准未来的结果。',
+    toneCaveat: {
+      limited: '您的肤色在我们的测试数据中代表性不足，因此这项颜色检测对您的验证程度较低——请将其视为较弱的信号。',
+      minimal: '我们对较深肤色的验证数据非常有限，因此这项颜色检测对您可能不够可靠。请不要过度解读。',
+    },
     agreement: {
       agree: '形状测量与 AI 模型在这一项上一致。',
       geometry_only: '基于形状测量；AI 模型在此没有得出结论。',
@@ -183,6 +219,8 @@ export default {
     loading: '正在加载您过去的扫描…',
     error: '无法加载扫描历史。后端正在运行吗？',
     empty: '还没有扫描记录。过去的结果会显示在这里，方便您追踪随时间的变化。',
+    rescanNote:
+      '指甲每月大约生长 3 毫米，所以这些征象变化很慢。每月重新扫描一次，能在镜子里看出变化之前就发现趋势。',
     placeholderNote: '当前显示的是示例扫描。完成首次扫描后将替换为真实结果。',
     example: '示例',
     changed: '有变化',
@@ -204,6 +242,9 @@ export default {
   info: {
     intro:
       'NailIQ 会在每张照片中筛查以下所有征象。点击任意一项，了解它的样子、成因以及您的结果意味着什么。',
+    equityTitle: '对所有肤色都诚实',
+    equityText:
+      '大多数指甲分析数据集偏向较浅的肤色。我们测量了自己的数据集，在训练数据中加入了深肤色人群，并且在某种肤色的覆盖仍然有限时，应用会降低置信度并在结果中如实说明——绝不假装。',
     close: '关闭',
   },
 

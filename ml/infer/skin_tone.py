@@ -84,7 +84,10 @@ def apply_coverage(findings, skin_ita):
 
     On 'well' coverage (or unmeasurable tone) findings pass through unchanged. On
     'limited'/'minimal', each finding's confidence is capped and a `tone_caveat`
-    + `skin_tone_band` is attached. Returns the (mutated) findings list.
+    (English, kept for any consumer that just wants prose) + a `tone_tier`
+    ('limited' | 'minimal', a stable key the frontend maps through i18n the same
+    way it does `label` -> `findingName()`) + `skin_tone_band` are attached.
+    Returns the (mutated) findings list.
     """
     tier = coverage_tier(ita_band(skin_ita))
     if tier == "well":
@@ -96,5 +99,6 @@ def apply_coverage(findings, skin_ita):
         if f.get("confidence") is not None:
             f["confidence"] = round(min(f["confidence"], cap), 2)
         f["tone_caveat"] = caveat
+        f["tone_tier"] = tier
         f["skin_tone_band"] = band
     return findings

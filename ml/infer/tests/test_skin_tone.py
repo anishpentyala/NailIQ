@@ -46,12 +46,14 @@ def test_limited_tone_caps_confidence_and_annotates():
     for f in findings:
         assert f["confidence"] == 0.50
         assert f["skin_tone_band"] == "tan"
+        assert f["tone_tier"] == "limited"
         assert "under-represented" in f["tone_caveat"]
 
 
 def test_minimal_tone_caps_harder():
     findings = apply_coverage(_findings(0.65), skin_ita=-40.0)  # dark
     assert all(f["confidence"] == 0.40 for f in findings)
+    assert all(f["tone_tier"] == "minimal" for f in findings)
     assert all("darker skin tones" in f["tone_caveat"] for f in findings)
 
 

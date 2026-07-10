@@ -25,6 +25,23 @@ export default {
     heroText:
       'Algunos signos de anemia y de condiciones del corazón, los pulmones y el hígado aparecen primero en las uñas, pero cambian tan lento que es difícil notarlo por tu cuenta. Dos fotos rápidas revisan trece de ellos.',
     cta: 'Iniciar un escaneo',
+    whyTitle: 'Por qué importa',
+    whyRows: {
+      anemia: {
+        name: 'Anemia',
+        text: 'Afecta a unos 2 mil millones de personas en el mundo — las uñas pálidas o en forma de cuchara están entre sus primeros signos visibles.',
+      },
+      organs: {
+        name: 'Condiciones del corazón, pulmones e hígado',
+        text: 'La acropaquia y los cambios de color en las uñas pueden aparecer meses antes de que estas condiciones se diagnostiquen.',
+      },
+      baseline: {
+        name: 'Demasiado lento para notarlo',
+        text: 'Estos signos se desarrollan durante meses, así que casi nadie los detecta en el espejo. Una foto de referencia hace visible la tendencia.',
+      },
+    },
+    whoFor:
+      'Creado como una primera revisión gratuita para quienes no tienen chequeos médicos regulares — nunca un reemplazo de ellos.',
     latestAssessment: 'Última evaluación',
     confidencePct: '{pct}% de confianza',
     noScans: 'Aún no hay escaneos',
@@ -42,8 +59,13 @@ export default {
       koilonychia: { name: 'Coiloniquia', text: 'Curvatura en forma de cuchara de la lámina ungueal.' },
       leukonychia: { name: 'Leuconiquia', text: 'Manchas blancas o decoloración en la uña.' },
       melanonychia: { name: 'Melanoniquia', text: 'Una banda oscura a lo largo de la uña.' },
+      pallor: { name: 'Palidez', text: 'Un tono de lecho ungueal pálido y sin color.' },
+      cyanosis: { name: 'Cianosis', text: 'Un tinte azulado o amoratado en el lecho ungueal.' },
       terrys_nails: { name: 'Uñas de Terry', text: 'Uña mayormente blanca con una banda oscura en la punta.' },
+      lindsays_nails: { name: 'Uñas de Lindsay', text: 'Uña dividida en mitad blanca y mitad rosada.' },
+      onycholysis: { name: 'Onicólisis', text: 'La uña se separa del lecho ungueal en la punta.' },
       beaus_lines: { name: 'Líneas de Beau', text: 'Surcos que cruzan la superficie de la uña.' },
+      muehrckes_lines: { name: 'Líneas de Muehrcke', text: 'Bandas pálidas que cruzan el lecho ungueal.' },
       splinter_hemorrhages: { name: 'Hemorragias en astilla', text: 'Pequeñas líneas oscuras bajo la uña.' },
       pitting: { name: 'Piqueteado', text: 'Pequeños hoyuelos en la superficie de la uña.' },
     },
@@ -132,6 +154,8 @@ export default {
     nextStepsOutside:
       'Uno o más signos salieron fuera del rango típico. Esto no es un diagnóstico: vale la pena mostrárselo a un médico, sobre todo si has notado otros síntomas.',
     nextStepsFallback: 'Vale la pena mencionárselo a un médico.',
+    nextStepsDoctor:
+      'Un médico de cabecera o un dermatólogo es la persona indicada para verlo. Usa "Guardar / imprimir informe" abajo para llevar una copia — los valores medidos son más útiles que una descripción de memoria.',
     nextStepsInconclusiveOne:
       'No pudimos analizar un signo con estas fotos. Tomarlas de nuevo con luz más brillante y uniforme, con la uña llenando el cuadro, suele solucionarlo.',
     nextStepsInconclusive:
@@ -139,6 +163,10 @@ export default {
     nextStepsWithin:
       'Todo parece estar dentro del rango típico. No hay nada que hacer por ahora: observa los cambios con el tiempo y consulta con un médico cualquier preocupación de salud.',
     groupCloserLook: 'Merece una mirada más de cerca',
+    diagramOverviewAlt: 'Ilustración que muestra dónde se encontró cada señal de este escaneo',
+    diagramOverviewNote: 'Una ilustración simplificada de dónde aparecen estas señales — no a escala, no es una foto de tu uña.',
+    diagramClubbing: 'Acropaquia',
+    diagramKoilonychia: 'Coiloniquia',
     groupCouldntAnalyze: 'No se pudo analizar',
     withinCount: '{n} dentro del rango típico',
     closestMatch: 'Coincidencia visual más cercana: {label} · {pct}% de confianza',
@@ -150,6 +178,10 @@ export default {
     sources:
       'Método y honestidad: el umbral del ángulo de acropaquia sigue a Hsu et al. (2024); las revisiones de color y textura usan umbrales heurísticos sin calibrar y son señales de detección, no mediciones. Las lecturas de color se ajustan a la iluminación y al tono de piel, pero su precisión en el mundo real no está verificada.',
     measuredCaption: 'El recuadro muestra el área de la uña que midieron las revisiones de color.',
+    measuredToggle: 'Área medida',
+    gradcamToggle: 'Atención de la IA',
+    gradcamCaption: 'Los colores más cálidos muestran de dónde salió la predicción del modelo de IA.',
+    gradcamAlt: 'Mapa de calor que muestra en qué parte de tu uña se basó la predicción del modelo de IA',
     photoAlt: 'Tu foto de la uña desde arriba',
     badgeMl: 'Modelo de IA',
     badgeFused: 'Geometría + IA',
@@ -159,6 +191,13 @@ export default {
     feedbackYes: 'Sí',
     feedbackNo: 'No',
     feedbackThanks: 'Gracias — eso nos ayuda a mejorar.',
+    feedbackImpact: 'Tus respuestas ayudan a calibrar resultados futuros.',
+    toneCaveat: {
+      limited:
+        'Este tono de piel está subrepresentado en nuestros datos de prueba, así que esta lectura de color está menos validada para ti — trátala como una señal más débil.',
+      minimal:
+        'Tenemos muy pocos datos de validación para tonos de piel más oscuros, así que esta lectura de color puede no ser fiable para ti. No le des demasiada importancia.',
+    },
     agreement: {
       agree: 'La medición de forma y el modelo de IA coinciden en esto.',
       geometry_only: 'Basado en la medición de forma; el modelo de IA no fue concluyente aquí.',
@@ -186,6 +225,8 @@ export default {
     loading: 'Cargando tus escaneos anteriores…',
     error: 'No se pudo cargar tu historial de escaneos. ¿Está funcionando el backend?',
     empty: 'Aún no hay escaneos. Tus resultados anteriores aparecerán aquí para que puedas seguir los cambios con el tiempo.',
+    rescanNote:
+      'Las uñas crecen unos 3 mm al mes, así que estos signos cambian despacio. Un reescaneo mensual hace visible una tendencia mucho antes de que sea obvia en el espejo.',
     placeholderNote: 'Mostrando escaneos de ejemplo. Haz tu primer escaneo para reemplazarlos con resultados reales.',
     example: 'Ejemplo',
     changed: 'Cambió',
@@ -208,6 +249,9 @@ export default {
   info: {
     intro:
       'NailIQ revisa cada foto en busca de todos estos signos. Toca cualquiera para aprender cómo se ve, por qué ocurre y qué significa tu resultado.',
+    equityTitle: 'Honesto con todos los tonos de piel',
+    equityText:
+      'La mayoría de los conjuntos de datos de análisis de uñas se inclinan hacia pieles más claras. Medimos el nuestro, añadimos una cohorte de piel más oscura a los datos de entrenamiento y, donde la cobertura para un tono de piel aún es limitada, la app reduce su confianza y lo dice en el resultado — nunca finge.',
     close: 'Cerrar',
   },
 

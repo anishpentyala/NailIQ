@@ -202,6 +202,7 @@ export default function HistoryView() {
           {scans[0].isPlaceholder && (
             <p className="history-placeholder-note">{t('history.placeholderNote')}</p>
           )}
+          <p className="history-rescan-note">{t('history.rescanNote')}</p>
           <AngleTrend scans={scans} />
           <div className="history-list">
             {scans.map((scan, i) => (

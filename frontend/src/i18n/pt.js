@@ -24,6 +24,22 @@ export default {
     "heroTitle": "Identifique alterações nas unhas que merecem uma consulta médica",
     "heroText": "Alguns sinais de anemia e de doenças cardíacas, pulmonares e hepáticas surgem cedo nas unhas — mas se desenvolvem tão lentamente que é difícil percebê-los por conta própria. Duas fotos rápidas verificam treze desses sinais.",
     "cta": "Iniciar um escaneamento",
+    "whyTitle": "Por que isso é importante",
+    "whyRows": {
+      "anemia": {
+        "name": "Anemia",
+        "text": "Afeta cerca de 2 bilhões de pessoas em todo o mundo — unhas pálidas ou em forma de colher estão entre seus primeiros sinais visíveis."
+      },
+      "organs": {
+        "name": "Doenças cardíacas, pulmonares e hepáticas",
+        "text": "O baqueteamento digital e alterações na cor das unhas podem surgir meses antes do diagnóstico dessas condições."
+      },
+      "baseline": {
+        "name": "Lento demais para perceber",
+        "text": "Esses sinais se desenvolvem ao longo de meses, por isso quase ninguém os percebe ao se olhar no espelho. Uma foto de referência torna essa evolução visível."
+      }
+    },
+    "whoFor": "Criado como uma avaliação inicial gratuita para quem não faz exames de rotina — mas que nunca substitui esses exames.",
     "latestAssessment": "Avaliação mais recente",
     "confidencePct": "{pct}% de confiança",
     "noScans": "Ainda não há escaneamentos",
@@ -62,13 +78,33 @@ export default {
         "name": "Melanoníquia",
         "text": "Uma faixa escura ao longo da unha."
       },
+      "pallor": {
+        "name": "Palidez",
+        "text": "Uma cor pálida e desbotada na base da unha."
+      },
+      "cyanosis": {
+        "name": "Cianose",
+        "text": "Uma coloração azulada ou escurecida no leito ungueal."
+      },
       "terrys_nails": {
         "name": "Unhas de Terry",
         "text": "Unha predominantemente branca, com uma faixa mais escura na ponta."
       },
+      "lindsays_nails": {
+        "name": "Unhas de Lindsay",
+        "text": "Coloração metade branca, metade rosa, dividida ao longo da unha."
+      },
+      "onycholysis": {
+        "name": "Onicólise",
+        "text": "A unha está se soltando do leito ungueal na ponta."
+      },
       "beaus_lines": {
         "name": "Linhas de Beau",
         "text": "Sulcos que atravessam a superfície da unha."
+      },
+      "muehrckes_lines": {
+        "name": "Linhas de Muehrcke",
+        "text": "Faixas claras que atravessam o leito ungueal."
       },
       "splinter_hemorrhages": {
         "name": "Hemorragias em lasca",
@@ -157,10 +193,15 @@ export default {
     "nextSteps": "Próximos passos",
     "nextStepsOutside": "Um ou mais sinais ficaram fora da faixa típica. Isso não é um diagnóstico — vale a pena mostrar a um médico, especialmente se você tiver notado outros sintomas.",
     "nextStepsFallback": "Vale a pena mencionar isso a um médico.",
+    "nextStepsDoctor": "Um médico de atenção primária ou um dermatologista é a pessoa certa a quem mostrar isso. Use a opção “Salvar/imprimir relatório” abaixo para levar uma cópia — os valores medidos são mais úteis do que uma descrição de memória.",
     "nextStepsInconclusiveOne": "Não conseguimos analisar um sinal nessas fotos. Tirar novas fotos com uma iluminação mais clara e uniforme, com a unha ocupando todo o quadro, geralmente resolve o problema.",
     "nextStepsInconclusive": "Não conseguimos analisar {n} sinais nessas fotos. Tirar novas fotos com uma iluminação mais clara e uniforme, com a unha ocupando todo o quadro, geralmente resolve o problema.",
     "nextStepsWithin": "Tudo parece estar dentro da faixa típica. Não há nada a fazer no momento — fique atento a alterações ao longo do tempo e consulte um médico caso surja qualquer preocupação com a saúde.",
     "groupCloserLook": "Vale a pena olhar mais de perto",
+    "diagramOverviewAlt": "Ilustração mostrando onde cada sinal deste escaneamento foi encontrado",
+    "diagramOverviewNote": "Uma ilustração simplificada de onde esses sinais aparecem — sem escala, não é uma foto da sua unha.",
+    "diagramClubbing": "Baqueteamento",
+    "diagramKoilonychia": "Coiloníquia",
     "groupCouldntAnalyze": "Não foi possível analisar",
     "withinCount": "{n} dentro da faixa típica",
     "closestMatch": "Correspondência visual mais próxima: {label} · {pct}% de confiança",
@@ -170,6 +211,10 @@ export default {
     "disclaimer": "O NailIQ é uma ferramenta educacional de triagem, não um dispositivo médico. Ele não diagnostica nenhuma condição. Sempre consulte um médico em caso de preocupações com a saúde.",
     "sources": "Método e honestidade: o limiar do ângulo de baqueteamento segue Hsu et al. (2024); as verificações de cor e textura utilizam limiares heurísticos não calibrados e constituem sinais de triagem, não medições. As leituras de cor são ajustadas de acordo com a iluminação e o tom de pele, mas a precisão em condições reais não foi verificada.",
     "measuredCaption": "A caixa mostra a área da unha que as verificações de cor mediram.",
+    "measuredToggle": "Área medida",
+    "gradcamToggle": "Atenção da IA",
+    "gradcamCaption": "Cores mais quentes mostram de onde veio a previsão do modelo de IA.",
+    "gradcamAlt": "Mapa de calor mostrando em qual parte da sua unha a previsão do modelo de IA se baseou",
     "photoAlt": "Sua foto da unha tirada de cima",
     "badgeMl": "Modelo de IA",
     "badgeFused": "Geometria + IA",
@@ -179,6 +224,11 @@ export default {
     "feedbackYes": "Sim",
     "feedbackNo": "Não",
     "feedbackThanks": "Obrigado — isso nos ajuda a melhorar.",
+    "feedbackImpact": "Suas respostas ajudam a calibrar resultados futuros.",
+    "toneCaveat": {
+      "limited": "Esse tom de pele está sub-representado em nossos dados de teste, então esta leitura de cor é menos validada para você — trate-a como um sinal mais fraco.",
+      "minimal": "Temos muito poucos dados de validação para tons de pele mais escuros, então esta leitura de cor pode ser pouco confiável para você. Não dê muita importância a ela."
+    },
     "agreement": {
       "agree": "A medição da forma e o modelo de IA concordam nisso.",
       "geometry_only": "Com base na medição da forma; o modelo de IA não foi conclusivo aqui."
@@ -205,6 +255,7 @@ export default {
     "loading": "Carregando seus escaneamentos anteriores…",
     "error": "Não foi possível carregar seu histórico de escaneamentos. O backend está em execução?",
     "empty": "Ainda não há escaneamentos. Seus resultados anteriores aparecerão aqui para que você possa acompanhar as mudanças ao longo do tempo.",
+    "rescanNote": "As unhas crescem cerca de 3 mm por mês, por isso esses sinais mudam lentamente. Uma nova análise mensal permite perceber uma tendência muito antes que ela se torne evidente no espelho.",
     "placeholderNote": "Exibindo escaneamentos de exemplo. Faça seu primeiro escaneamento para substituí-los por resultados reais.",
     "example": "Exemplo",
     "changed": "Mudou",
@@ -224,6 +275,8 @@ export default {
   },
   "info": {
     "intro": "O NailIQ analisa cada foto em busca de todos esses sinais. Toque em qualquer um deles para saber como ele se parece, por que ocorre e o que seu resultado significa.",
+    "equityTitle": "Honesto em todos os tons de pele",
+    "equityText": "A maioria dos conjuntos de dados de análise de unhas apresenta um viés em favor de peles mais claras. Medimos os nossos, adicionamos uma coorte de pessoas com pele mais escura aos dados de treinamento e, nos casos em que a cobertura para um tom de pele ainda é limitada, o aplicativo reduz seu nível de confiança e informa isso no resultado — ele nunca finge saber o que não sabe.",
     "close": "Fechar"
   },
   "failure": {

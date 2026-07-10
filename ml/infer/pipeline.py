@@ -6,6 +6,7 @@ from . import (
     color_fusion,
     cyanosis,
     fusion,
+    gradcam,
     image_quality,
     koilonychia,
     leukonychia,
@@ -114,6 +115,14 @@ def _ml_finding(image_b64, view):
         return None
 
 
+def _gradcam_b64(image_b64):
+    """Base64 'what the AI looked at' heatmap for the top photo, or None."""
+    image = decode_base64_image(image_b64)
+    if image is None:
+        return None
+    return gradcam.overlay_b64(image)
+
+
 def _photo_quality(image):
     """Focus-only quality dict for a decoded photo, or a zero score if it won't decode."""
     if image is None:
@@ -204,6 +213,7 @@ def analyze(side_image_b64, top_image_b64):
         return {"findings": geometry + color, "overlay": overlay, "image_quality": image_quality_resp}
 
     ml_top = _ml_finding(top_image_b64, "top")
+    overlay["gradcam"] = _gradcam_b64(top_image_b64)
     return {
         "findings": fusion.fuse(geometry, ml_top) + color,
         "overlay": overlay,

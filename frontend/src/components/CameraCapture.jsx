@@ -4,6 +4,33 @@ import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
 import { useI18n } from '../i18n'
 
+// Translucent finger silhouette shown inside the guide ring, so a first-time
+// user knows *what shape* to fill the frame with, not just where the frame's
+// edges are. Side-profile shot = a horizontal finger with the nail on its top
+// edge; top-down shot = a vertical finger with the nail plate near its tip.
+function FrameGuideSilhouette({ step }) {
+  if (step === 'side') {
+    return (
+      <svg className="cam-guide-silhouette" viewBox="0 0 200 150" aria-hidden="true">
+        <path
+          className="cam-guide-finger"
+          d="M20,45 L150,45 C168,45 178,60 178,75 C178,90 168,105 150,105 L20,105 Z"
+        />
+        <rect className="cam-guide-nail" x="140" y="50" width="30" height="20" rx="8" />
+      </svg>
+    )
+  }
+  return (
+    <svg className="cam-guide-silhouette" viewBox="0 0 150 200" aria-hidden="true">
+      <path
+        className="cam-guide-finger"
+        d="M45,180 L45,50 C45,32 58,22 75,22 C92,22 105,32 105,50 L105,180 Z"
+      />
+      <rect className="cam-guide-nail" x="50" y="28" width="50" height="34" rx="10" />
+    </svg>
+  )
+}
+
 export default function CameraCapture({ onCapture, loading, onClose }) {
   const { t } = useI18n()
   const webcamRef = useRef(null)
@@ -138,6 +165,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       {!cameraError && (
         <div className="cam-guide-overlay">
           <div className={`cam-guide-ring ${isSide ? 'cam-guide-ring--landscape' : ''}`}>
+            <FrameGuideSilhouette step={step} />
             <div className="cam-guide-corners">
               <span /><span /><span /><span />
             </div>

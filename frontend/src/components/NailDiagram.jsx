@@ -10,7 +10,7 @@ import onycholysisComparisonImg from '../assets/diagrams/onycholysis-comparison.
 import beausLinesComparisonImg from '../assets/diagrams/beaus_lines-comparison.png'
 import muehrckesLinesComparisonImg from '../assets/diagrams/muehrckes_lines-comparison.png'
 import splinterHemorrhagesComparisonImg from '../assets/diagrams/splinter_hemorrhages-comparison.png'
-import { useI18n } from '../i18n'
+import { useI18n, findingName } from '../i18n'
 
 // Conditions with a real comparison illustration; their alt text lives in the
 // locale dictionaries under diagram.imgAlts so it translates with the UI.
@@ -133,4 +133,139 @@ export default function NailDiagram({ type, sub }) {
     return <img className="diagram" src={img} alt={t(`diagram.imgAlts.${type}`)} />
   }
   return <NailPlate pattern={type} sub={sub} />
+}
+
+/* ---- Annotated result diagram: every outside-range sign on one figure ----
+   Composition, not new art: the top-down plate reuses plateOverlay() as-is
+   (same coordinate system, just repositioned via a <g transform>), and the
+   side-profile panel reuses the diagram-skin/diagram-nail/diagram-arc/
+   diagram-drop classes that clubbing's old side-view diagram already defined
+   in App.css but nothing currently renders. */
+
+// Conditions whose whole-plate color IS the sign (no separate overlay mark),
+// in priority order -- a stylized single nail can only show one base tint,
+// so on the rare scan where more than one fires we show the more specific one.
+const BASE_TINT_PRIORITY = ['cyanosis', 'pallor', 'terrys_nails', 'lindsays_nails']
+const BASE_TINT_CLASS = {
+  cyanosis: 'plate-blue',
+  pallor: 'plate-pale',
+  terrys_nails: 'plate-white',
+  lindsays_nails: 'plate-white',
+}
+
+// Legend swatch colors, matching each mark's actual fill (mark-white items get
+// a CSS border since white-on-white would otherwise be invisible in the key).
+const SWATCH_COLOR = {
+  clubbing: 'var(--warn)',
+  koilonychia: 'var(--primary)',
+  leukonychia: '#fbf7f3',
+  melanonychia: '#463a32',
+  pallor: '#e9e2dd',
+  cyanosis: '#c6d2e0',
+  terrys_nails: '#b67d5f',
+  lindsays_nails: '#b67d5f',
+  onycholysis: '#fbf7f3',
+  beaus_lines: '#d6bdb1',
+  muehrckes_lines: '#fbf7f3',
+  splinter_hemorrhages: '#7d2b2b',
+  pitting: '#caa893',
+}
+
+const PLATE_WITH_PROFILE_TRANSFORM = 'translate(-74.4,-22) scale(1.3)'
+const PLATE_ALONE_TRANSFORM = 'translate(-180,-35) scale(1.5)'
+
+function SideProfilePanel({ clubbing, koilonychia, t }) {
+  // Finger silhouette: normal tapered tip, or a bulbous clubbed tip.
+  const skinPath = clubbing
+    ? 'M40,20 C25,20 18,60 18,105 C18,150 20,175 55,182 C90,175 92,150 92,105 C92,60 85,20 70,20 Z'
+    : 'M40,20 C25,20 20,60 20,100 C20,140 25,165 45,178 L65,178 C85,165 90,140 90,100 C90,60 85,20 70,20 Z'
+
+  // Nail-plate line traced on the front of the finger: clubbing removes the
+  // normal cuticle notch (nail meets skin smoothly, >180 degrees); koilonychia
+  // dips concave along its length instead of the normal gentle outward curve.
+  const nailPath = clubbing
+    ? 'M70,20 Q95,60 93,105 Q90,160 55,182'
+    : koilonychia
+      ? 'M58,38 Q40,75 55,110 Q70,145 62,170'
+      : 'M58,38 Q90,70 88,110 Q86,150 62,170'
+
+  return (
+    <g>
+      <path className="diagram-skin" d={skinPath} />
+      <path className="diagram-nail" d={nailPath} />
+      {clubbing && (
+        <>
+          <path className="diagram-arc" d="M58,38 Q75,45 70,20" />
+          <text className="diagram-tag diagram-tag--warn" x="135" y="18" textAnchor="end">{t('result.diagramClubbing')}</text>
+        </>
+      )}
+      {koilonychia && (
+        <>
+          <circle className="diagram-drop" cx="55" cy="110" r="3" />
+          <text className="diagram-tag" x="0" y="195">{t('result.diagramKoilonychia')}</text>
+        </>
+      )}
+    </g>
+  )
+}
+
+// One figure with every outside-range sign from this scan drawn where it
+// occurs. Shown once, above the individual finding cards -- those still carry
+// their own single-condition reference diagram for the "what does X look
+// like" explanation; this one is the "where did MY signs show up" overview.
+export function AnnotatedNailDiagram({ findings }) {
+  const { t } = useI18n()
+  const outside = (findings ?? []).filter((f) => f.verdict === 'outside')
+  if (outside.length === 0) return null
+
+  const clubbing = outside.some((f) => f.label === 'clubbing')
+  const koilonychia = outside.some((f) => f.label === 'koilonychia')
+  const hasProfile = clubbing || koilonychia
+  const plateFindings = outside.filter((f) => f.label !== 'clubbing' && f.label !== 'koilonychia')
+  const plateLabels = plateFindings.map((f) => f.label)
+
+  const baseTintLabel = BASE_TINT_PRIORITY.find((l) => plateLabels.includes(l))
+  const baseClass = baseTintLabel ? BASE_TINT_CLASS[baseTintLabel] : 'plate-healthy'
+  const overlayMarks = plateLabels
+    .map((label) => ({ label, mark: plateOverlay(label) }))
+    .filter((m) => m.mark != null)
+
+  const hasPlate = plateLabels.length > 0 || !hasProfile
+  const plateTransform = hasProfile ? PLATE_WITH_PROFILE_TRANSFORM : PLATE_ALONE_TRANSFORM
+  const clip = 'nailclip-annotated'
+
+  return (
+    <div className="annotated-diagram">
+      <svg className="diagram" viewBox="0 0 300 220" role="img" aria-label={t('result.diagramOverviewAlt')}>
+        <defs>
+          <clipPath id={clip}>
+            <rect x="188" y="40" width="64" height="92" rx="18" />
+          </clipPath>
+        </defs>
+        {hasProfile && (
+          <g transform="translate(10,10)">
+            <SideProfilePanel clubbing={clubbing} koilonychia={koilonychia} t={t} />
+          </g>
+        )}
+        {hasPlate && (
+          <g transform={plateTransform}>
+            <rect className={baseClass} x="188" y="40" width="64" height="92" rx="18" />
+            <g clipPath={`url(#${clip})`}>
+              {overlayMarks.map(({ label, mark }) => <g key={label}>{mark}</g>)}
+            </g>
+            <rect className="plate-stroke" x="188" y="40" width="64" height="92" rx="18" />
+          </g>
+        )}
+      </svg>
+      <ul className="annotated-diagram-legend">
+        {outside.map((f) => (
+          <li key={f.label}>
+            <span className="annotated-diagram-swatch" style={{ background: SWATCH_COLOR[f.label] ?? 'var(--text-muted)' }} />
+            {findingName(t, f)}
+          </li>
+        ))}
+      </ul>
+      <p className="annotated-diagram-note">{t('result.diagramOverviewNote')}</p>
+    </div>
+  )
 }

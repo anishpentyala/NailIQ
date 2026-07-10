@@ -98,6 +98,14 @@ export default function InfoSection() {
         ))}
       </div>
 
+      <section className="info-equity">
+        <span className="info-equity-icon"><Icon name="checkCircle" /></span>
+        <div>
+          <p className="info-point-title">{t('info.equityTitle')}</p>
+          <p className="info-point-text">{t('info.equityText')}</p>
+        </div>
+      </section>
+
       {openCondition && (
         <ConditionSheet condition={openCondition} onClose={() => setOpenKey(null)} />
       )}
