@@ -5,7 +5,7 @@
 // translates them, and writes the locale file back. {placeholders} are protected
 // as <ph> XML tags so DeepL passes them through untouched.
 //
-// Output is MACHINE TRANSLATION — always review before shipping (medical copy,
+// Output is MACHINE TRANSLATION - always review before shipping (medical copy,
 // non-diagnostic hedging, and formal/informal register are where MT goes wrong).
 //
 // Usage:
@@ -135,7 +135,7 @@ async function main() {
   for (const code of codes) {
     const target = TARGETS[code]
     if (!target) {
-      console.error(`Unknown code "${code}" — add it to TARGETS first.`)
+      console.error(`Unknown code "${code}" - add it to TARGETS first.`)
       continue
     }
 
@@ -171,7 +171,7 @@ async function main() {
 
     const header =
       `// ${target.langName} translations. Keys mirror en.js; missing keys fall back to English.\n` +
-      `// MACHINE-TRANSLATED via DeepL (scripts/translate_locales.mjs) — review before shipping.\n`
+      `// MACHINE-TRANSLATED via DeepL (scripts/translate_locales.mjs) - review before shipping.\n`
     writeFileSync(filePath, `${header}export default ${JSON.stringify(unflatten(merged), null, 2)}\n`)
     console.log(`${code}: wrote ${filePath}`)
   }

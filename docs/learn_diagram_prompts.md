@@ -22,9 +22,9 @@ below it representing app UI text. The circular badge is split down the middle i
 side-by-side SIDE-PROFILE finger icons (silhouettes seen from the side, like a finger pointing left,
 NOT a frontal nail shape and NOT a finger pointing up at the viewer), separated by a thin vertical
 divider line, with a small checkmark above the left icon and a small warning triangle above the
-right icon. LEFT icon: a simple matchstick-shaped finger — a straight narrow shaft that meets a
+right icon. LEFT icon: a simple matchstick-shaped finger - a straight narrow shaft that meets a
 small flat-topped oval tip at one clear angled corner, like a flat-head screwdriver tip. RIGHT icon:
-a drumstick-shaped or balloon-on-a-stick-shaped finger — the same narrow shaft, but it smoothly
+a drumstick-shaped or balloon-on-a-stick-shaped finger - the same narrow shaft, but it smoothly
 swells into one large, round, puffy bulb at the tip with NO corner, NO notch, and NO straight edge
 anywhere near the tip, so the whole tip end reads as one continuous round ball shape, clearly
 rounder and fatter than the left icon's tip. The two icons must look obviously different in tip
@@ -36,25 +36,25 @@ flat-shaded vector art, soft drop shadows, square or 4:5 portrait aspect ratio.
 
 ## 1b. Clubbing (clinical comparison-diagram alternative)
 
-Use this instead of #1 if the phone-mockup badge still doesn't read clearly — it drops the
+Use this instead of #1 if the phone-mockup badge still doesn't read clearly - it drops the
 woman/phone framing entirely and is a direct cartoon-style redraw of a side-by-side medical
 comparison diagram, which makes the shape difference unmissable.
 
 Flat 2D vector illustration, clean educational-diagram style (like a friendly cartoon medical
-infographic, NOT photorealistic, NOT clinical/textbook rendering — smooth flat shading, simplified
+infographic, NOT photorealistic, NOT clinical/textbook rendering - smooth flat shading, simplified
 rounded shapes, minimal outline, no skin texture or pores). Teal-green color palette (primary teal
 #2F7D6B, deeper forest green #245F51, soft mint accent #BFE3D8, dark navy/charcoal #1F2A2E for
-linework, white highlights, light mint-green flat background, no gradients or realistic skin tones —
+linework, white highlights, light mint-green flat background, no gradients or realistic skin tones  -
 render the fingers in a stylized flat teal/mint tone, not a realistic flesh color). Two large
 side-profile cartoon fingers stand side by side pointing upward, evenly spaced, viewed from the side
 (so the nail is seen edge-on, like looking at a finger in profile). LEFT finger: a straight, even
-shaft that meets the nail at one clear angled corner where the nail sits flat on top — a small thin
+shaft that meets the nail at one clear angled corner where the nail sits flat on top - a small thin
 upward arrow floats just above its tip. Above it, a circular zoomed-in inset bubble (thin dark
 outline, light mint fill, connected to the fingertip by a short thin line) showing a close-up of
 that same fingertip: a flat, normal-looking nail with a crisp angled edge where it meets the
 cuticle/skin. A short label below this finger reads "Typical" in simple bold sans-serif lettering.
 RIGHT finger: the same shaft, but it smoothly swells outward into one large, round, puffy bulb right
-at the tip, with NO corner and NO flat edge anywhere near the nail — the whole tip reads as one
+at the tip, with NO corner and NO flat edge anywhere near the nail - the whole tip reads as one
 continuous rounded dome, noticeably fatter than the left finger's tip; a small thin upward arrow
 floats above its tip too, angled slightly to suggest the rounder curve. Above it, a matching circular
 zoomed-in inset bubble showing a close-up of that fingertip: the nail appears to wrap over a rounded

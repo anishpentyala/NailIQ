@@ -257,7 +257,7 @@ function ScanDashboard({ findings, imageQuality }) {
     <div className="scan-dashboard">
       <div className="dashboard-tile">
         <span className="tile-label">{t('result.howSure')}</span>
-        <span className="tile-value">{meanConf == null ? '—' : `${Math.round(meanConf * 100)}%`}</span>
+        <span className="tile-value">{meanConf == null ? '--' : `${Math.round(meanConf * 100)}%`}</span>
         <span className="tile-sub">
           {conclusive.length === 0
             ? t('result.noSignsRead')
@@ -296,7 +296,7 @@ function ScanDashboard({ findings, imageQuality }) {
             </span>
           </>
         ) : (
-          <span className="tile-value">—</span>
+          <span className="tile-value">--</span>
         )}
       </div>
     </div>

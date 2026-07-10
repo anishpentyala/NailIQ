@@ -7,13 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 NailIQ: a precautionary screener for nail-based signs of systemic disease. It
 covers thirteen conditions across four tracks: digital clubbing and koilonychia/spoon
 nails (side-profile geometry, fused with a top-down CNN), and eleven top-down
-color/texture signs — leukonychia, melanonychia, pallor, cyanosis, Terry's nails,
+color/texture signs - leukonychia, melanonychia, pallor, cyanosis, Terry's nails,
 Lindsay's nails, onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages,
-and pitting — five of which (cyanosis, Terry's nails, Beau's lines, Muehrcke's
+and pitting - five of which (cyanosis, Terry's nails, Beau's lines, Muehrcke's
 lines, pitting) are further fused with a second color-condition CNN ensemble.
 A user photographs
 their finger and gets a finding per condition, each one only ever "within typical range,"
-"outside typical range," or "couldn't analyze this photo" — **never** a named
+"outside typical range," or "couldn't analyze this photo" - **never** a named
 diagnosis. This framing is non-negotiable and must show up on every result screen,
 not just a footer disclaimer.
 
@@ -27,8 +27,8 @@ pip install -r requirements.txt
 python app.py                  # runs on :5000 (PORT env var overrides)
 ```
 
-Run the geometry unit tests (synthetic point sets — no camera, no dataset needed).
-**Run from the repo root, not `backend/`** — the tests import `ml.infer.*`, which
+Run the geometry unit tests (synthetic point sets - no camera, no dataset needed).
+**Run from the repo root, not `backend/`** - the tests import `ml.infer.*`, which
 needs the repo root on `sys.path`; running from `backend/` fails with
 `ModuleNotFoundError: No module named 'ml'`:
 ```bash
@@ -65,8 +65,8 @@ npm run lint
 ### Dev servers via Preview
 `.claude/launch.json` defines both servers for the `preview_start` MCP tool
 (`frontend`, `backend`). Prefer that over manually backgrounding `npm run dev` /
-`python app.py` in this repo — it tracks process lifecycle and ports correctly.
-Backend's port is configurable via `PORT` env (`autoPort: true` in launch.json) —
+`python app.py` in this repo - it tracks process lifecycle and ports correctly.
+Backend's port is configurable via `PORT` env (`autoPort: true` in launch.json)  -
 this was added after a stale Windows TCP listener got stuck on port 5000.
 
 ## Architecture
@@ -78,7 +78,7 @@ step state `'side' | 'top'`): a side-profile shot and a top-down shot. Both are
 POSTed to `/analyze` as `{ side_image, top_image }` (base64, no `data:` prefix).
 **Both photos are now analyzed**: the side photo drives the geometry track, the
 top-down photo drives the trained-CNN track and the color/texture track. (The
-`top_image` field used to be decoded and discarded — it was kept in the contract on
+`top_image` field used to be decoded and discarded - it was kept in the contract on
 purpose precisely so the color/texture findings could be added without changing the
 capture flow or request shape, which is exactly what happened.)
 
@@ -91,7 +91,7 @@ that measures the top-down photo's nail plate.
 The geometry and CNN tracks are **fused** by `ml/infer/fusion.py` into **one
 finding per geometry condition** (`track_used: "fused"`): when both tracks agree the
 verdict's confidence is boosted; when they disagree the finding is `inconclusive`
-(`tracks_disagree`) rather than asserting a split call. The CNN track is optional —
+(`tracks_disagree`) rather than asserting a split call. The CNN track is optional  -
 `classifier.is_available()` gates it, so if torch/weights are absent the geometry
 findings are returned unchanged (`track_used: "geometric"`). The color/texture track
 is **standalone** (`track_used: "color"`), classical CV that needs no trained model,
@@ -114,9 +114,9 @@ plus `geometry` and `ml` sub-objects; a torch-free geometry finding looks like:
 }
 ```
 `inconclusive` (with a `failure_reason`) means the CV pipeline couldn't reliably
-locate the finger or its keypoints — it never guesses a verdict it isn't confident
+locate the finger or its keypoints - it never guesses a verdict it isn't confident
 in. `confidence` is a heuristic from keypoint-detection quality signals, not a
-calibrated probability — don't present it as one in any UI copy.
+calibrated probability - don't present it as one in any UI copy.
 
 ### Per-photo retake check (`/validate_photo`)
 
@@ -129,46 +129,46 @@ right after each capture, before advancing to the next step or submitting. On
 losing progress on the other one.
 
 `ml/infer/pipeline.py`'s `_extract()` backs both this and `/analyze`: it takes a
-`require_keypoints` flag because the side and top photos need different rigor —
+`require_keypoints` flag because the side and top photos need different rigor  -
 `view: 'side'` runs the full fingertip+cuticle keypoint search (same checks
 `/analyze` relies on), `view: 'top'` only confirms a finger-shaped contour exists,
 since the cuticle-vertex search assumes the side-profile orientation and doesn't
 apply to a top-down shot. `validate_photo()` and `analyze_side_profile()` are now
-both thin wrappers around `_extract()` — don't reintroduce duplicate
+both thin wrappers around `_extract()` - don't reintroduce duplicate
 decode/threshold/contour logic in either one.
 
 ### `ml/infer/`: a geometry track + a trained-CNN track
 
-The geometry track is classical OpenCV contour analysis — no trained model needed.
+The geometry track is classical OpenCV contour analysis - no trained model needed.
 MediaPipe Hands was deliberately dropped: it's trained on whole-hand poses, and
 this app's photo is a tight single-finger close-up, a framing it wasn't built for.
 
 Pipeline stages, each importable independently:
-- `preprocessing.py` — decode base64 → grayscale/threshold/morphology → largest
+- `preprocessing.py` - decode base64 → grayscale/threshold/morphology → largest
   contour. Rejects (→ inconclusive) on: no contour, contour too small, or contour
   touching the image border (finger cropped out of frame).
-- `keypoints.py` — finds the fingertip (contour extremum + circle-fit prominence
+- `keypoints.py` - finds the fingertip (contour extremum + circle-fit prominence
   check) and the cuticle vertex (peak of discrete contour curvature near the tip).
   Also determines `cuticle_is_concave` by comparing the cuticle's curvature sign to
   the fingertip's (the tip is *always* convex regardless of clubbing status, so it's
   a reliable reference). Rejects on keypoints too close together or collinear.
-- `clubbing.py` — angle at the cuticle vertex via the cosine rule. **Important**:
+- `clubbing.py` - angle at the cuticle vertex via the cosine rule. **Important**:
   `arccos` alone is mathematically capped at 180°, so a naive implementation can
   never report a clubbed (>180°) angle. The fix is `cuticle_is_concave`: a concave
   cuticle (normal) reports the raw angle; a convex one (clubbed) reports
   `360 - raw_angle`, the reflex angle on the dorsal side. Don't reintroduce a plain
   `arccos`-only formula here.
-- `koilonychia.py` — sagitta (max perpendicular distance from the nail-plate
+- `koilonychia.py` - sagitta (max perpendicular distance from the nail-plate
   contour segment to the chord between cuticle and tip), normalized by chord
   length for scale invariance. Sign distinguishes concave/spoon from convex/normal.
-- `pipeline.py` — orchestrates all of the above. Both findings share one
+- `pipeline.py` - orchestrates all of the above. Both findings share one
   extraction pass; if contour/keypoint detection fails, *both* findings come back
   `inconclusive` with the same `failure_reason` rather than computing one
   condition's geometry on keypoints that weren't validated.
 
 Thresholds (`CLUBBING_ANGLE_THRESHOLD_DEG`, `KOILONYCHIA_SAGITTA_THRESHOLD`, etc.)
 are named module-level constants. Koilonychia's in particular is a rough starting
-estimate — there's no labeled photo dataset yet to calibrate against.
+estimate - there's no labeled photo dataset yet to calibrate against.
 
 Adding a third geometric condition: reuse `preprocessing.py` and `keypoints.py`
 as-is, add a new `<condition>.py` with `build_finding()`/`inconclusive_finding()`
@@ -179,7 +179,7 @@ following the existing pattern, and call it from `pipeline.py`.
 A **2-model ensemble** (MobileNetV3-Large + EfficientNet-B0, both ImageNet
 transfer learning) classifies a photo as `clubbing` / `koilonychia` / `healthy`,
 averaging each member's softmax. Trained by `ml/train/train_classifier.py
---backbone <name>`, run once per backbone — each run appends its member to the
+--backbone <name>`, run once per backbone - each run appends its member to the
 ensemble rather than overwriting it. Training data is the **merged** dataset
 (`data/raw/merged`): the NailCheck dataset (`data/raw/nailcheck-3xvkl`,
 downloaded via `scripts/download_data.py` from Roboflow Universe, CC BY 4.0) plus
@@ -189,13 +189,13 @@ then restores `merged/valid` and `merged/test` to the original, untouched
 NailCheck split (so eval numbers stay comparable to the old baseline) and drops
 any train image that's a near-duplicate (dHash, Hamming ≤5) of an eval image to
 prevent leakage. Weights live in `ml/models/nail_classifier__<backbone>.pt` +
-one shared `nail_classifier_labels.json` (gitignored — regenerate by re-running
+one shared `nail_classifier_labels.json` (gitignored - regenerate by re-running
 training for each backbone). The JSON's `"ensemble"` list carries each member's
 `backbone`, `weights_file`, and its own independently-fit calibration
 `temperature`; `classifier._members_from_meta()` falls back to the old
 single-backbone top-level format if `"ensemble"` is absent, so don't remove that
 fallback while any non-ensemble manifest might still be in the wild. Reported
-accuracy is on the dataset's held-out split — **NOT** on real phone photos; treat
+accuracy is on the dataset's held-out split - **NOT** on real phone photos; treat
 real-world accuracy as unknown/lower (measure it with `ml/eval/eval_real.py`) and
 never present it as clinical-grade.
 
@@ -203,12 +203,12 @@ What makes the prediction more than a raw softmax guess (all in
 `classifier.classify_bgr`, mirrored in training so train/inference match):
 - **Ensemble.** Two diverse backbones vote and their probabilities are averaged;
   a wrong call from one is usually outvoted by the other. `ml/eval/eval_ensemble.py`
-  is the only script that measures this averaged number (what actually ships) —
+  is the only script that measures this averaged number (what actually ships)  -
   `train_classifier.py`'s printed accuracy is each backbone's *solo* number.
 - **ROI crop.** `preprocessing.crop_to_finger_roi` crops to the detected finger
   (same contour detector geometry uses) **before** classifying, so the CNN keys on
   the nail, not the background. This is the single biggest real-world robustness
-  fix — feeding the whole frame let background clutter swing the prediction.
+  fix - feeding the whole frame let background clutter swing the prediction.
 - **TTA.** Each member's prediction is averaged over the image + its horizontal
   flip, independently, before the cross-member average.
 - **Temperature scaling.** Each member's logits are divided by its own
@@ -234,7 +234,7 @@ Training (`ml/train/train_classifier.py`) fine-tunes the last few backbone block
 early stopping, class weights + label smoothing for the mild imbalance, and
 phone-realistic augmentation (RandAugment, perspective, blur, RandomErasing,
 MixUp/CutMix). It prints a confusion matrix + per-class precision/recall for that
-one backbone — for a screener, **recall on the condition classes** (don't miss a
+one backbone - for a screener, **recall on the condition classes** (don't miss a
 real sign) is the metric to watch, but the number that matters for production is
 the ensemble's, from `ml/eval/eval_ensemble.py`: **0.935 overall test accuracy**
 (n=108), up from 0.898 for the prior single-backbone model on the same split.
@@ -246,14 +246,14 @@ Per condition C: geometry inconclusive → inconclusive; ML missing / low-confid
 / predicting the *other* condition → geometry alone stands
 (`agreement: "geometry_only"`); tracks agree → agreed verdict with boosted
 confidence (`"agree"`); tracks disagree → `inconclusive` (`tracks_disagree`,
-`"disagree"`). Only the **top-view** ML signal is used — side-view ML is a domain
+`"disagree"`). Only the **top-view** ML signal is used - side-view ML is a domain
 mismatch and is deliberately ignored here.
 
 ### The color/texture track (`ml/infer/nail_region.py` + per-condition modules)
 
 A third track, parallel to geometry, that reads the **top-down** photo's nail plate
 and reports six color/texture conditions. It's **classical CV** like the geometry
-track — no trained model, no dataset needed — so it always runs (even torch-free) and
+track - no trained model, no dataset needed - so it always runs (even torch-free) and
 its findings carry `track_used: "color"`. When the **color-condition CNN** is trained
 and torch is present, five of these conditions are instead fused with it into
 `track_used: "color_fused"` findings (see "The color-condition CNN track" below); the
@@ -262,9 +262,9 @@ rest stay standalone `"color"`. All are appended after the geometry/fused ones i
 
 `nail_region.compute_nail_region(image, contour)` is the shared front-end (the
 top-down counterpart to `keypoints.py`). It does **not** do pixel-perfect nail
-segmentation — honestly, there's no model for that here. Using PCA on the finger
+segmentation - honestly, there's no model for that here. Using PCA on the finger
 silhouette it takes the distal ~45% of the finger length (the end whose skin is
-*least saturated* — i.e. the nail end) and its central 60% width, which lands on the
+*least saturated* - i.e. the nail end) and its central 60% width, which lands on the
 nail plate while insetting away from the skin folds. It returns the region's
 per-pixel `S`/`V`/`across`/`along` arrays **and** a rectified `grid_v`/`grid_s`
 patch (`GRID_H`×`GRID_W`, rows proximal→distal, cols across, NaN where empty) so the
@@ -274,21 +274,21 @@ small / unclear a region → `nail_region_unclear`, and *all* color findings com
 
 Each condition is one module with `build_finding(region)` / `inconclusive_finding(reason)`
 (same finding shape as geometry), registered in `pipeline._COLOR_CONDITIONS` (which
-drives both the findings and the inconclusive list — add a condition there once):
-- `leukonychia.py` — fraction of the nail region that's white (high V, low S),
+drives both the findings and the inconclusive list - add a condition there once):
+- `leukonychia.py` - fraction of the nail region that's white (high V, low S),
   excluding the very brightest pixels as specular glare.
-- `melanonychia.py` — a dark *longitudinal* band: an internal across-bin much
+- `melanonychia.py` - a dark *longitudinal* band: an internal across-bin much
   darker than the rest of the plate (edge bins excluded as edge shadow).
-- `terrys_nails.py` — proximal plate mostly opaque-white **and** a darker distal
+- `terrys_nails.py` - proximal plate mostly opaque-white **and** a darker distal
   band (both gates must trip).
-- `beaus_lines.py` — a dark *transverse* groove: an internal `grid_v` row,
+- `beaus_lines.py` - a dark *transverse* groove: an internal `grid_v` row,
   spanning the width, well below the baseline of interior rows.
-- `splinter_hemorrhages.py` — small vertically-elongated dark streaks
+- `splinter_hemorrhages.py` - small vertically-elongated dark streaks
   (cv2 connected components on a dark mask); needs ≥2 to flag.
-- `pitting.py` — multiple small roundish dark pits (same CC approach); needs ≥4.
+- `pitting.py` - multiple small roundish dark pits (same CC approach); needs ≥4.
 
 Every threshold here is a **rough starting estimate** (named module-level constant)
-— there's no labeled photo dataset to calibrate against yet, confidences are capped
+ - there's no labeled photo dataset to calibrate against yet, confidences are capped
 modestly via `nail_region.heuristic_confidence`, and the conditions lean toward
 `within`/`inconclusive` to limit false positives. Adding a seventh color condition:
 add `<condition>.py` following the pattern, build its metric off the `region` dict
@@ -319,17 +319,17 @@ Pipeline:
 - `scripts/build_color_classification_dataset.py` crops every KNM box to its nail plate
   (15% pad) into `data/raw/color_cls/{train,valid,test}/<slug>/`, keeping KNM's own
   clean image-level split (no reshuffle, no leakage). It trains on **all 10 KNM classes
-  with data** (Lindsay's, 2 boxes, excluded) — including `melanoma`, `onychogryphosis`,
-  `clubbing`, `koilonychia`, which the app does **not** report — purely so the model
+  with data** (Lindsay's, 2 boxes, excluded) - including `melanoma`, `onychogryphosis`,
+  `clubbing`, `koilonychia`, which the app does **not** report - purely so the model
   discriminates instead of forcing every nail into one of the five reported classes.
-  Note: box crops here are the *opposite* of `build_color_eval_set.py`'s full images —
+  Note: box crops here are the *opposite* of `build_color_eval_set.py`'s full images  -
   the classical pipeline needs a whole finger silhouette, a CNN wants the tight nail crop.
   It **also** ingests the Ghana fingernail-anemia set (`data/raw/fingernails-ghana-anemia`,
   a darker-skinned cohort; see `data/DATASETS_DIVERSITY.md`): anemic crops → a new
   `pallor` class (which the heuristic track couldn't calibrate and the CNN didn't cover),
   non-anemic → darker-cohort `healthy`. These are split **patient-grouped** (by finger id,
   not image) so no subject straddles splits. This is the fix for the light-skin skew
-  `ml/eval/audit_skin_tone.py` found — it broadens tone exposure and backs `pallor` with
+  `ml/eval/audit_skin_tone.py` found - it broadens tone exposure and backs `pallor` with
   data. `discover_classes()` picks up `pallor` automatically once the data is on disk;
   retrain both backbones to make it a live signal.
 - `ml/train/train_color_classifier.py --backbone <name>` reuses the geometry trainer's
@@ -338,24 +338,24 @@ Pipeline:
   `ml/models/nail_color_classifier__<backbone>.pt` + a separate manifest
   `nail_color_classifier_labels.json` (with an `app_conditions` list). Reports overall
   accuracy *and* accuracy restricted to the app's conditions + healthy.
-- `ml/infer/color_classifier.py` — lazy + optional, same contract as `classifier.py`
+- `ml/infer/color_classifier.py` - lazy + optional, same contract as `classifier.py`
   (`is_available()` gates it). At inference it crops to **nail_region's detected bbox**
   (the closest analogue to the training nail-box crop) and classifies; below
   `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion." `CLASS_CONFIDENCE_THRESHOLD`
-  overrides that floor per class — `pallor` needs 0.65: at 0.45 its test-set precision
+  overrides that floor per class - `pallor` needs 0.65: at 0.45 its test-set precision
   is only 0.688 (anemic-vs-non-anemic nail colour is a genuinely subtle call, and the
   errors concentrate entirely within the Ghana-sourced images, not a leakage artifact),
   and confidence is a real precision signal for it (0.65 -> 0.792P/0.678R), so the
   higher floor trades some recall for a false-positive rate low enough to show a user.
   Re-measure (`ml/eval/eval_color_ensemble.py` + a manual precision-by-cutoff sweep) if
   the dataset changes.
-- `ml/infer/color_fusion.py` — fuses the CNN with the classical findings for its six
+- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for its six
   **app conditions** (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting,
-  pallor — the last added when the Ghana fingernail-anemia set was folded into the
+  pallor - the last added when the Ghana fingernail-anemia set was folded into the
   color-CNN's training data; see `data/DATASETS_DIVERSITY.md`).
   **Deliberately different trust model from `fusion.py`:** geometry is a real measurement
   so it's the authority there; here the heuristic is near-chance, so the **CNN is primary**
-  — when it has a confident call it sets the verdict, and the heuristic can only
+  - when it has a confident call it sets the verdict, and the heuristic can only
   corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
   confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
   (`"ml_primary"`). A confident prediction of a *different* condition is treated as "no
@@ -364,15 +364,15 @@ Pipeline:
   untouched. `ResultView.jsx` renders `color_fused` with a "Color + AI" badge.
 
 Same honesty caveats as the geometry CNN: trained on KNM **clinical** photos, not phone
-photos — real-world accuracy is unknown/lower and never clinical-grade; output stays
+photos - real-world accuracy is unknown/lower and never clinical-grade; output stays
 within / outside / inconclusive, never a diagnosis.
 
 ### Eval / diagnostics (`ml/eval/`)
 
-- `grad_cam.py` — Grad-CAM overlays (last conv block) on test images, written to
+- `grad_cam.py` - Grad-CAM overlays (last conv block) on test images, written to
   `ml/eval/gradcam_out/` (gitignored), to confirm the model attends to the nail,
   not the background. Good judging/demo artifact.
-- `eval_real.py` — runs the **full inference path** (ROI + TTA + temperature) over
+- `eval_real.py` - runs the **full inference path** (ROI + TTA + temperature) over
   real phone photos in `data/real_eval/<label>/` (gitignored, personal images) and
   reports a confusion matrix + per-class recall. This is the number that matters;
   the training split accuracy doesn't reflect phone photos.
@@ -380,7 +380,7 @@ within / outside / inconclusive, never a diagnosis.
 ### Frontend component contract
 
 - `CameraCapture.jsx` owns the two-step capture flow internally and only calls
-  `onCapture({ sideImage, topImage })` once both shots are taken — `App.jsx` never
+  `onCapture({ sideImage, topImage })` once both shots are taken - `App.jsx` never
   needs to know about the two-step mechanics.
 - `ResultView.jsx` renders one finding-card per item in `result.findings`, mapping
   `verdict` through a `COPY` lookup (`within` / `outside` / `inconclusive`) for
@@ -394,18 +394,18 @@ within / outside / inconclusive, never a diagnosis.
 - `api.js` is the only place that knows the `/analyze` request/response shape
   (`VITE_API_BASE` env var overrides the default `http://localhost:5000`).
 - **i18n + accessibility (`frontend/src/i18n/`)**: every user-facing string lives
-  in the locale dictionaries (`en.js` is the master/fallback, `es.js` mirrors it) —
+  in the locale dictionaries (`en.js` is the master/fallback, `es.js` mirrors it)  -
   don't hardcode UI copy in components; use `useI18n()`'s `t('dot.path', {params})`.
   Adding a language = one new dictionary file registered in `i18n/index.jsx`.
   Condition copy lives under `conditions.<key>` in the dictionaries;
   `conditions.js` only holds structure (keys/icons) and localized getters.
   Backend findings arrive with English `display_name`; the UI renames by `label`
   via `findingName()` (`findingNames` in the dictionaries) so the API contract is
-  untouched — backend-generated strings like `tone_caveat` are the one thing that
+  untouched - backend-generated strings like `tone_caveat` are the one thing that
   stays English in other languages. `SettingsProvider` (wraps App in `main.jsx`)
   also persists high-contrast / large-text / reduce-motion prefs to localStorage
   and reflects them as `a11y-*` classes on `<html>`; App.css font sizes are rem
-  on purpose so the large-text root font-size bump scales type — don't add new
+  on purpose so the large-text root font-size bump scales type - don't add new
   `font-size: ...px` rules.
 
 ### Scan history
@@ -413,11 +413,11 @@ within / outside / inconclusive, never a diagnosis.
 `/analyze` persists every scan: `backend/models.py`'s `ScanRecord` (SQLite via
 flask-sqlalchemy, `findings_json` + `created_at`) is written after analysis runs
 (`backend/app.py`'s `/analyze`), and the response includes `scan_id`. A DB write
-failure is swallowed (rolled back) rather than failing the request — history
+failure is swallowed (rolled back) rather than failing the request - history
 logging must never block a result. `GET /history` returns all `ScanRecord`s
 newest-first. `Feedback` (also in `models.py`) records a user's "does this match
 what you see?" response per finding (`scan_id` FK, `label`, `shown_verdict`,
-`agreed`, optional `note`) via `POST /feedback` — the honest data path toward
+`agreed`, optional `note`) via `POST /feedback` - the honest data path toward
 calibrating the uncalibrated color/geometry thresholds later. Neither model
 stores images, only findings/labels.
 
@@ -431,10 +431,10 @@ history, only findings.
 ### Data pipeline
 
 `scripts/download_data.py` pulls nail-image datasets (Roboflow Universe, CC BY 4.0)
-into `data/raw/` — needs a free `ROBOFLOW_API_KEY`. `data/raw/nailcheck-3xvkl` is
+into `data/raw/` - needs a free `ROBOFLOW_API_KEY`. `data/raw/nailcheck-3xvkl` is
 the classification set the CNN trains on (Clubbing/Koilonychia/Healthy + 5 more
 classes, already train/valid/test split). `data/raw/LICENSES.md` (generated) tracks
-attribution — CC BY 4.0 requires crediting each source in any submission/README.
+attribution - CC BY 4.0 requires crediting each source in any submission/README.
 `data/raw/` is gitignored (don't commit the images/licensing); re-run the script to
 repopulate. The other detection datasets (`nail-clubbing`, etc.) are boxes, not
-class folders — not yet wired into training (would need a crop step).
+class folders - not yet wired into training (would need a crop step).

@@ -8,7 +8,7 @@ import hi from './hi'
 import fr from './fr'
 import pt from './pt'
 
-// Add a language: import its dictionary and list it here — nothing else to touch.
+// Add a language: import its dictionary and list it here - nothing else to touch.
 // (For DeepL-supported languages, scripts/translate_locales.mjs generates a
 // reviewed-before-shipping draft.)
 const DICTIONARIES = { en, es, zh, hi, fr, pt }

@@ -74,8 +74,8 @@ def main():
             project = rf.workspace(ws).project(proj)
             project.version(ver).download(fmt, location=str(dest))
             manifest.append(
-                f"- **{proj}** ({task}, format={fmt}) — {note}\n"
-                f"  https://universe.roboflow.com/{ws}/{proj} — CC BY 4.0\n"
+                f"- **{proj}** ({task}, format={fmt}) - {note}\n"
+                f"  https://universe.roboflow.com/{ws}/{proj} - CC BY 4.0\n"
             )
         except Exception as e:  # noqa: BLE001 -- keep going on per-dataset failure
             print(f"  !! failed: {e}")

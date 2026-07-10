@@ -29,7 +29,7 @@ export default {
     whyRows: {
       anemia: {
         name: 'Anemia',
-        text: 'Afecta a unos 2 mil millones de personas en el mundo — las uñas pálidas o en forma de cuchara están entre sus primeros signos visibles.',
+        text: 'Afecta a unos 2 mil millones de personas en el mundo - las uñas pálidas o en forma de cuchara están entre sus primeros signos visibles.',
       },
       organs: {
         name: 'Condiciones del corazón, pulmones e hígado',
@@ -41,7 +41,7 @@ export default {
       },
     },
     whoFor:
-      'Creado como una primera revisión gratuita para quienes no tienen chequeos médicos regulares — nunca un reemplazo de ellos.',
+      'Creado como una primera revisión gratuita para quienes no tienen chequeos médicos regulares - nunca un reemplazo de ellos.',
     latestAssessment: 'Última evaluación',
     confidencePct: '{pct}% de confianza',
     noScans: 'Aún no hay escaneos',
@@ -155,7 +155,7 @@ export default {
       'Uno o más signos salieron fuera del rango típico. Esto no es un diagnóstico: vale la pena mostrárselo a un médico, sobre todo si has notado otros síntomas.',
     nextStepsFallback: 'Vale la pena mencionárselo a un médico.',
     nextStepsDoctor:
-      'Un médico de cabecera o un dermatólogo es la persona indicada para verlo. Usa "Guardar / imprimir informe" abajo para llevar una copia — los valores medidos son más útiles que una descripción de memoria.',
+      'Un médico de cabecera o un dermatólogo es la persona indicada para verlo. Usa "Guardar / imprimir informe" abajo para llevar una copia - los valores medidos son más útiles que una descripción de memoria.',
     nextStepsInconclusiveOne:
       'No pudimos analizar un signo con estas fotos. Tomarlas de nuevo con luz más brillante y uniforme, con la uña llenando el cuadro, suele solucionarlo.',
     nextStepsInconclusive:
@@ -164,7 +164,7 @@ export default {
       'Todo parece estar dentro del rango típico. No hay nada que hacer por ahora: observa los cambios con el tiempo y consulta con un médico cualquier preocupación de salud.',
     groupCloserLook: 'Merece una mirada más de cerca',
     diagramOverviewAlt: 'Ilustración que muestra dónde se encontró cada señal de este escaneo',
-    diagramOverviewNote: 'Una ilustración simplificada de dónde aparecen estas señales — no a escala, no es una foto de tu uña.',
+    diagramOverviewNote: 'Una ilustración simplificada de dónde aparecen estas señales - no a escala, no es una foto de tu uña.',
     diagramClubbing: 'Acropaquia',
     diagramKoilonychia: 'Coiloniquia',
     groupCouldntAnalyze: 'No se pudo analizar',
@@ -190,11 +190,11 @@ export default {
     feedbackQ: '¿Esto coincide con lo que ves?',
     feedbackYes: 'Sí',
     feedbackNo: 'No',
-    feedbackThanks: 'Gracias — eso nos ayuda a mejorar.',
+    feedbackThanks: 'Gracias - eso nos ayuda a mejorar.',
     feedbackImpact: 'Tus respuestas ayudan a calibrar resultados futuros.',
     toneCaveat: {
       limited:
-        'Este tono de piel está subrepresentado en nuestros datos de prueba, así que esta lectura de color está menos validada para ti — trátala como una señal más débil.',
+        'Este tono de piel está subrepresentado en nuestros datos de prueba, así que esta lectura de color está menos validada para ti - trátala como una señal más débil.',
       minimal:
         'Tenemos muy pocos datos de validación para tonos de piel más oscuros, así que esta lectura de color puede no ser fiable para ti. No le des demasiada importancia.',
     },
@@ -251,7 +251,7 @@ export default {
       'NailIQ revisa cada foto en busca de todos estos signos. Toca cualquiera para aprender cómo se ve, por qué ocurre y qué significa tu resultado.',
     equityTitle: 'Honesto con todos los tonos de piel',
     equityText:
-      'La mayoría de los conjuntos de datos de análisis de uñas se inclinan hacia pieles más claras. Medimos el nuestro, añadimos una cohorte de piel más oscura a los datos de entrenamiento y, donde la cobertura para un tono de piel aún es limitada, la app reduce su confianza y lo dice en el resultado — nunca finge.',
+      'La mayoría de los conjuntos de datos de análisis de uñas se inclinan hacia pieles más claras. Medimos el nuestro, añadimos una cohorte de piel más oscura a los datos de entrenamiento y, donde la cobertura para un tono de piel aún es limitada, la app reduce su confianza y lo dice en el resultado - nunca finge.',
     close: 'Cerrar',
   },
 
@@ -441,7 +441,7 @@ export default {
       name: 'Melanoniquia (banda oscura)',
       summary: 'Una banda marrón o negra que recorre la uña a lo largo.',
       lead:
-        'Una banda longitudinal oscura —una franja que va de la cutícula a la punta— se llama melanoniquia. Es muy común, sobre todo en personas con tonos de piel más oscuros, y a menudo es completamente benigna. Pero una banda nueva o que está cambiando merece la revisión de un médico.',
+        'Una banda longitudinal oscura, una franja que va de la cutícula a la punta, se llama melanoniquia. Es muy común, sobre todo en personas con tonos de piel más oscuros, y a menudo es completamente benigna. Pero una banda nueva o que está cambiando merece la revisión de un médico.',
       points: {
         looks:
           'Una franja marrón, negra o gris oscura recorre la uña a lo largo, desde la cutícula hasta la punta, a veces ocupando todo el ancho de la uña o solo una parte. La banda puede ser estrecha o bastante ancha.',

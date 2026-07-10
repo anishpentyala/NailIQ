@@ -22,13 +22,13 @@ export default {
     "title": "Accueil",
     "heroAlt": "Illustration d'un téléphone scannant un ongle",
     "heroTitle": "Repérez les changements d'ongles qui méritent un avis médical",
-    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles — mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient treize.",
+    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles - mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient treize.",
     "cta": "Lancer un scan",
     "whyTitle": "Pourquoi est-ce important ?",
     "whyRows": {
       "anemia": {
         "name": "Anémie",
-        "text": "Cette affection touche environ 2 milliards de personnes dans le monde — des ongles pâles ou en forme de cuillère comptent parmi ses premiers signes visibles."
+        "text": "Cette affection touche environ 2 milliards de personnes dans le monde - des ongles pâles ou en forme de cuillère comptent parmi ses premiers signes visibles."
       },
       "organs": {
         "name": "Maladies cardiaques, pulmonaires et hépatiques",
@@ -39,7 +39,7 @@ export default {
         "text": "Ces signes apparaissent progressivement au fil des mois, si bien que presque personne ne les remarque en se regardant dans le miroir. Une photo de référence permet de mettre en évidence cette évolution."
       }
     },
-    "whoFor": "Conçu comme un premier bilan gratuit pour toutes les personnes qui ne passent pas régulièrement de bilans de santé — il ne remplace en aucun cas ces derniers.",
+    "whoFor": "Conçu comme un premier bilan gratuit pour toutes les personnes qui ne passent pas régulièrement de bilans de santé - il ne remplace en aucun cas ces derniers.",
     "latestAssessment": "Dernière évaluation",
     "confidencePct": "{pct}% de confiance",
     "noScans": "Aucun scan pour le moment",
@@ -119,10 +119,10 @@ export default {
     "tips": [
       "Un bon éclairage et un fond uni rendent votre scan bien plus précis.",
       "Des ongles sains sont généralement lisses, avec une légère courbure régulière et sans sillons profonds.",
-      "Les changements d'ongles sont lents — vérifier de temps en temps aide à repérer une tendance.",
+      "Les changements d'ongles sont lents - vérifier de temps en temps aide à repérer une tendance.",
       "Appuyez votre doigt contre un bord pour garder la photo de profil stable et nette.",
       "Retirez le vernis avant de scanner pour que la surface de l'ongle soit visible.",
-      "Un seul ongle étrange est rarement inquiétant en soi — les motifs sur plusieurs ongles comptent davantage.",
+      "Un seul ongle étrange est rarement inquiétant en soi - les motifs sur plusieurs ongles comptent davantage.",
       "Cadrez un seul doigt, remplissant l'essentiel de l'image, pour la lecture la plus claire."
     ]
   },
@@ -169,7 +169,7 @@ export default {
     "summaryWithin": "Tout semble dans la plage typique.",
     "summaryOutsideOne": "1 signe est hors de la plage typique.",
     "summaryOutside": "{n} signes sont hors de la plage typique.",
-    "summaryInconclusive": "Impossible d'analyser ce scan — essayez de reprendre vos photos.",
+    "summaryInconclusive": "Impossible d'analyser ce scan - essayez de reprendre vos photos.",
     "howSure": "Notre degré de certitude",
     "noSignsRead": "Aucun signe n'a pu être lu",
     "signsUnreadOne": "1 signe n'a pas pu être lu",
@@ -191,15 +191,15 @@ export default {
     "issueGlare": "reflets",
     "issuePolish": "vernis à ongles",
     "nextSteps": "Prochaines étapes",
-    "nextStepsOutside": "Un ou plusieurs signes sont ressortis hors de la plage typique. Ce n'est pas un diagnostic — cela mérite d'être montré à un médecin, surtout si vous avez remarqué d'autres symptômes.",
+    "nextStepsOutside": "Un ou plusieurs signes sont ressortis hors de la plage typique. Ce n'est pas un diagnostic - cela mérite d'être montré à un médecin, surtout si vous avez remarqué d'autres symptômes.",
     "nextStepsFallback": "À mentionner à un médecin.",
     "nextStepsDoctor": "Un médecin généraliste ou un dermatologue est la personne à qui vous devez montrer cela. Utilisez l'option « Enregistrer / imprimer le rapport » ci-dessous pour en apporter une copie : les valeurs mesurées sont plus utiles qu'une description de mémoire.",
     "nextStepsInconclusiveOne": "Un signe n'a pas pu être analysé sur ces photos. Les reprendre sous une lumière plus vive et uniforme, l'ongle remplissant le cadre, résout généralement le problème.",
     "nextStepsInconclusive": "{n} signes n'ont pas pu être analysés sur ces photos. Les reprendre sous une lumière plus vive et uniforme, l'ongle remplissant le cadre, résout généralement le problème.",
-    "nextStepsWithin": "Tout semble dans la plage typique. Rien à faire pour l'instant — surveillez les changements au fil du temps et consultez un médecin pour toute préoccupation de santé.",
+    "nextStepsWithin": "Tout semble dans la plage typique. Rien à faire pour l'instant - surveillez les changements au fil du temps et consultez un médecin pour toute préoccupation de santé.",
     "groupCloserLook": "À regarder de plus près",
     "diagramOverviewAlt": "Illustration montrant où chaque signe de ce scan a été détecté",
-    "diagramOverviewNote": "Illustration simplifiée montrant où ces signes apparaissent — pas à l'échelle, ce n'est pas une photo de votre ongle.",
+    "diagramOverviewNote": "Illustration simplifiée montrant où ces signes apparaissent - pas à l'échelle, ce n'est pas une photo de votre ongle.",
     "diagramClubbing": "Hippocratisme",
     "diagramKoilonychia": "Koïlonychie",
     "groupCouldntAnalyze": "Impossible d'analyser",
@@ -223,10 +223,10 @@ export default {
     "feedbackQ": "Cela correspond-il à ce que vous voyez ?",
     "feedbackYes": "Oui",
     "feedbackNo": "Non",
-    "feedbackThanks": "Merci — cela nous aide à nous améliorer.",
+    "feedbackThanks": "Merci - cela nous aide à nous améliorer.",
     "feedbackImpact": "Vos réponses aident à calibrer les résultats futurs.",
     "toneCaveat": {
-      "limited": "Cette carnation est sous-représentée dans nos données de test, donc cette lecture de couleur est moins validée pour vous — considérez-la comme un signal plus faible.",
+      "limited": "Cette carnation est sous-représentée dans nos données de test, donc cette lecture de couleur est moins validée pour vous - considérez-la comme un signal plus faible.",
       "minimal": "Nous avons très peu de données de validation pour les carnations plus foncées, donc cette lecture de couleur pourrait être peu fiable pour vous. N'y accordez pas trop d'importance."
     },
     "agreement": {
@@ -276,7 +276,7 @@ export default {
   "info": {
     "intro": "NailIQ dépiste tous ces signes sur chaque photo. Touchez-en un pour découvrir à quoi il ressemble, pourquoi il apparaît et ce que signifie votre résultat.",
     "equityTitle": "Honnête sur toutes les carnations",
-    "equityText": "La plupart des ensembles de données utilisés pour l'analyse des ongles sont principalement composés de personnes à la peau claire. Nous avons mesuré les nôtres, ajouté une cohorte de personnes à la peau plus foncée aux données d'apprentissage, et lorsque la couverture pour une carnation reste limitée, l'application réduit son niveau de confiance et l'indique clairement dans le résultat — elle ne fait jamais semblant de savoir.",
+    "equityText": "La plupart des ensembles de données utilisés pour l'analyse des ongles sont principalement composés de personnes à la peau claire. Nous avons mesuré les nôtres, ajouté une cohorte de personnes à la peau plus foncée aux données d'apprentissage, et lorsque la couverture pour une carnation reste limitée, l'application réduit son niveau de confiance et l'indique clairement dans le résultat - elle ne fait jamais semblant de savoir.",
     "close": "Fermer"
   },
   "failure": {
@@ -292,7 +292,7 @@ export default {
     "points_collinear": "Nous n'avons pas pu lire clairement la forme de votre ongle. Repositionnez votre doigt et reprenez la photo.",
     "low_confidence": "Le modèle IA n'était pas assez sûr de cette photo pour donner une lecture. Essayez une prise plus nette et bien éclairée d'un seul ongle.",
     "nail_region_unclear": "Nous n'avons pas pu lire clairement la tablette de votre ongle sur la photo de dessus. Remplissez le cadre avec votre ongle sous une lumière uniforme et reprenez-la.",
-    "nail_polish_detected": "Il semble y avoir du vernis. Les signes de couleur et de surface ne se lisent pas à travers le vernis — retirez-le et reprenez la photo de dessus.",
+    "nail_polish_detected": "Il semble y avoir du vernis. Les signes de couleur et de surface ne se lisent pas à travers le vernis - retirez-le et reprenez la photo de dessus.",
     "too_much_glare": "Il y a trop de reflets sur l'ongle pour lire sa couleur. Inclinez-le hors de la lumière directe ou passez à un éclairage plus doux, puis reprenez la photo.",
     "tracks_disagree": "Nos deux vérifications ne concordent pas sur ce point, donc nous ne tranchons pas. Reprenez les deux photos sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
     "default": "Nous n'avons pas détecté d'ongle sur cette photo. Essayez un fond plus uni, un meilleur éclairage et le doigt entier dans le cadre."
@@ -387,20 +387,20 @@ export default {
       "lead": "Regardez votre doigt de côté. La plupart des doigts présentent une petite encoche là où l'ongle rejoint la peau. L'hippocratisme efface lentement cette encoche jusqu'à ce que le bout du doigt paraisse arrondi et que l'ongle se courbe par-dessus.",
       "points": {
         "looks": "Normalement, il y a un petit creux, comme une petite vallée, là où l'ongle rejoint la peau du doigt. Avec l'hippocratisme, ce creux s'aplatit ou disparaît, le bout du doigt paraît plus rond et plus bombé, et avec le temps l'ongle peut commencer à se courber vers le bas par-dessus le bout au lieu de rester plat.",
-        "why": "Les médecins ne savent pas exactement pourquoi cela se produit, mais on l'observe le plus souvent avec des problèmes pulmonaires chroniques, certaines maladies cardiaques ou certaines maladies digestives. Cela s'installe lentement sur des mois ou des années — ça n'apparaît pas du jour au lendemain.",
-        "how": "Nous mesurons l'angle où votre ongle rejoint votre peau à partir de la photo de profil. Un angle typique reste sous environ 180°. L'hippocratisme le pousse au-delà — c'est donc de la géométrie rigoureuse, pas une supposition.",
-        "action": "Un résultat « hors de la plage typique » ne signifie pas que vous avez une maladie précise — simplement que cela mérite d'être montré à un médecin, surtout si vous avez aussi remarqué un essoufflement, une toux persistante ou une fatigue inhabituelle."
+        "why": "Les médecins ne savent pas exactement pourquoi cela se produit, mais on l'observe le plus souvent avec des problèmes pulmonaires chroniques, certaines maladies cardiaques ou certaines maladies digestives. Cela s'installe lentement sur des mois ou des années - ça n'apparaît pas du jour au lendemain.",
+        "how": "Nous mesurons l'angle où votre ongle rejoint votre peau à partir de la photo de profil. Un angle typique reste sous environ 180°. L'hippocratisme le pousse au-delà - c'est donc de la géométrie rigoureuse, pas une supposition.",
+        "action": "Un résultat « hors de la plage typique » ne signifie pas que vous avez une maladie précise - simplement que cela mérite d'être montré à un médecin, surtout si vous avez aussi remarqué un essoufflement, une toux persistante ou une fatigue inhabituelle."
       }
     },
     "koilonychia": {
       "name": "Koïlonychie (ongles en cuillère)",
       "summary": "Des ongles qui se courbent vers le haut comme une cuillère au lieu de rester plats.",
-      "lead": "Regardez votre ongle à la verticale. Un ongle typique est plat ou légèrement bombé. Un ongle en cuillère se creuse au centre — parfois assez pour qu'une goutte d'eau y reste au lieu de glisser.",
+      "lead": "Regardez votre ongle à la verticale. Un ongle typique est plat ou légèrement bombé. Un ongle en cuillère se creuse au centre - parfois assez pour qu'une goutte d'eau y reste au lieu de glisser.",
       "points": {
         "looks": "Au lieu de rester plat ou de se courber doucement vers l'extérieur, le centre de l'ongle se creuse vers l'intérieur, comme une petite cuillère. Dans les cas plus marqués, l'ongle est assez fin et courbé pour qu'une goutte d'eau reste réellement dans le creux au lieu de glisser.",
         "why": "La cause la plus fréquente est un manque de fer dans le sang, appelé anémie ferriprive. Cela peut aussi apparaître avec des troubles thyroïdiens, certaines maladies de peau, ou une forte exposition aux solvants et détergents agressifs. Chez les bébés et jeunes enfants, des ongles légèrement en cuillère sont souvent tout à fait normaux et disparaissent en grandissant.",
         "how": "Nous mesurons de combien le centre de votre ongle s'écarte d'une ligne droite tracée entre la cuticule et le bout du doigt, puis nous ajustons selon la longueur de l'ongle pour que la mesure reste équitable quelle que soit la taille du doigt.",
-        "action": "Un résultat « hors de la plage typique » mérite d'être mentionné à un médecin, surtout si vous vous sentez aussi inhabituellement fatigué, paraissez pâle ou avez les ongles cassants — cela peut évoquer une anémie, facile à détecter par une simple prise de sang et facile à traiter."
+        "action": "Un résultat « hors de la plage typique » mérite d'être mentionné à un médecin, surtout si vous vous sentez aussi inhabituellement fatigué, paraissez pâle ou avez les ongles cassants - cela peut évoquer une anémie, facile à détecter par une simple prise de sang et facile à traiter."
       }
     },
     "leukonychia": {
@@ -409,42 +409,42 @@ export default {
       "lead": "Les taches, lignes ou plaques blanches sur l'ongle s'appellent leuconychie. Parfois quelques taches apparaissent après un choc ou une petite blessure. Parfois de plus grandes zones de l'ongle paraissent blanchâtres au lieu de la couleur rose et blanche habituelle.",
       "points": {
         "looks": "Les marques blanches peuvent être de petites taches rondes, de fines lignes horizontales, de plus grandes plaques nuageuses, ou dans certains cas la majeure partie du lit unguéal paraît blanche ou opaque au lieu du rose habituel sous la tablette.",
-        "why": "Les petites taches blanches viennent généralement de petits chocs sur l'ongle. Un blanchiment étendu du lit unguéal peut être lié à une maladie du foie, des reins, un problème cardiaque, un diabète ou des carences — mais il peut aussi être totalement bénin. Seul un médecin peut faire la différence.",
-        "how": "Nous estimons la tablette de l'ongle à partir d'une photo de dessus et cherchons des zones blanches ou opaques, en tenant compte de votre carnation. Ce sont des signaux de dépistage, pas des mesures précises — l'éclairage et les différences entre appareils photo influencent le résultat.",
-        "action": "Si vous voyez un blanchiment étendu de vos ongles, surtout sur plusieurs doigts, mentionnez-le à un médecin — il pourra vous examiner correctement et prescrire des examens si nécessaire. Les petites taches blanches dues à des chocs disparaissent généralement seules."
+        "why": "Les petites taches blanches viennent généralement de petits chocs sur l'ongle. Un blanchiment étendu du lit unguéal peut être lié à une maladie du foie, des reins, un problème cardiaque, un diabète ou des carences - mais il peut aussi être totalement bénin. Seul un médecin peut faire la différence.",
+        "how": "Nous estimons la tablette de l'ongle à partir d'une photo de dessus et cherchons des zones blanches ou opaques, en tenant compte de votre carnation. Ce sont des signaux de dépistage, pas des mesures précises - l'éclairage et les différences entre appareils photo influencent le résultat.",
+        "action": "Si vous voyez un blanchiment étendu de vos ongles, surtout sur plusieurs doigts, mentionnez-le à un médecin - il pourra vous examiner correctement et prescrire des examens si nécessaire. Les petites taches blanches dues à des chocs disparaissent généralement seules."
       }
     },
     "melanonychia": {
       "name": "Mélanonychie (bande sombre)",
       "summary": "Une bande brune ou noire dans le sens de la longueur de l'ongle.",
-      "lead": "Une bande longitudinale sombre — une strie allant de la cuticule au bout — s'appelle mélanonychie. Elle est très fréquente, surtout chez les personnes à peau foncée, et souvent totalement bénigne. Mais une bande nouvelle ou qui change mérite l'avis d'un médecin.",
+      "lead": "Une bande longitudinale sombre - une strie allant de la cuticule au bout - s'appelle mélanonychie. Elle est très fréquente, surtout chez les personnes à peau foncée, et souvent totalement bénigne. Mais une bande nouvelle ou qui change mérite l'avis d'un médecin.",
       "points": {
         "looks": "Une strie brune, noire ou gris foncé court le long de l'ongle, de la cuticule au bout, sur toute la largeur de l'ongle ou seulement une partie. La bande peut être étroite ou assez large.",
         "why": "La cause la plus fréquente est le pigment des cellules qui forment l'ongle (les mélanocytes), particulièrement courant chez les personnes à peau foncée et presque toujours bénin. Les bandes peuvent aussi venir de grains de beauté, de taches de naissance, de médicaments (comme certaines chimiothérapies) ou, rarement, d'un mélanome. Une bande nouvelle ou changeante mérite l'attention d'un médecin.",
         "how": "Nous estimons la tablette de l'ongle et cherchons une pigmentation brun foncé ou noire dans le sens de la longueur. NailIQ ajuste sa sensibilité selon votre carnation pour tenir compte des variations normales. Ces vérifications sont des signaux de dépistage, pas un diagnostic.",
-        "action": "Si une bande sombre est ancienne et inchangée, elle est très probablement sans danger. Si elle est nouvelle, s'élargit, change de couleur ou de forme, ou si vous ignorez depuis quand vous l'avez, montrez-la à un médecin — il pourra l'examiner et décider si d'autres examens sont nécessaires."
+        "action": "Si une bande sombre est ancienne et inchangée, elle est très probablement sans danger. Si elle est nouvelle, s'élargit, change de couleur ou de forme, ou si vous ignorez depuis quand vous l'avez, montrez-la à un médecin - il pourra l'examiner et décider si d'autres examens sont nécessaires."
       }
     },
     "pallor": {
       "name": "Pâleur (ongles pâles)",
       "summary": "Un lit unguéal anormalement pâle ou blanc.",
-      "lead": "La plupart des ongles ont un lit rose avec un bout blanc. Quand le lit de l'ongle est anormalement pâle ou blanc, cela peut parfois être lié à un manque de fer, une anémie, une maladie du foie ou des reins — mais cela peut aussi être une variation normale.",
+      "lead": "La plupart des ongles ont un lit rose avec un bout blanc. Quand le lit de l'ongle est anormalement pâle ou blanc, cela peut parfois être lié à un manque de fer, une anémie, une maladie du foie ou des reins - mais cela peut aussi être une variation normale.",
       "points": {
         "looks": "Le lit unguéal (la partie sous la tablette transparente) paraît pâle, blanchâtre ou presque incolore au lieu du rose habituel. Le tout bout de l'ongle peut rester blanc, mais le milieu et la base paraissent moins roses que d'habitude.",
         "why": "Des ongles pâles peuvent être liés à un faible taux de globules rouges (anémie), un manque de fer, une maladie du foie ou des reins, ou une circulation réduite vers les doigts. Ils peuvent aussi être une simple variation de carnation. Un médecin doit vous examiner et éventuellement prescrire des analyses de sang pour en trouver la cause.",
-        "how": "Nous analysons la couleur du lit unguéal à partir d'une photo de dessus et cherchons une pâleur ou un blanchiment, en tenant compte de votre carnation. C'est uniquement un signal de dépistage — ce n'est pas une mesure de la numération sanguine ou de l'oxygène.",
-        "action": "Des ongles pâles de façon généralisée, surtout sur plusieurs doigts, méritent d'être mentionnés à un médecin lors d'un examen. Si vous vous sentez aussi fatigué, étourdi ou essoufflé, signalez ces symptômes — ils aideront votre médecin à décider si une prise de sang est utile."
+        "how": "Nous analysons la couleur du lit unguéal à partir d'une photo de dessus et cherchons une pâleur ou un blanchiment, en tenant compte de votre carnation. C'est uniquement un signal de dépistage - ce n'est pas une mesure de la numération sanguine ou de l'oxygène.",
+        "action": "Des ongles pâles de façon généralisée, surtout sur plusieurs doigts, méritent d'être mentionnés à un médecin lors d'un examen. Si vous vous sentez aussi fatigué, étourdi ou essoufflé, signalez ces symptômes - ils aideront votre médecin à décider si une prise de sang est utile."
       }
     },
     "cyanosis": {
       "name": "Cyanose (ongles bleutés)",
       "summary": "Une teinte bleutée ou violacée des ongles.",
-      "lead": "Quand les ongles prennent une teinte bleutée ou violacée au lieu du rose et blanc habituels, on parle de cyanose. Cela peut être lié à un manque d'oxygène dans le sang, au froid ou à des problèmes cardiaques/pulmonaires — mais aussi à un artefact de l'appareil photo ou de l'éclairage.",
+      "lead": "Quand les ongles prennent une teinte bleutée ou violacée au lieu du rose et blanc habituels, on parle de cyanose. Cela peut être lié à un manque d'oxygène dans le sang, au froid ou à des problèmes cardiaques/pulmonaires - mais aussi à un artefact de l'appareil photo ou de l'éclairage.",
       "points": {
         "looks": "Le lit et la tablette de l'ongle ont une teinte bleutée, violacée ou grisâtre au lieu du rose habituel. La décoloration peut toucher tout l'ongle ou être plus visible au niveau du lit unguéal.",
         "why": "La vraie cyanose (teinte bleutée due à un faible taux d'oxygène) peut survenir avec une maladie pulmonaire, cardiaque ou une exposition sévère au froid. Les ongles peuvent aussi paraître bleus ou violets à cause d'un hématome, de l'âge, de doigts froids ou de certains médicaments. Une mycose peut parfois donner une teinte bleutée.",
-        "how": "Nous analysons la couleur du lit et de la tablette à partir d'une photo de dessus et cherchons des teintes bleutées ou violacées. Attention : l'éclairage, la balance des blancs du téléphone et le vernis peuvent fausser cela — ce sont des signaux de dépistage, pas une mesure d'oxygène.",
-        "action": "Si vos ongles paraissent vraiment bleutés et que vous remarquez aussi un essoufflement, une douleur thoracique, ou des lèvres ou une langue bleutées, consultez immédiatement. Si les ongles paraissent juste un peu bleus en photo mais que vous vous sentez bien, c'est peut-être un artefact — un médecin peut examiner vos ongles en personne pour clarifier."
+        "how": "Nous analysons la couleur du lit et de la tablette à partir d'une photo de dessus et cherchons des teintes bleutées ou violacées. Attention : l'éclairage, la balance des blancs du téléphone et le vernis peuvent fausser cela - ce sont des signaux de dépistage, pas une mesure d'oxygène.",
+        "action": "Si vos ongles paraissent vraiment bleutés et que vous remarquez aussi un essoufflement, une douleur thoracique, ou des lèvres ou une langue bleutées, consultez immédiatement. Si les ongles paraissent juste un peu bleus en photo mais que vous vous sentez bien, c'est peut-être un artefact - un médecin peut examiner vos ongles en personne pour clarifier."
       }
     },
     "terrys_nails": {
@@ -454,7 +454,7 @@ export default {
       "points": {
         "looks": "La majeure partie de l'ongle (environ deux tiers à trois quarts) paraît blanche, opaque ou pâle. Seule l'extrémité distale montre une bande brun-rougeâtre plus foncée, généralement de 1 à 3 mm de large. Parfois une fine ligne pâle sépare la zone blanche de la bande sombre.",
         "why": "Les ongles de Terry s'observent le plus souvent avec une maladie du foie, une maladie rénale, une insuffisance cardiaque ou un diabète. Ils peuvent aussi apparaître après une chimiothérapie ou avec l'âge. La cause exacte n'est pas entièrement comprise, mais le lit unguéal change de façon à paraître plus blanc. C'est considéré comme un signe clinique à explorer.",
-        "how": "Nous estimons la tablette de l'ongle et cherchons une transition nette entre un lit majoritairement blanc et une bande distale plus sombre. C'est un signal de dépistage — un vrai diagnostic nécessite l'examen d'un médecin.",
+        "how": "Nous estimons la tablette de l'ongle et cherchons une transition nette entre un lit majoritairement blanc et une bande distale plus sombre. C'est un signal de dépistage - un vrai diagnostic nécessite l'examen d'un médecin.",
         "action": "Si vos ongles correspondent à ce motif, surtout sur plusieurs doigts, montrez-les à un médecin. Il pourra évaluer votre état général et prescrire des examens (bilan sanguin, fonction hépatique, fonction rénale, examen cardiaque) pour comprendre ce qui se passe."
       }
     },
@@ -466,7 +466,7 @@ export default {
         "looks": "Une ligne horizontale divise l'ongle à peu près en deux : la moitié proximale (près de la cuticule) est blanche, opaque ou pâle, et la moitié distale (vers le bout) est rougeâtre, rose ou brune. La ligne de démarcation est généralement nette et distincte.",
         "why": "Les ongles de Lindsay sont classiquement associés à la maladie et à l'insuffisance rénales, surtout chez les patients dialysés. Ils peuvent aussi survenir avec d'autres maladies graves comme une maladie du foie ou une leucémie. La cause exacte est inconnue, mais le motif est considéré comme un signe clinique à explorer.",
         "how": "Nous estimons les limites de l'ongle et cherchons une bande horizontale nette séparant une moitié proximale blanche d'une moitié distale plus sombre. C'est un signal de dépistage basé sur la couleur et la position.",
-        "action": "Si vos ongles montrent ce motif, surtout sur plusieurs doigts, signalez-le à un médecin. Si vous avez des antécédents de problèmes rénaux, de diabète ou de maladie du foie, mentionnez-le aussi — votre médecin pourra prescrire les examens et le suivi appropriés."
+        "action": "Si vos ongles montrent ce motif, surtout sur plusieurs doigts, signalez-le à un médecin. Si vous avez des antécédents de problèmes rénaux, de diabète ou de maladie du foie, mentionnez-le aussi - votre médecin pourra prescrire les examens et le suivi appropriés."
       }
     },
     "onycholysis": {
@@ -486,17 +486,17 @@ export default {
       "lead": "Les lignes de Beau sont des sillons ou dépressions qui traversent l'ongle d'un côté à l'autre. Elles marquent une pause ou un ralentissement temporaire de la croissance de l'ongle, généralement causé par une maladie, une forte fièvre, une opération ou un stress sévère.",
       "points": {
         "looks": "Un ou plusieurs sillons ou crêtes horizontaux traversent toute la largeur de l'ongle d'un bord à l'autre. Les sillons peuvent être superficiels ou assez profonds, et plus visibles sur certains doigts que d'autres.",
-        "why": "Les lignes de Beau se forment quand les cellules qui fabriquent l'ongle se mettent en pause ou ralentissent, ce qui arrive après un stress physique ou émotionnel important — forte fièvre, maladie grave, opération, infection sévère ou blessure majeure. Elles apparaissent à peu près dans la zone de l'ongle qui poussait au moment du stress. À mesure que l'ongle pousse, la ligne migre vers le bout et finit par disparaître.",
+        "why": "Les lignes de Beau se forment quand les cellules qui fabriquent l'ongle se mettent en pause ou ralentissent, ce qui arrive après un stress physique ou émotionnel important - forte fièvre, maladie grave, opération, infection sévère ou blessure majeure. Elles apparaissent à peu près dans la zone de l'ongle qui poussait au moment du stress. À mesure que l'ongle pousse, la ligne migre vers le bout et finit par disparaître.",
         "how": "Nous analysons la surface de l'ongle à la recherche de dépressions ou sillons horizontaux traversant sa largeur. C'est une vérification visuelle basée sur la texture de surface.",
-        "action": "Si vous remarquez des lignes de Beau, essayez de vous souvenir d'une maladie importante, d'une forte fièvre, d'une opération ou d'un grand stress environ 6 à 12 semaines plus tôt — la chronologie correspond généralement. Les lignes de Beau elles-mêmes sont bénignes et s'estompent avec la pousse. Si elles reviennent souvent ou s'accompagnent d'autres changements inquiétants, parlez-en à un médecin."
+        "action": "Si vous remarquez des lignes de Beau, essayez de vous souvenir d'une maladie importante, d'une forte fièvre, d'une opération ou d'un grand stress environ 6 à 12 semaines plus tôt - la chronologie correspond généralement. Les lignes de Beau elles-mêmes sont bénignes et s'estompent avec la pousse. Si elles reviennent souvent ou s'accompagnent d'autres changements inquiétants, parlez-en à un médecin."
       }
     },
     "muehrckes_lines": {
       "name": "Lignes de Muehrcke",
       "summary": "Paires de bandes blanches traversant l'ongle, qui ne bougent pas quand l'ongle pousse.",
-      "lead": "Les lignes de Muehrcke sont des paires de bandes blanches horizontales traversant l'ongle. Contrairement aux lignes de Beau, elles restent au même endroit par rapport à la cuticule quand l'ongle pousse — elles ne migrent pas vers le bout. Elles sont souvent liées à un faible taux de protéines sanguines ou à une maladie rénale.",
+      "lead": "Les lignes de Muehrcke sont des paires de bandes blanches horizontales traversant l'ongle. Contrairement aux lignes de Beau, elles restent au même endroit par rapport à la cuticule quand l'ongle pousse - elles ne migrent pas vers le bout. Elles sont souvent liées à un faible taux de protéines sanguines ou à une maladie rénale.",
       "points": {
-        "looks": "Deux bandes blanches traversent l'ongle horizontalement, généralement dans la région centrale ou proximale. Les bandes sont séparées par une fine ligne de couleur normale. Contrairement aux lignes de Beau (des sillons), les lignes de Muehrcke sont plates (sans creux) — c'est purement un changement de couleur.",
+        "looks": "Deux bandes blanches traversent l'ongle horizontalement, généralement dans la région centrale ou proximale. Les bandes sont séparées par une fine ligne de couleur normale. Contrairement aux lignes de Beau (des sillons), les lignes de Muehrcke sont plates (sans creux) - c'est purement un changement de couleur.",
         "why": "Les lignes de Muehrcke sont classiquement associées à un faible taux de protéines dans le sang (hypoalbuminémie), qui peut survenir avec une maladie rénale, une maladie du foie, une malnutrition ou d'autres maladies graves. Elles peuvent aussi apparaître temporairement pendant la grossesse ou avec certains cancers. Elles reflètent un changement du lit unguéal lui-même et restent en place quand l'ongle pousse (contrairement aux lignes de Beau, qui migrent vers le bout).",
         "how": "Nous cherchons des paires de bandes blanches horizontales, plates (sans sillon), qui restent à peu près à la même position sur la largeur de l'ongle. C'est une vérification visuelle de dépistage.",
         "action": "Si vous remarquez ce motif, surtout sur plusieurs ongles, parlez-en à un médecin. Il évoque souvent un problème rénal ou hépatique à explorer. Votre médecin peut prescrire des analyses pour vérifier les protéines, la fonction rénale et la fonction hépatique."
@@ -509,8 +509,8 @@ export default {
       "points": {
         "looks": "Une ou plusieurs stries fines et sombres (rouges, brunes ou noires) courent sous l'ongle dans le sens de la longueur, du lit vers le bout. Elles ressemblent à de petites échardes, généralement de quelques millimètres, plus visibles dans les portions centrale ou distale de l'ongle.",
         "why": "La plupart des hémorragies filiformes viennent de petits chocs ou traumatismes du doigt qui endommagent de petits vaisseaux sous l'ongle. Elles guérissent seules à mesure que l'ongle pousse. Parfois, elles peuvent signaler une infection du sang (endocardite), surtout si elles apparaissent sur plusieurs ongles sans blessure évidente, ou avec d'autres symptômes comme de la fièvre, des frissons ou un nouveau souffle cardiaque.",
-        "how": "Nous cherchons des stries longitudinales sombres sous l'ongle pouvant indiquer de petites hémorragies. C'est une vérification visuelle de dépistage — certaines lignes sombres peuvent être des artefacts de saleté ou de l'appareil photo.",
-        "action": "Si vous voyez une hémorragie filiforme et vous souvenez d'un choc au doigt, elle disparaîtra probablement seule. Si plusieurs ongles en développent sans blessure, ou si vous avez aussi de la fièvre ou vous sentez mal, parlez-en à un médecin — il évaluera si d'autres examens sont nécessaires."
+        "how": "Nous cherchons des stries longitudinales sombres sous l'ongle pouvant indiquer de petites hémorragies. C'est une vérification visuelle de dépistage - certaines lignes sombres peuvent être des artefacts de saleté ou de l'appareil photo.",
+        "action": "Si vous voyez une hémorragie filiforme et vous souvenez d'un choc au doigt, elle disparaîtra probablement seule. Si plusieurs ongles en développent sans blessure, ou si vous avez aussi de la fièvre ou vous sentez mal, parlez-en à un médecin - il évaluera si d'autres examens sont nécessaires."
       }
     },
     "pitting": {
