@@ -61,10 +61,18 @@ _EXTS = {".jpg", ".jpeg", ".png"}
 # Of the trained classes, the ones the app actually screens for in the colour track.
 # (clubbing/koilonychia belong to the geometry track; melanoma/onychogryphosis aren't
 # app findings -- all three are kept as classes only so the model can tell them apart.)
-# `pallor` is present only when the Ghana fingernail-anemia set has been ingested
-# (scripts/build_color_classification_dataset.py); discover_classes() decides what
-# actually trains, so listing it here is a no-op until that data is on disk.
-APP_CONDITIONS = ["cyanosis", "terrys_nails", "beaus_lines", "muehrckes_lines", "pitting", "pallor"]
+# Presence of a class here is a no-op until its data is on disk -- discover_classes()
+# decides what actually trains. `pallor` needs the Ghana fingernail-anemia set;
+# leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails need the nail-disease set;
+# `melanonychia` needs the arthitaya set (all via
+# scripts/build_color_classification_dataset.py). These were added to give previously
+# heuristic-only conditions -- which false-positived on healthy nails (leukonychia
+# ~61%) or, for melanonychia, had NO training data anywhere -- a CNN color_fusion.py
+# can make primary over the heuristic. With melanonychia's addition, every condition
+# the app screens for now has (or will have, once trained) a CNN behind it.
+APP_CONDITIONS = ["cyanosis", "terrys_nails", "beaus_lines", "muehrckes_lines", "pitting",
+                  "pallor", "leukonychia", "onycholysis", "splinter_hemorrhages",
+                  "lindsays_nails", "melanonychia"]
 
 
 def discover_classes():
@@ -190,7 +198,14 @@ def main():
     test_dl = DataLoader(test_ds, batch_size=BATCH, num_workers=0)
 
     counts = torch.tensor(train_ds.class_counts(), dtype=torch.float)
-    weights = (counts.sum() / (len(classes) * counts)).to(device)
+    # Sqrt-dampened inverse frequency, not raw inverse frequency: with 17 classes now
+    # (melanonychia n=51, mees_lines n=48 are the newest, smallest), raw inverse-freq
+    # weighting over-corrects for them and starves gradient signal from the larger,
+    # already-hard-to-calibrate classes (leukonychia, pitting, pallor), which is what
+    # caused those classes' real-photo false-positive rate to regress when melanonychia
+    # was added (see fp_rate.py results in this session). Sqrt keeps rare classes
+    # up-weighted without letting them dominate the loss.
+    weights = (counts.sum() / (len(classes) * counts)).sqrt().to(device)
     print(f"train class counts {counts.int().tolist()}")
 
     model = build_model(args.backbone, len(classes)).to(device)

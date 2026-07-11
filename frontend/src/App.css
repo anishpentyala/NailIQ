@@ -1128,6 +1128,10 @@
   border-radius: 20px;
 }
 
+.cam-guide-ring--zoom {
+  width: 66%;
+}
+
 /* Translucent finger shape inside the ring -- shows what to fill the frame
    with, not just where the frame's edges are. */
 .cam-guide-silhouette {
@@ -1146,6 +1150,12 @@
   fill: rgba(255, 255, 255, 0.22);
   stroke: rgba(255, 255, 255, 0.55);
   stroke-width: 1.5;
+}
+.cam-guide-cuticle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 .cam-guide-corners {

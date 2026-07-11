@@ -5,7 +5,8 @@ Roboflow Universe) is heavily skewed toward light skin: of the ~430 images where
 skin region is even measurable, ~59% fall in the lightest ITA band and the darker
 bands are thin and noisy. The color findings are therefore largely **unvalidated on
 darker skin tones**. This file tracks the datasets we use or could use to close that
-gap. Anything CC BY must be credited per `data/raw/LICENSES.md`.
+gap. Anything CC BY must be credited per [`ATTRIBUTION.md`](../ATTRIBUTION.md) (the
+git-tracked attribution record; `data/raw/LICENSES.md` is gitignored).
 
 ## Integrated
 
@@ -14,7 +15,9 @@ gap. Anything CC BY must be credited per `data/raw/LICENSES.md`.
   darker-skinned) cohort, labelled anemic / non-anemic in the filename, collected with
   Hb values, age, sex per subject.
 - **Source:** "Detection of Anemia using Colour of the Fingernails Image Datasets from
-  Ghana," Mendeley Data, DOI [10.17632/2xx4j3kjg2.1](https://data.mendeley.com/datasets/2xx4j3kjg2/1).
+  Ghana," Asare, J.W., Appiahene, P., & Donkoh, E. (2022). Mendeley Data, Version 1,
+  DOI [10.17632/2xx4j3kjg2.1](https://data.mendeley.com/datasets/2xx4j3kjg2/1).
+  **License: CC BY 4.0.**
 - **How we use it:** folded into the color-CNN dataset by
   `scripts/build_color_classification_dataset.py` - anemic → a new `pallor` class
   (which previously had *no* CNN backing), non-anemic → darker-cohort `healthy`

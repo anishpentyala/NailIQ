@@ -17,8 +17,11 @@ Crop parity: the model trained on nail-plate box crops, so at inference we class
 crop of nail_region's detected nail bbox (predict_from_region) -- the closest
 inference-time analogue to the training crop. The model has more classes than the app
 reports (it also learned melanoma / onychogryphosis / clubbing / koilonychia, purely
-to discriminate); color_fusion only consults the prediction for the five app colour
-conditions.
+to discriminate); color_fusion only consults the prediction for the app colour
+conditions it covers (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting,
+pallor, leukonychia, onycholysis, splinter_hemorrhages, lindsays_nails, and --
+once the arthitaya set was folded in -- melanonychia, the last previously
+heuristic-only condition).
 
 HONESTY: trained on clinical photos, not phone photos -- real-world accuracy unknown
 and never clinical-grade. Output stays within / outside / inconclusive, never a
@@ -45,7 +48,30 @@ CONFIDENCE_THRESHOLD = 0.45
 # test set, confidence is a real precision signal for this class (0.45->0.688P/0.883R,
 # 0.65->0.792P/0.678R), so a class-specific floor of 0.65 trades some recall for a false
 # "outside" rate low enough to show a user. Re-measure if the dataset changes.
-CLASS_CONFIDENCE_THRESHOLD = {"pallor": 0.65}
+#
+# leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails were added from the
+# nail-disease set specifically to replace pure heuristics that false-positived badly on
+# healthy nails (leukonychia ~61% FP rate, measured via /analyze on real photo framing).
+# A cutoff sweep on the held-out test set (ml/eval -- see scratch sweep, not checked in)
+# showed these four calibrate far worse than pallor: onycholysis tops out near 0.50
+# precision at any cutoff (never gets clean), the others plateau around 0.6-0.8P. Floors
+# below trade meaningful recall for precision; re-sweep if the dataset changes.
+CLASS_CONFIDENCE_THRESHOLD = {
+    "pallor": 0.65,
+    "leukonychia": 0.65,          # P 0.625 / R 0.556 at this cutoff
+    "onycholysis": 0.65,          # P 0.500 / R 0.471 -- weakest of the four, still uncertain
+    "splinter_hemorrhages": 0.70,  # P 0.800 / R 0.444
+    "lindsays_nails": 0.75,       # P 0.773 / R 0.515
+    # melanonychia: only 6 test images exist anywhere (data/raw/nail-dataset-arthitaya
+    # is the only dataset found with this label at all -- see LICENSES.md), so this
+    # cutoff is barely better than a guess. Sweep on the held-out test set plateaus at
+    # 0.55-0.65 -> P 0.571 / R 0.667 (4 TP, 3 FP, 2 FN); below that precision craters,
+    # above it (0.70) both drop. This is the single least-trustworthy number in this
+    # file -- re-sweep the moment more melanonychia images turn up anywhere, and
+    # re-sweep again after any retrain (this value already shifted once when the
+    # class-weighting scheme changed -- see train_color_classifier.py).
+    "melanonychia": 0.60,
+}
 
 # Must match scripts/build_color_classification_dataset.py's BOX_PAD_FRAC so the
 # inference crop matches the training crop framing.

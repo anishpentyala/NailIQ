@@ -16,7 +16,7 @@ function FrameGuideSilhouette({ step }) {
           className="cam-guide-finger"
           d="M20,45 L150,45 C168,45 178,60 178,75 C178,90 168,105 150,105 L20,105 Z"
         />
-        <rect className="cam-guide-nail" x="140" y="50" width="30" height="20" rx="8" />
+        <rect className="cam-guide-nail" x="118" y="48" width="44" height="44" rx="20" />
       </svg>
     )
   }
@@ -24,9 +24,9 @@ function FrameGuideSilhouette({ step }) {
     <svg className="cam-guide-silhouette" viewBox="0 0 150 200" aria-hidden="true">
       <path
         className="cam-guide-finger"
-        d="M45,180 L45,50 C45,32 58,22 75,22 C92,22 105,32 105,50 L105,180 Z"
+        d="M20,190 L38,130 C38,70 48,20 75,15 C102,20 112,70 112,130 L130,190 Z"
       />
-      <rect className="cam-guide-nail" x="50" y="28" width="50" height="34" rx="10" />
+      <path className="cam-guide-cuticle" d="M50,130 Q75,110 100,130" />
     </svg>
   )
 }
@@ -164,7 +164,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       {/* Finger guide overlay */}
       {!cameraError && (
         <div className="cam-guide-overlay">
-          <div className={`cam-guide-ring ${isSide ? 'cam-guide-ring--landscape' : ''}`}>
+          <div className={`cam-guide-ring ${isSide ? 'cam-guide-ring--landscape' : 'cam-guide-ring--zoom'}`}>
             <FrameGuideSilhouette step={step} />
             <div className="cam-guide-corners">
               <span /><span /><span /><span />

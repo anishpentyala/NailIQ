@@ -156,7 +156,9 @@ backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # -> ml/eval/gradc
 backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
 ```
 Datasets, weights, and eval outputs are gitignored. CC BY 4.0 requires crediting
-each dataset source - attribution is tracked in the generated `data/raw/LICENSES.md`.
+each dataset source - attribution is tracked in [`ATTRIBUTION.md`](ATTRIBUTION.md)
+(git-tracked; the generated `data/raw/LICENSES.md` is gitignored along with the
+raw data).
 
 ## API contract
 

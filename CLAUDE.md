@@ -342,26 +342,38 @@ Pipeline:
   (`is_available()` gates it). At inference it crops to **nail_region's detected bbox**
   (the closest analogue to the training nail-box crop) and classifies; below
   `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion." `CLASS_CONFIDENCE_THRESHOLD`
-  overrides that floor per class - `pallor` needs 0.65: at 0.45 its test-set precision
-  is only 0.688 (anemic-vs-non-anemic nail colour is a genuinely subtle call, and the
-  errors concentrate entirely within the Ghana-sourced images, not a leakage artifact),
-  and confidence is a real precision signal for it (0.65 -> 0.792P/0.678R), so the
-  higher floor trades some recall for a false-positive rate low enough to show a user.
-  Re-measure (`ml/eval/eval_color_ensemble.py` + a manual precision-by-cutoff sweep) if
-  the dataset changes.
-- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for its six
-  **app conditions** (cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting,
-  pallor - the last added when the Ghana fingernail-anemia set was folded into the
-  color-CNN's training data; see `data/DATASETS_DIVERSITY.md`).
+  overrides that floor per class, each set from a precision-by-cutoff sweep on the
+  held-out test set: `pallor` 0.65, `leukonychia` 0.65, `onycholysis` 0.65,
+  `splinter_hemorrhages` 0.70, `lindsays_nails` 0.75, `melanonychia` 0.60 (the last is
+  the least trustworthy - only 6 test images exist anywhere; see its code comment).
+  Re-sweep (`ml/eval/eval_color_ensemble.py` + a manual cutoff sweep) whenever the
+  dataset OR the training weighting scheme changes - a class-weighting change already
+  shifted melanonychia's optimal cutoff once this session.
+- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for its
+  **eleven app conditions**: cyanosis, terrys_nails, beaus_lines, muehrckes_lines,
+  pitting (from KNM), pallor (Ghana fingernail-anemia set, see
+  `data/DATASETS_DIVERSITY.md`), leukonychia/onycholysis/splinter_hemorrhages/
+  lindsays_nails (from the `nail-disease` Roboflow set, added because as pure
+  heuristics they false-positived badly on healthy nails), and melanonychia (from
+  `data/raw/nail-dataset-arthitaya`, the only dataset found anywhere with this label -
+  see `data/raw/LICENSES.md` for its unclear-license caveat). **Every color condition
+  the app reports now has CNN coverage; none pass through untouched.**
   **Deliberately different trust model from `fusion.py`:** geometry is a real measurement
   so it's the authority there; here the heuristic is near-chance, so the **CNN is primary**
   - when it has a confident call it sets the verdict, and the heuristic can only
   corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
   confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
   (`"ml_primary"`). A confident prediction of a *different* condition is treated as "no
-  opinion" (single-label can't rule out a co-occurring sign). Uncovered conditions
-  (leukonychia, melanonychia, pallor, lindsays_nails, onycholysis, splinter) pass through
-  untouched. `ResultView.jsx` renders `color_fused` with a "Color + AI" badge.
+  opinion" (single-label can't rule out a co-occurring sign). `ResultView.jsx` renders
+  `color_fused` with a "Color + AI" badge.
+  Class-weighting note: `train_color_classifier.py` uses **sqrt-dampened** inverse-
+  frequency class weights, not raw inverse frequency - when melanonychia/mees_lines
+  (two small classes) were first added, raw inverse-frequency weighting over-corrected
+  for them and regressed the real-photo false-positive rate on leukonychia/pitting/
+  pallor/onycholysis/splinter_hemorrhages (measured via `/analyze`, not just test-set
+  accuracy). Sqrt-dampening plus more epochs fixed it - re-verify with a real `/analyze`
+  false-positive check (not just `eval_color_ensemble.py`) after any future retrain that
+  adds a new small class, since test-set accuracy alone didn't catch the regression.
 
 Same honesty caveats as the geometry CNN: trained on KNM **clinical** photos, not phone
 photos - real-world accuracy is unknown/lower and never clinical-grade; output stays

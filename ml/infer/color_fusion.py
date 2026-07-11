@@ -10,14 +10,19 @@ because the two situations aren't symmetric:
     (ml/eval/calibrate_color.py). Letting that veto a CNN trained on the same labels
     would throw away the whole reason the CNN exists.
 
-So for the colour conditions the CNN was trained on (cyanosis, terrys_nails,
-beaus_lines, muehrckes_lines, pitting, and -- once the Ghana fingernail-anemia set was
-folded in, see data/DATASETS_DIVERSITY.md -- pallor) the CNN is PRIMARY: when it has a
+So for the colour conditions the CNN was trained on the CNN is PRIMARY: when it has a
 confident call, it sets the verdict; the heuristic can only corroborate it (boosting
 confidence on agreement), never overturn it. When the CNN has no confident call, the
-heuristic stands alone, exactly as before. Conditions the CNN doesn't cover
-(leukonychia, melanonychia, lindsays_nails, onycholysis, splinter_hemorrhages) pass
-through untouched. Which labels are "covered" is read from the model's own manifest
+heuristic stands alone, exactly as before. The covered set grew as training data was
+added: cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting (KNM); pallor
+(Ghana fingernail-anemia set, see data/DATASETS_DIVERSITY.md); leukonychia,
+onycholysis, splinter_hemorrhages, lindsays_nails (nail-disease set) -- added because
+as pure heuristics they false-positived badly on healthy nails (leukonychia ~61%), and
+CNN-primary fusion is what fixed that; and melanonychia (data/raw/nail-dataset-arthitaya,
+the only dataset found anywhere with melanonychia labels -- see
+scripts/build_color_classification_dataset.py and data/raw/LICENSES.md for its license
+caveat), which had NO training data at all until then. Every app colour condition now
+has CNN coverage. Which labels are "covered" is read from the model's own manifest
 (color_classifier.app_conditions()), not hardcoded here -- see pipeline.py's call site.
 
 The single-label CNN can name only one condition per nail, so a confident prediction of
