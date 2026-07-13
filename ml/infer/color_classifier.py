@@ -40,37 +40,41 @@ _LABELS_PATH = _MODELS / "nail_color_classifier_labels.json"
 # Below it we treat the CNN as having no opinion (color_fusion falls back to classical).
 CONFIDENCE_THRESHOLD = 0.45
 
-# Per-class override of the floor above. `pallor` (added when the Ghana
-# fingernail-anemia set was folded in -- see scripts/build_color_classification_dataset.py)
-# sits at precision 0.688 at the global 0.45 floor on the held-out test set, because
-# anemic-vs-non-anemic nail colour is a genuinely subtle visual call -- the errors
-# concentrate entirely within that cohort's images, not elsewhere. Measured on the same
-# test set, confidence is a real precision signal for this class (0.45->0.688P/0.883R,
-# 0.65->0.792P/0.678R), so a class-specific floor of 0.65 trades some recall for a false
-# "outside" rate low enough to show a user. Re-measure if the dataset changes.
-#
-# leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails were added from the
-# nail-disease set specifically to replace pure heuristics that false-positived badly on
-# healthy nails (leukonychia ~61% FP rate, measured via /analyze on real photo framing).
-# A cutoff sweep on the held-out test set (ml/eval -- see scratch sweep, not checked in)
-# showed these four calibrate far worse than pallor: onycholysis tops out near 0.50
-# precision at any cutoff (never gets clean), the others plateau around 0.6-0.8P. Floors
-# below trade meaningful recall for precision; re-sweep if the dataset changes.
+# Per-class override of the floor above. Each cutoff below is chosen by
+# ml/eval/sweep_color_thresholds.py on the VALID split, then its precision/recall is
+# measured once, on TEST, at that fixed cutoff -- the sweep and the report use
+# different data on purpose. An earlier version of this file swept AND reported on
+# the same test split (classic cutoff-selection leakage: the "P/R at this cutoff"
+# numbers were optimistic by construction). Re-run that script and update the numbers
+# below after any retrain -- they will also shift because the model changes, not only
+# because of which split picked the cutoff.
 CLASS_CONFIDENCE_THRESHOLD = {
-    "pallor": 0.65,
-    "leukonychia": 0.65,          # P 0.625 / R 0.556 at this cutoff
-    "onycholysis": 0.65,          # P 0.500 / R 0.471 -- weakest of the four, still uncertain
-    "splinter_hemorrhages": 0.70,  # P 0.800 / R 0.444
-    "lindsays_nails": 0.75,       # P 0.773 / R 0.515
-    # melanonychia: only 6 test images exist anywhere (data/raw/nail-dataset-arthitaya
-    # is the only dataset found with this label at all -- see LICENSES.md), so this
-    # cutoff is barely better than a guess. Sweep on the held-out test set plateaus at
-    # 0.55-0.65 -> P 0.571 / R 0.667 (4 TP, 3 FP, 2 FN); below that precision craters,
-    # above it (0.70) both drop. This is the single least-trustworthy number in this
-    # file -- re-sweep the moment more melanonychia images turn up anywhere, and
-    # re-sweep again after any retrain (this value already shifted once when the
-    # class-weighting scheme changed -- see train_color_classifier.py).
-    "melanonychia": 0.60,
+    # pallor: the valid-picked cutoff was 0.70 (test P 0.878/R 0.565), but end-to-end
+    # sensitivity (ml/eval/eval_color_sensitivity.py) showed that cost real recall for
+    # no measured benefit: at 0.70, real anemic photos were caught only ~20-28% of the
+    # time. Overriding down to 0.45 (test P 0.741/R 0.835) nearly quadrupled end-to-end
+    # recall to 76.2% while the healthy-image false-positive rate stayed exactly the
+    # same (0.9%) -- the confidence range this floor change opens up (0.45-0.70) turned
+    # out to hold real anemic cases, not borderline healthy ones. Re-verify both numbers
+    # (not just the isolated CNN test) if this ever gets re-swept.
+    "pallor": 0.45,
+    "leukonychia": 0.45,           # test: P 0.692 / R 0.818 (n=33)
+    # onycholysis: tried overriding down to 0.35 the same way pallor was (end-to-end
+    # sensitivity: recall 19.0%->28.6%), but unlike pallor this cost a real
+    # false-positive increase (2.6%->7.9% on healthy images) for a recall that's still
+    # poor either way -- not a free win, so left at the valid-picked value. This
+    # condition needs more/better data (see the data-search note in DATASETS_DIVERSITY.md),
+    # not a threshold tweak.
+    "onycholysis": 0.70,           # test: P 0.647 / R 0.458 (n=24)
+    "splinter_hemorrhages": 0.45,  # test: P 0.750 / R 0.333 (n=18)
+    "lindsays_nails": 0.40,        # test: P 0.629 / R 0.667 (n=33)
+    # melanonychia has NO entry: its only ever training source
+    # (data/raw/nail-dataset-arthitaya) was dropped from
+    # scripts/build_color_classification_dataset.py because its Kaggle license is
+    # "Unknown" (data/raw/LICENSES.md) -- an unresolved legal blocker for weights that
+    # might be shared. The class no longer exists in the manifest, so
+    # predict_from_region never returns it and color_fusion.py never fuses it;
+    # melanonychia stays on the classical heuristic alone (ml/infer/melanonychia.py).
 }
 
 # Must match scripts/build_color_classification_dataset.py's BOX_PAD_FRAC so the

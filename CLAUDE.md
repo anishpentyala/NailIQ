@@ -342,30 +342,51 @@ Pipeline:
   (`is_available()` gates it). At inference it crops to **nail_region's detected bbox**
   (the closest analogue to the training nail-box crop) and classifies; below
   `CONFIDENCE_THRESHOLD` (0.45) it returns "no opinion." `CLASS_CONFIDENCE_THRESHOLD`
-  overrides that floor per class, each set from a precision-by-cutoff sweep on the
-  held-out test set: `pallor` 0.65, `leukonychia` 0.65, `onycholysis` 0.65,
-  `splinter_hemorrhages` 0.70, `lindsays_nails` 0.75, `melanonychia` 0.60 (the last is
-  the least trustworthy - only 6 test images exist anywhere; see its code comment).
-  Re-sweep (`ml/eval/eval_color_ensemble.py` + a manual cutoff sweep) whenever the
-  dataset OR the training weighting scheme changes - a class-weighting change already
-  shifted melanonychia's optimal cutoff once this session.
-- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for its
-  **eleven app conditions**: cyanosis, terrys_nails, beaus_lines, muehrckes_lines,
-  pitting (from KNM), pallor (Ghana fingernail-anemia set, see
-  `data/DATASETS_DIVERSITY.md`), leukonychia/onycholysis/splinter_hemorrhages/
-  lindsays_nails (from the `nail-disease` Roboflow set, added because as pure
-  heuristics they false-positived badly on healthy nails), and melanonychia (from
-  `data/raw/nail-dataset-arthitaya`, the only dataset found anywhere with this label -
-  see `data/raw/LICENSES.md` for its unclear-license caveat). **Every color condition
-  the app reports now has CNN coverage; none pass through untouched.**
+  overrides that floor per class: `pallor` 0.45, `leukonychia` 0.45, `onycholysis`
+  0.70, `splinter_hemorrhages` 0.45, `lindsays_nails` 0.40. There is deliberately no
+  `melanonychia` entry - see below, its CNN coverage was removed for a licensing
+  reason, not a threshold one. Chosen by `ml/eval/sweep_color_thresholds.py`, which
+  selects each cutoff on the **valid** split and reports precision/recall on **test**
+  only - an earlier version of this file swept and reported on the same test split
+  (cutoff-selection leakage), which overstated every number in the old code comments.
+  `pallor` is a deliberate override of that script's own pick (0.70): end-to-end
+  sensitivity testing (`eval_color_sensitivity.py`) showed 0.70 cost real recall (real
+  anemic photos caught only ~20-28% of the time) for no measured false-positive
+  benefit, so it's pinned to 0.45 instead (76.2% end-to-end recall, same 0.9%
+  false-positive rate) - **the isolated CNN-test sweep is a starting point, not the
+  final word; always re-check with `eval_color_sensitivity.py` + a false-positive
+  check before trusting a picked cutoff.** Re-sweep whenever the dataset OR the
+  training weighting scheme changes.
+- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for **ten
+  app conditions**: cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting
+  (from KNM), pallor (Ghana fingernail-anemia set, see `data/DATASETS_DIVERSITY.md`),
+  leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails (from the
+  `nail-disease` Roboflow set, added because as pure heuristics they false-positived
+  badly on healthy nails). **melanonychia is deliberately NOT in this list** - it was
+  briefly CNN-covered via `data/raw/nail-dataset-arthitaya` (the only dataset found
+  anywhere with this label), then that data source was **removed** from
+  `scripts/build_color_classification_dataset.py` once its Kaggle license turned out
+  to be a real, unresolved "Unknown" (see `data/raw/LICENSES.md`) rather than a
+  formality - training on it and shipping/redistributing the resulting weights was a
+  legal risk, not a hypothetical one, so melanonychia went back to classical-heuristic-
+  only (`ml/infer/melanonychia.py`, `track_used: "color"`). Not every color condition
+  the app reports has CNN coverage, and closing that gap needs a differently-licensed
+  data source, not a code change.
   **Deliberately different trust model from `fusion.py`:** geometry is a real measurement
   so it's the authority there; here the heuristic is near-chance, so the **CNN is primary**
   - when it has a confident call it sets the verdict, and the heuristic can only
   corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
   confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
-  (`"ml_primary"`). A confident prediction of a *different* condition is treated as "no
-  opinion" (single-label can't rule out a co-occurring sign). `ResultView.jsx` renders
-  `color_fused` with a "Color + AI" badge.
+  (`"ml_primary"`). Exception: for **`LOW_SAMPLE_CONDITIONS`** (`onycholysis`,
+  `splinter_hemorrhages` - test-set n of 24 and 18, where a single example flips
+  precision/recall by 5-15 points), disagreement instead falls back to `inconclusive`
+  (`"low_sample_disagree"`, `failure_reason: "insufficient_data_for_confident_call"`)
+  rather than letting the CNN unilaterally overrule the heuristic - neither signal has
+  enough held-out evidence to justify asserting a verdict against the other for these
+  two. Agreement (both signals concur) is unaffected by this exception. A confident
+  prediction of a *different* condition is treated as "no opinion" (single-label can't
+  rule out a co-occurring sign). `ResultView.jsx` renders `color_fused` with a "Color +
+  AI" badge.
   Class-weighting note: `train_color_classifier.py` uses **sqrt-dampened** inverse-
   frequency class weights, not raw inverse frequency - when melanonychia/mees_lines
   (two small classes) were first added, raw inverse-frequency weighting over-corrected
@@ -388,6 +409,108 @@ within / outside / inconclusive, never a diagnosis.
   real phone photos in `data/real_eval/<label>/` (gitignored, personal images) and
   reports a confusion matrix + per-class recall. This is the number that matters;
   the training split accuracy doesn't reflect phone photos.
+- `eval_real_color.py` - the color track's sibling to `eval_real.py`: runs real phone
+  photos in `data/real_eval_color/<condition-or-healthy>/` (gitignored) through the
+  full `/analyze` path. **As of this writing it has never been run against real
+  data** - no camera/subject was available to generate labeled phone photos
+  autonomously, so this is a harness waiting on real photos, not a result. Every
+  color-track number elsewhere in this doc (`eval_color_ensemble.py`,
+  `eval_color_sensitivity.py`) is measured on clinical/dataset images; real
+  phone-photo accuracy for the color track remains genuinely unmeasured. Even
+  10-20 labeled photos per condition would make this meaningful.
+- `eval_color_sensitivity.py` - **the color track's most important number, and the
+  one most likely to surprise you.** `eval_color_ensemble.py` measures the CNN in
+  isolation on pre-cropped nail-plate images; this script instead runs known-positive
+  **full, uncropped** images (from the same held-out test split, re-derived via the
+  build script's exact `bucket_split`/KNM-native-split logic so there's no leakage)
+  through the real Flask `/analyze` endpoint - region detection, bbox crop, and
+  `color_fusion` included - with the same realistic-framing simulation used for
+  false-positive checks. Recall here is consistently **worse** than the CNN-only
+  numbers because the CNN's per-class confidence floors (tuned against clean crops)
+  throw away true positives once bbox-crop noise is folded back in, falling back to
+  the classical heuristic, which is also weak. First run: pitting 82.8% and
+  leukonychia 76.0% hold up well, but pallor 28.0%, onycholysis 19.0%, and
+  splinter_hemorrhages 14.3% miss most real cases end-to-end despite reasonable
+  CNN-only numbers - this is the gap that matters for a screener and the CNN-only
+  eval alone will not surface it. Re-run after any retrain or threshold change.
+  Pallor's gap was a threshold problem and got fixed (see `CLASS_CONFIDENCE_THRESHOLD`
+  below); onycholysis/splinter_hemorrhages/lindsays_nails were diagnosed further (per
+  finding, real `f["ml"]` prediction inspected) and are NOT a threshold problem: the
+  classical heuristic is essentially blind on these three (`heuristic=within` on
+  nearly every miss, matching its documented near-chance calibration), and when the
+  CNN abstains it's usually genuinely unsure (confidence 0.2-0.4) - but a meaningful
+  share of the misses are the CNN **confidently wrong about a neighboring class**
+  (onycholysis mistaken for lindsays_nails at conf 0.63, leukonychia at 0.59,
+  muehrckes_lines at 0.87; lindsays_nails mistaken for beaus_lines at 0.91,
+  leukonychia at 0.999). These five conditions (leukonychia, lindsays_nails,
+  muehrckes_lines, beaus_lines, onycholysis) all present as some form of pale/white
+  discoloration or banding, and the CNN confuses between them under real (noisier)
+  bbox crops more than the clean-crop test-set numbers suggest. No confidence-floor
+  change can fix a confident vote for the wrong class in this cluster - that's inter-
+  class discrimination capacity, not calibration. A hierarchical classifier (first
+  "which of this white-patch cluster," then discriminate within it) or higher-res
+  crops are the plausible fixes, but both are bigger changes than a threshold tweak
+  and weren't attempted this session.
+  **Post-arthitaya-removal update:** dropping the unlicensed arthitaya source (see
+  "The color-condition CNN track" above) cost real recall beyond the numbers above,
+  since arthitaya had also contributed some onycholysis training images -
+  onycholysis end-to-end recall fell further, to 0% (0/19) in the retrain that
+  removed it, and splinter_hemorrhages fell from 28.6% to 18.2%; their false-positive
+  rates stayed flat or improved slightly (onycholysis 3.5%->2.9%, splinter_hemorrhages
+  7.9%->12.4%, mixed). This is the real, measured cost of closing the license gap, not
+  a hypothetical one - onycholysis in particular is now close to never firing a
+  correct positive end-to-end. `color_fusion.py`'s new `LOW_SAMPLE_CONDITIONS`
+  disagreement-to-inconclusive path (see "Fusing the two tracks" section) accounts
+  for part of this: some cases that used to resolve (rightly or wrongly) to a verdict
+  now honestly resolve to `insufficient_data_for_confident_call` instead. Both
+  conditions need materially more/better data to become useful screeners; no
+  threshold or fusion change can substitute for that.
+
+**`healthy` recall is weak (0.451 ensemble) but it's a single-cohort problem, not a
+general model weakness - confirmed, not just theorized:** a raw-argmax confusion
+check found 72% of all `healthy` misclassifications go to `pallor` (73/101), and a
+follow-up split by image source nailed down exactly why: on the `healthy` test
+split, **100% of the healthy->pallor errors (73/73) are Ghana-cohort images; 0/58
+non-Ghana healthy images (KNM/NailCheck/merged) are ever confused with pallor.**
+Checked again on the *train* split for a hard-negative-mining attempt: 383/384
+healthy images the model calls "pallor" are Ghana; only 1/819 non-Ghana healthy
+images is. This means the CNN's real-world healthy/disease separation is fine - the
+weak aggregate number is entirely the Ghana anemic-vs-non-anemic distinction being
+genuinely hard (the classical heuristic documented this as near-chance before the
+CNN was ever added), concentrated in one sub-population of one class. Oversampling
+the confused Ghana images in training was considered and **not attempted**: the
+train-set confusion rate (27.7% of Ghana healthy images) shows the model already
+sees these images constantly and still can't separate them, so more repetition of
+the same images is unlikely to add information the pixels don't already carry -
+this reads as a genuine visual/data ceiling, not a fixable training artifact.
+This is NOT a user-facing problem regardless: `predict_from_region`'s per-class
+floor (`pallor` needs 0.45, see `CLASS_CONFIDENCE_THRESHOLD`) filters almost all of
+these low-confidence healthy->pallor guesses into "no opinion" before
+`color_fusion` sees them, which is why the real end-to-end pallor false-positive
+rate is only ~1% (see `fp_rate`-style checks) despite this raw confusion. The floor
+is doing the real work here, not the CNN's discrimination - don't lower `pallor`'s
+threshold without re-checking both this confusion rate and the false-positive rate.
+
+**A second fix angle was tried and also failed - probability-margin gating.** Theory:
+maybe healthy-misclassified-as-pallor cases are lower-confidence/closer-call than true
+pallor cases, so gating on `probs["pallor"] - probs["healthy"]` (a signal
+`predict_from_region` computes but doesn't currently use) could separate them without
+new data. Measured directly on the color-CNN test split's healthy+pallor images: at
+margin >= 0.30 (a stringent gate), precision only moves 0.715 -> 0.754 while recall
+drops from 0.904 to 0.774 - the two classes' margin distributions overlap almost
+completely (true pallor cases have plenty of low-margin examples too). Not worth
+shipping for that trade. This confirms the earlier conclusion from a different angle:
+the healthy/pallor confusion is a genuine information ceiling in this cohort's pixels,
+not a decision-rule problem - a smarter threshold or margin gate doesn't recover it,
+only more/different training data would.
+
+**Trap for any script that drives `/analyze` in a loop:** `backend/app.py` rate-limits
+`/analyze`/`/validate_photo`/`/feedback` to 30 req/60s per IP, and the Flask test client
+looks like one IP making dozens of rapid requests. Early testing this session mistook
+the resulting HTTP 429s for real pipeline rejections - the false-positive/sensitivity
+scripts above all monkeypatch `app_module._rate_limited = lambda ip: False` before
+building the test client for exactly this reason. Forgetting it silently caps any
+batch eval at ~30 analyzed images and inflates the apparent rejection rate.
 
 ### Frontend component contract
 

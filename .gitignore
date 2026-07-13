@@ -39,6 +39,7 @@ ml/models/*.json
 # ML eval artifacts + real-photo eval set (personal images)
 ml/eval/gradcam_out/
 data/real_eval/
+data/real_eval_color/
 
 # Color-calibration eval set: regenerable crops of CC BY 4.0 datasets
 # (rebuild with scripts/build_color_eval_set.py). Not committed -- same rationale

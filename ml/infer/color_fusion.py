@@ -18,18 +18,35 @@ added: cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting (KNM); pall
 (Ghana fingernail-anemia set, see data/DATASETS_DIVERSITY.md); leukonychia,
 onycholysis, splinter_hemorrhages, lindsays_nails (nail-disease set) -- added because
 as pure heuristics they false-positived badly on healthy nails (leukonychia ~61%), and
-CNN-primary fusion is what fixed that; and melanonychia (data/raw/nail-dataset-arthitaya,
-the only dataset found anywhere with melanonychia labels -- see
-scripts/build_color_classification_dataset.py and data/raw/LICENSES.md for its license
-caveat), which had NO training data at all until then. Every app colour condition now
-has CNN coverage. Which labels are "covered" is read from the model's own manifest
-(color_classifier.app_conditions()), not hardcoded here -- see pipeline.py's call site.
+CNN-primary fusion is what fixed that. melanonychia was briefly added the same way via
+data/raw/nail-dataset-arthitaya, then REMOVED: that dataset's Kaggle license is
+"Unknown" (data/raw/LICENSES.md), an unresolved legal blocker for any model whose
+weights might be shared, so scripts/build_color_classification_dataset.py no longer
+trains on it. melanonychia is therefore CNN-uncovered and stands on the classical
+heuristic alone -- not every app colour condition has CNN coverage, and that gap is
+deliberate, not an oversight. Which labels are "covered" is read from the model's own
+manifest (color_classifier.app_conditions()), not hardcoded here -- see pipeline.py's
+call site.
 
 The single-label CNN can name only one condition per nail, so a confident prediction of
 some OTHER condition is treated as "no opinion" on C (it can't rule out a co-occurring
 sign) rather than as evidence C is absent -- the screener-safe choice. The output stays
 within / outside / inconclusive, never a diagnosis.
+
+LOW_SAMPLE_CONDITIONS is a deliberate exception to "CNN is primary" above. onycholysis
+(test n=24) and splinter_hemorrhages (n=18) have precision/recall numbers computed on so
+few images that a single test example flips them by 5-15 points (ml/eval/eval_color_ensemble.py,
+ml/eval/eval_color_sensitivity.py) -- there isn't enough evidence to say the CNN's call is
+more trustworthy than the heuristic's for these two specifically. Letting the CNN silently
+overrule the heuristic on disagreement, as it does for the well-sampled conditions, would
+assert a verdict neither signal can actually back. So for this subset, disagreement falls
+back to inconclusive (`agreement: "low_sample_disagree"`) instead of `ml_primary` --
+still screener-safe, and honest about the data gap CLAUDE.md documents rather than papering
+over it with a confidence float. Agreement (both signals concur) is unaffected -- that's
+still real corroborating evidence regardless of sample size.
 """
+
+LOW_SAMPLE_CONDITIONS = {"onycholysis", "splinter_hemorrhages"}
 
 
 def _cnn_signal_for(condition, pred):
@@ -79,6 +96,12 @@ def _fuse_one(heur, pred):
     if cnn_verdict == heur["verdict"]:  # both agree -> reinforce
         return {**base, "verdict": cnn_verdict, "confidence": _boost(heur["confidence"], cnn_conf),
                 "agreement": "agree", "failure_reason": None}
+
+    if heur["label"] in LOW_SAMPLE_CONDITIONS:
+        # Neither signal has enough held-out evidence to back overruling the other here
+        # (see the module docstring) -- stay inconclusive rather than assert a verdict.
+        return {**base, "verdict": "inconclusive", "confidence": 0.0,
+                "agreement": "low_sample_disagree", "failure_reason": "insufficient_data_for_confident_call"}
 
     # Disagree: the CNN leads (the heuristic is near-chance and cannot veto it).
     return {**base, "verdict": cnn_verdict, "confidence": cnn_conf,

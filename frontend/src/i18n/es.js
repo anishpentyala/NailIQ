@@ -283,6 +283,8 @@ export default {
       'Hay demasiado reflejo en la uña para leer su color. Inclínala lejos de la luz directa o busca una luz más suave, y vuelve a tomar la foto.',
     tracks_disagree:
       'Nuestras dos revisiones no coincidieron en este signo, así que no lo llamamos en ningún sentido. Vuelve a tomar ambas fotos con buena luz, y considera mostrárselo a un médico si te preocupa.',
+    insufficient_data_for_confident_call:
+      'No tenemos suficientes datos validados sobre este signo para determinarlo con confianza, y nuestras dos revisiones no coincidieron. Vuelve a tomar la foto con buena luz, y considera mostrárselo a un médico si te preocupa.',
     default:
       'No pudimos detectar una uña en esa foto. Prueba con un fondo más liso, mejor iluminación y todo el dedo dentro del cuadro.',
   },

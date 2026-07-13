@@ -110,36 +110,13 @@ NAIL_DISEASE_SLUGS = {
     "clubbing-nail": "clubbing",                 # discrimination only
 }
 
-# Fourth source: data/raw/nail-dataset-arthitaya (Kaggle, "nail dataset" by arthitaya,
-# 540 folder-classified images), the ONLY dataset found anywhere (Kaggle + Roboflow
-# Universe both searched) carrying melanonychia labels -- the one app color condition
-# that had no CNN backing at all. Cited by Coşar Soğukkuyu & Ata (2023, PeerJ Computer
-# Science 9:e1533) as their melanonychia/Beau's/clubbing classifier's training source.
-# A second listing, nail-dataset2, is a verified byte-for-byte subset of this one and is
-# deliberately NOT used (would just inflate counts with duplicate images).
-#
-# LICENSE CAVEAT (see data/raw/LICENSES.md): Kaggle shows this dataset's license as
-# "Unknown", unlike every other source above (all CC BY 4.0). Used here for
-# research/screener training only -- verify licensing before any public release,
-# redistribution of weights trained on it, or commercial use.
-ARTHITAYA = REPO / "data" / "raw" / "nail-dataset-arthitaya" / "Nail"
-
-# "black line" is this dataset's name for melanonychia (matches the PeerJ paper's
-# terminology). "white spot" is leukonychia punctata (visually confirmed: discrete
-# white spots on the nail plate). "other" is an ambiguous catch-all and is dropped.
-# "mees_ line" (Mees' lines -- transverse white bands from arsenic/heavy-metal
-# exposure) is medically distinct from muehrckes_lines and NOT an app condition, so
-# it's kept as its own discrimination-only class rather than merged into anything.
-ARTHITAYA_SLUGS = {
-    "black line": "melanonychia",     # NEW app condition (was heuristic-only, no data anywhere)
-    "white spot": "leukonychia",
-    "beau_s line": "beaus_lines",
-    "terry_s nail": "terrys_nails",
-    "onycholysis": "onycholysis",
-    "clubbing": "clubbing",            # discrimination only (geometry owns it)
-    "normal": "healthy",
-    "mees_ line": "mees_lines",         # discrimination only (distinct from muehrckes_lines)
-}
+# A fourth source, data/raw/nail-dataset-arthitaya (Kaggle, the only dataset found
+# anywhere with melanonychia labels), was tried and DROPPED: its Kaggle license is
+# "Unknown" (data/raw/LICENSES.md), an unresolved legal blocker for a model whose
+# weights might ever be shared or shipped. Rather than train on unlicensed data and
+# caveat it in a comment, melanonychia is CNN-uncovered -- it stays on the classical
+# heuristic alone (ml/infer/melanonychia.py). Re-add only once a permissively-licensed
+# melanonychia source turns up.
 
 
 def load_names(root):
@@ -276,40 +253,6 @@ def add_ghana(totals):
     print(f"  ghana: +{added}  (skipped {skipped})")
 
 
-def add_arthitaya(totals):
-    """Whole-image ingestion (already close-up nail crops, no box step needed).
-    No patient/subject id is available in this dataset, so the split key is the
-    filename itself -- fine here since, unlike Ghana, there's no risk of the same
-    subject's repeat photos straddling train/valid/test."""
-    if not ARTHITAYA.exists():
-        print(f"  arthitaya set not found at {ARTHITAYA} -- skipping "
-              f"(melanonychia stays heuristic-only, no data anywhere else)")
-        return
-    added = {s: 0 for s in SPLITS}
-    skipped = 0
-    for cls_dir in sorted(ARTHITAYA.iterdir()):
-        if not cls_dir.is_dir():
-            continue
-        slug = ARTHITAYA_SLUGS.get(cls_dir.name)
-        if slug is None:          # "other": ambiguous catch-all, dropped
-            continue
-        for img_path in sorted(cls_dir.iterdir()):
-            if img_path.suffix.lower() not in (".jpg", ".jpeg", ".png"):
-                continue
-            img = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
-            if img is None or min(img.shape[:2]) < MIN_CROP_PX:
-                skipped += 1
-                continue
-            split = bucket_split(f"{cls_dir.name}-{img_path.stem}")
-            dst_dir = OUT / split / slug
-            dst_dir.mkdir(parents=True, exist_ok=True)
-            stem = re.sub(r"[^A-Za-z0-9]+", "_", f"{cls_dir.name}_{img_path.stem}")
-            cv2.imwrite(str(dst_dir / f"arthitaya__{stem}.jpg"), img)
-            added[split] += 1
-            totals[split] = totals.get(split, 0) + 1
-    print(f"  arthitaya: +{added}  (skipped {skipped})")
-
-
 def main():
     if not KNM.exists():
         raise SystemExit(f"KNM dataset not found at {KNM} -- run scripts/download_data.py first.")
@@ -325,9 +268,15 @@ def main():
     ingest_yolo(NAIL_DISEASE, NAIL_DISEASE_SLUGS, "nd", totals, resplit=True)
     print("Adding Ghana fingernail-anemia crops (pallor / darker-cohort healthy)...")
     add_ghana(totals)
-    print("Adding arthitaya crops (NEW: melanonychia; also boosts leukonychia, "
-          "beaus_lines, terrys_nails, onycholysis, healthy)...")
-    add_arthitaya(totals)
+    # arthitaya (data/raw/nail-dataset-arthitaya) was DROPPED as a training source: its
+    # Kaggle license is "Unknown" (see data/raw/LICENSES.md), an unresolved legal blocker
+    # for any model whose weights might be shared or shipped. Rather than keep training on
+    # unlicensed data while a caveat comment sits nearby, add_arthitaya() is no longer
+    # called -- melanonychia drops back to CNN-uncovered / heuristic-only
+    # (ml/infer/melanonychia.py), which is the same honest fallback this dataset's own
+    # code comment described before it was ever integrated ("melanonychia stays
+    # heuristic-only, no data anywhere else"). Re-enable only once the license is
+    # confirmed permissive, or a differently-licensed melanonychia source is found.
 
     print("=" * 60)
     print(f"Done. Color-condition crops written to {OUT}")

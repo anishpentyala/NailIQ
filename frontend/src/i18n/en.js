@@ -284,6 +284,8 @@ export default {
       "There's too much glare on the nail to read its color. Tilt away from direct light or move to softer lighting, then retake the photo.",
     tracks_disagree:
       "Our two checks didn't agree on this one, so we're not calling it either way. Retake both photos in good lighting, and consider showing a doctor if you're concerned.",
+    insufficient_data_for_confident_call:
+      "We don't have enough validated data on this sign to call it confidently, and our two checks didn't agree. Retake in good lighting, and consider showing a doctor if you're concerned.",
     default:
       "We couldn't detect a nail in that photo. Try a plainer background, better lighting, and your whole finger in frame.",
   },

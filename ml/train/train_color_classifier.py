@@ -39,7 +39,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
-from torchvision import models
+from torchvision import models, transforms
 
 REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
@@ -52,27 +52,64 @@ DATA_DIR = REPO / "data" / "raw" / "color_cls"
 from ml.train.train_classifier import (  # noqa: E402
     BATCH, EMA, IMAGENET_MEAN, IMAGENET_STD, IMG_SIZE, LABEL_SMOOTHING,
     PATIENCE, SEED, UNFREEZE_LAST_BLOCKS, WARMUP_EPOCHS, WEIGHT_DECAY,
-    _eval_tf, _train_tf, collect_logits, eval_acc, fit_temperature,
+    _eval_tf, collect_logits, eval_acc, fit_temperature,
     param_groups, train_epoch,
 )
 
 _EXTS = {".jpg", ".jpeg", ".png"}
 
+
+def _train_tf_color():
+    """TRIED AND REVERTED: this used to override RandomResizedCrop's scale to
+    (0.85, 1.0) (vs. the geometry trainer's (0.6, 1.0)), on the theory that
+    onycholysis/lindsays_nails/muehrckes_lines/beaus_lines/leukonychia - which are
+    confused with EACH OTHER far more than clean test-set numbers suggest (see
+    ml/eval/eval_color_sensitivity.py's per-finding CNN output; a true onycholysis
+    photo was once confidently called muehrckes_lines at 0.87) - were losing their
+    distinguishing pattern (a groove vs. a band vs. a patch vs. edge separation) to
+    aggressive cropping on an already-tight nail-plate crop.
+
+    Tested via a full retrain + ensemble eval + `eval_color_sensitivity.py` +
+    `fp_rate`-style false-positive check: it was a clear regression, not a fix.
+    Pallor's end-to-end recall (a real, hard-won win from a confidence-threshold fix
+    earlier this session) crashed 76.2% -> 47.7%; onycholysis's own end-to-end
+    recall got WORSE (19.0% -> 9.5%); false-positive rates rose broadly (leukonychia
+    13.2% -> 20.2%, splinter_hemorrhages 7.9% -> 9.6%, cyanosis 3.5% -> 6.1%).
+    Reducing crop-augmentation diversity apparently hurt generalization more than it
+    helped fine-grained discrimination. Reverted to match `_train_tf` exactly.
+    Left as its own function (not just calling `_train_tf` from train_classifier.py)
+    so the next person who has this same idea can see it was already tried, and
+    isn't tempted to reach for a smaller scale range as a first move - if you retry
+    this, it needs a different angle (e.g. higher resolution instead of less
+    cropping, or actually building the hierarchical classifier for this cluster)
+    to have a real chance.
+    """
+    return transforms.Compose([
+        transforms.RandomResizedCrop(IMG_SIZE, scale=(0.6, 1.0), antialias=True),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandAugment(num_ops=2, magnitude=7),
+        transforms.ConvertImageDtype(torch.float),
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+        transforms.RandomErasing(p=0.25, scale=(0.02, 0.15)),
+    ])
+
 # Of the trained classes, the ones the app actually screens for in the colour track.
 # (clubbing/koilonychia belong to the geometry track; melanoma/onychogryphosis aren't
-# app findings -- all three are kept as classes only so the model can tell them apart.)
+# app findings -- both are kept as classes only so the model can tell them apart.)
 # Presence of a class here is a no-op until its data is on disk -- discover_classes()
 # decides what actually trains. `pallor` needs the Ghana fingernail-anemia set;
-# leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails need the nail-disease set;
-# `melanonychia` needs the arthitaya set (all via
-# scripts/build_color_classification_dataset.py). These were added to give previously
-# heuristic-only conditions -- which false-positived on healthy nails (leukonychia
-# ~61%) or, for melanonychia, had NO training data anywhere -- a CNN color_fusion.py
-# can make primary over the heuristic. With melanonychia's addition, every condition
-# the app screens for now has (or will have, once trained) a CNN behind it.
+# leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails need the nail-disease set
+# (all via scripts/build_color_classification_dataset.py). These were added to give
+# previously heuristic-only conditions -- which false-positived on healthy nails
+# (leukonychia ~61%) -- a CNN color_fusion.py can make primary over the heuristic.
+# `melanonychia` is deliberately absent: its only training data
+# (data/raw/nail-dataset-arthitaya) has an unresolved "Unknown" Kaggle license
+# (data/raw/LICENSES.md), so it's not trained on and melanonychia stays
+# CNN-uncovered -- the app's classical heuristic (ml/infer/melanonychia.py) is the
+# whole signal for it. Re-add once a permissively-licensed source exists.
 APP_CONDITIONS = ["cyanosis", "terrys_nails", "beaus_lines", "muehrckes_lines", "pitting",
                   "pallor", "leukonychia", "onycholysis", "splinter_hemorrhages",
-                  "lindsays_nails", "melanonychia"]
+                  "lindsays_nails"]
 
 
 def discover_classes():
@@ -98,7 +135,7 @@ class CropDataset(Dataset):
                     self.samples.append((p, self.label_to_idx[cls]))
         if not self.samples:
             raise SystemExit(f"No images under {DATA_DIR / split}.")
-        self.tf = _train_tf() if augment else _eval_tf()
+        self.tf = _train_tf_color() if augment else _eval_tf()
 
     def __len__(self):
         return len(self.samples)
