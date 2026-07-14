@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
+import PrivacySheet from './PrivacySheet'
 import { useI18n, LANGUAGES } from '../i18n'
 
 function Toggle({ id, label, description, checked, onChange }) {
@@ -27,6 +28,7 @@ function Toggle({ id, label, description, checked, onChange }) {
 export default function SettingsSheet({ onClose }) {
   const { t, lang, setLang, highContrast, largeText, reduceMotion, darkMode, setPref } = useI18n()
   const sheetRef = useRef(null)
+  const [privacyOpen, setPrivacyOpen] = useState(false)
 
   useEffect(() => {
     const onKey = (e) => {
@@ -113,9 +115,20 @@ export default function SettingsSheet({ onClose }) {
             onChange={(on) => setPref('reduceMotion', on)}
           />
 
+          <button
+            type="button"
+            className="settings-link"
+            onClick={() => setPrivacyOpen(true)}
+          >
+            <Icon name="info" size={16} />
+            {t('settings.privacyLink')}
+          </button>
+
           <p className="settings-note">{t('settings.note')}</p>
         </div>
       </div>
+
+      {privacyOpen && <PrivacySheet onClose={() => setPrivacyOpen(false)} />}
     </div>
   )
 }

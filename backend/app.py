@@ -15,7 +15,16 @@ from ml.infer.pipeline import analyze as run_analysis, validate_photo  # noqa: E
 from models import Feedback, ScanRecord, db  # noqa: E402
 
 app = Flask(__name__)
-CORS(app)
+
+# Wide-open CORS is fine only while everything runs on localhost. Origins are
+# configurable via ALLOWED_ORIGINS (comma-separated) so a deployed frontend can be
+# allow-listed without code changes; the default covers the two local dev origins
+# (Vite's default host and the phone-preview script's explicit 127.0.0.1 bind).
+_default_origins = "http://localhost:5173,http://127.0.0.1:5173"
+_allowed_origins = [
+    o.strip() for o in os.environ.get("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
+]
+CORS(app, origins=_allowed_origins)
 
 # Cap the request body. Two base64 photos are ~a few MB; this stops an oversized
 # body from exhausting memory before we ever look at it. Flask raises 413 itself.

@@ -366,6 +366,25 @@ export default {
     reduceMotion: 'Reduce motion',
     reduceMotionDesc: 'Turn off animations and transitions.',
     note: 'These settings are saved on this device.',
+    privacyLink: 'Privacy policy',
+  },
+
+  privacy: {
+    title: 'Privacy policy',
+    close: 'Close privacy policy',
+    photosTitle: 'Your photos',
+    photosBody:
+      'Your two photos are analyzed in memory and then discarded. No photo is ever saved to disk or to the database - only the findings (labels, verdicts, confidence) are stored.',
+    storedTitle: 'What is stored',
+    storedBody:
+      'Scan findings are saved locally so History and the angle-trend chart can show past scans. If you answer "does this match what you see?", that response is stored the same way to help calibrate the app later - avoid putting anything identifying in the note field. Display and language settings are stored only on this device.',
+    notCollectedTitle: 'What is not collected',
+    notCollectedBody: 'No accounts, names, emails, or device identifiers are requested or stored anywhere in this app.',
+    limitationTitle: 'Known limitation',
+    limitationBody:
+      'This is a single-deployment prototype: History shows every scan stored on this backend, with no per-user separation. Treat it accordingly if this backend is ever shared beyond one person.',
+    disclaimer:
+      'Nothing in this app is a diagnosis. Every finding is only ever "within typical range," "outside typical range," or "couldn\'t analyze this photo." Talk to a clinician about any concerning nail change.',
   },
 
   // Backend findings arrive with English display_name; the UI renames them by
