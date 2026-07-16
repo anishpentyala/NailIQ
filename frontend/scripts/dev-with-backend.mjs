@@ -58,7 +58,7 @@ function stopBackend() {
 
 await startBackend();
 
-const vite = spawn("npx", ["vite"], {
+const vite = spawn("npx", ["vite", ...process.argv.slice(2)], {
   cwd: path.join(projectRoot, "frontend"),
   stdio: "inherit",
   shell: process.platform === "win32",

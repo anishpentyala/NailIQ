@@ -275,12 +275,11 @@ export default {
   },
   "info": {
     "intro": "O NailIQ analisa cada foto em busca de todos esses sinais. Toque em qualquer um deles para saber como ele se parece, por que ocorre e o que seu resultado significa.",
-    "equityTitle": "Honesto em todos os tons de pele",
-    "equityText": "A maioria dos conjuntos de dados de análise de unhas apresenta um viés em favor de peles mais claras. Medimos os nossos, adicionamos uma coorte de pessoas com pele mais escura aos dados de treinamento e, nos casos em que a cobertura para um tom de pele ainda é limitada, o aplicativo reduz seu nível de confiança e informa isso no resultado - ele nunca finge saber o que não sabe.",
     "close": "Fechar"
   },
   "failure": {
     "invalid_image": "Não foi possível processar essa foto. Tente novamente.",
+    "camera_feed_blank": "Não recebemos uma imagem real da sua câmera. Verifique se o acesso à câmera está permitido e recarregue a página.",
     "too_blurry": "Essa foto parece desfocada. Mantenha a mão e a câmera firmes, deixe a câmera focar e tire a foto de novo.",
     "no_contour_found": "Não conseguimos identificar seu dedo nessa foto. Certifique-se de que ele ocupe todo o quadro, contra um fundo liso.",
     "contour_too_small": "Seu dedo parece muito pequeno no enquadramento. Aproxime a câmera e tente novamente.",
@@ -327,7 +326,8 @@ export default {
       "onycholysis": "Comparação lado a lado entre unhas normais e onicólise (a lâmina ungueal se separa e se levanta do leito na borda livre distal, deixando uma área descolada branca ou branco-amarelada)",
       "beaus_lines": "Comparação lado a lado entre unhas normais e linhas de Beau (um sulco ou depressão transversal que atravessa a lâmina ungueal)",
       "muehrckes_lines": "Comparação lado a lado entre unhas normais e linhas de Muehrcke (um par de faixas brancas transversais que atravessam a lâmina ungueal)",
-      "splinter_hemorrhages": "Comparação entre unhas normais e casos típicos e graves de hemorragias em lasca (pequenas linhas verticais finas, marrom-avermelhadas, sob a unha)"
+      "splinter_hemorrhages": "Comparação entre unhas normais e casos típicos de hemorragias em lasca (pequenas linhas verticais finas, marrom-avermelhadas, sob a unha)",
+      "pitting": "Comparação lado a lado entre unhas normais (superfície lisa) e unhas com pitting (numerosas pequenas depressões distintas e irregulares espalhadas pela lâmina ungueal)"
     },
     "subs": {
       "leukonychia": "manchas brancas",

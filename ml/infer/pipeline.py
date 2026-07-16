@@ -22,7 +22,13 @@ from . import (
     terrys_nails,
 )
 from .keypoints import find_keypoints
-from .preprocessing import BLUR_THRESHOLD, decode_base64_image, extract_best_contour, focus_score
+from .preprocessing import (
+    BLUR_THRESHOLD,
+    decode_base64_image,
+    extract_best_contour,
+    focus_score,
+    is_flat_frame,
+)
 
 # Color/texture conditions measured from the top-down nail region, in display order
 # (grouped: overall colour, then proximal/distal patterns, then surface markings).
@@ -64,6 +70,9 @@ def _extract(image_b64, require_keypoints=True):
     image = decode_base64_image(image_b64)
     if image is None:
         return None, None, "invalid_image"
+
+    if is_flat_frame(image):
+        return None, None, "camera_feed_blank"
 
     if focus_score(image) < BLUR_THRESHOLD:
         return None, None, "too_blurry"
@@ -150,6 +159,8 @@ def analyze_top_color(top_image_b64):
     if image is None:
         return _color_inconclusive("invalid_image"), no_overlay, _photo_quality(None)
     quality = _photo_quality(image)
+    if is_flat_frame(image):
+        return _color_inconclusive("camera_feed_blank"), no_overlay, quality
     if focus_score(image) < BLUR_THRESHOLD:
         return _color_inconclusive("too_blurry"), no_overlay, quality
     contour, validation = extract_best_contour(image)

@@ -3,31 +3,23 @@ import Webcam from 'react-webcam'
 import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
 import { useI18n } from '../i18n'
+import cameraGuideSide from '../assets/camera-guide-side.png'
+import cameraGuideTop from '../assets/camera-guide-top.png'
 
 // Translucent finger silhouette shown inside the guide ring, so a first-time
 // user knows *what shape* to fill the frame with, not just where the frame's
-// edges are. Side-profile shot = a horizontal finger with the nail on its top
-// edge; top-down shot = a vertical finger with the nail plate near its tip.
+// edges are. Both are hand-drawn reference sketches, recolored to
+// white-on-transparent so they read on the dark viewfinder: side-profile
+// shot = a horizontal finger with the nail as a thin edge-on wedge near the
+// tip; top-down shot = a vertical finger with the nail plate near its tip.
 function FrameGuideSilhouette({ step }) {
-  if (step === 'side') {
-    return (
-      <svg className="cam-guide-silhouette" viewBox="0 0 200 150" aria-hidden="true">
-        <path
-          className="cam-guide-finger"
-          d="M20,45 L150,45 C168,45 178,60 178,75 C178,90 168,105 150,105 L20,105 Z"
-        />
-        <rect className="cam-guide-nail" x="118" y="48" width="44" height="44" rx="20" />
-      </svg>
-    )
-  }
   return (
-    <svg className="cam-guide-silhouette" viewBox="0 0 150 200" aria-hidden="true">
-      <path
-        className="cam-guide-finger"
-        d="M20,190 L38,130 C38,70 48,20 75,15 C102,20 112,70 112,130 L130,190 Z"
-      />
-      <path className="cam-guide-cuticle" d="M50,130 Q75,110 100,130" />
-    </svg>
+    <img
+      className="cam-guide-silhouette cam-guide-silhouette--image"
+      src={step === 'side' ? cameraGuideSide : cameraGuideTop}
+      alt=""
+      aria-hidden="true"
+    />
   )
 }
 
@@ -73,6 +65,15 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
   }, [step, sideImage, onCapture, t])
 
   const handleCapture = useCallback(async () => {
+    const video = webcamRef.current?.video
+    // A stream can resolve (no onUserMediaError) without ever delivering real
+    // frames -- e.g. permission silently blocked, device busy. readyState below
+    // HAVE_CURRENT_DATA (2) or a 0x0 video means there's no actual image behind
+    // the viewfinder yet, so don't let a blank capture through.
+    if (!video || video.readyState < 2 || video.videoWidth === 0) {
+      setCameraError(t('camera.captureFailed'))
+      return
+    }
     const screenshot = webcamRef.current?.getScreenshot()
     if (!screenshot) {
       setCameraError(t('camera.captureFailed'))

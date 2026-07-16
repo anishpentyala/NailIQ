@@ -250,14 +250,13 @@ export default {
   info: {
     intro:
       'NailIQ screens every photo for all of these signs. Tap any one to learn what it looks like, why it happens, and what your result means.',
-    equityTitle: 'Honest across skin tones',
-    equityText:
-      'Most nail-analysis datasets skew toward lighter skin. We measured ours, added a darker-skinned cohort to the training data, and where coverage for a skin tone is still limited, the app lowers its confidence and says so on the result - it never pretends.',
     close: 'Close',
   },
 
   failure: {
     invalid_image: "That photo couldn't be processed. Please try again.",
+    camera_feed_blank:
+      "We didn't get an actual image from your camera. Check that camera access is allowed, then reload and try again.",
     too_blurry:
       'That photo looks blurry. Hold your hand and camera steady, let it focus, and retake the shot.',
     no_contour_found:
@@ -334,7 +333,9 @@ export default {
       muehrckes_lines:
         "Side-by-side comparison of normal nails versus Muehrcke's lines (a pair of transverse white bands running across the nail plate)",
       splinter_hemorrhages:
-        'Comparison of normal nails versus typical and severe splinter hemorrhages (small, thin, reddish-brown vertical lines under the nail)',
+        'Comparison of normal nails versus typical splinter hemorrhages (small, thin, reddish-brown vertical lines under the nail)',
+      pitting:
+        'Side-by-side comparison of normal nails (smooth surface) versus nail pitting (numerous small, distinct, irregular depressions scattered across the nail plate)',
     },
     subs: {
       leukonychia: 'white spots',

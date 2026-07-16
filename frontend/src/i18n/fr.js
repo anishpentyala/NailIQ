@@ -275,12 +275,11 @@ export default {
   },
   "info": {
     "intro": "NailIQ dépiste tous ces signes sur chaque photo. Touchez-en un pour découvrir à quoi il ressemble, pourquoi il apparaît et ce que signifie votre résultat.",
-    "equityTitle": "Honnête sur toutes les carnations",
-    "equityText": "La plupart des ensembles de données utilisés pour l'analyse des ongles sont principalement composés de personnes à la peau claire. Nous avons mesuré les nôtres, ajouté une cohorte de personnes à la peau plus foncée aux données d'apprentissage, et lorsque la couverture pour une carnation reste limitée, l'application réduit son niveau de confiance et l'indique clairement dans le résultat - elle ne fait jamais semblant de savoir.",
     "close": "Fermer"
   },
   "failure": {
     "invalid_image": "Cette photo n'a pas pu être traitée. Veuillez réessayer.",
+    "camera_feed_blank": "Nous n'avons reçu aucune image réelle de votre caméra. Vérifiez que l'accès à la caméra est autorisé, puis rechargez la page et réessayez.",
     "too_blurry": "Cette photo semble floue. Gardez la main et la caméra stables, laissez la mise au point se faire, puis reprenez la photo.",
     "no_contour_found": "Nous n'avons pas trouvé votre doigt sur cette photo. Assurez-vous qu'il remplit le cadre devant un fond uni.",
     "contour_too_small": "Votre doigt semble trop petit dans le cadre. Rapprochez la caméra et réessayez.",
@@ -327,7 +326,8 @@ export default {
       "onycholysis": "Comparaison côte à côte d'ongles normaux et d'une onycholyse (la tablette se détache et se soulève du lit au bord libre distal, laissant une zone décollée blanche ou blanc jaunâtre)",
       "beaus_lines": "Comparaison côte à côte d'ongles normaux et de lignes de Beau (un sillon transversal traversant la tablette)",
       "muehrckes_lines": "Comparaison côte à côte d'ongles normaux et de lignes de Muehrcke (une paire de bandes blanches transversales traversant la tablette)",
-      "splinter_hemorrhages": "Comparaison d'ongles normaux et d'hémorragies filiformes typiques et sévères (petites lignes verticales fines brun rougeâtre sous l'ongle)"
+      "splinter_hemorrhages": "Comparaison d'ongles normaux et d'hémorragies filiformes typiques (petites lignes verticales fines brun rougeâtre sous l'ongle)",
+      "pitting": "Comparaison côte à côte d'ongles normaux (surface lisse) et d'ongles ponctués (nombreuses petites dépressions distinctes et irrégulières réparties sur le plateau unguéal)"
     },
     "subs": {
       "leukonychia": "taches blanches",

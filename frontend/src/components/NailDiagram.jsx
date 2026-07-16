@@ -10,6 +10,7 @@ import onycholysisComparisonImg from '../assets/diagrams/onycholysis-comparison.
 import beausLinesComparisonImg from '../assets/diagrams/beaus_lines-comparison.png'
 import muehrckesLinesComparisonImg from '../assets/diagrams/muehrckes_lines-comparison.png'
 import splinterHemorrhagesComparisonImg from '../assets/diagrams/splinter_hemorrhages-comparison.png'
+import pittingComparisonImg from '../assets/diagrams/pitting-comparison.png'
 import { useI18n, findingName } from '../i18n'
 
 // Conditions with a real comparison illustration; their alt text lives in the
@@ -27,6 +28,7 @@ const COMPARISON_IMAGES = {
   beaus_lines: beausLinesComparisonImg,
   muehrckes_lines: muehrckesLinesComparisonImg,
   splinter_hemorrhages: splinterHemorrhagesComparisonImg,
+  pitting: pittingComparisonImg,
 }
 
 /* ---- Top-down nail plate, for the color / surface conditions ---- */

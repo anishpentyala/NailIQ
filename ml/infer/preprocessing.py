@@ -15,11 +15,31 @@ MIN_CONTOUR_AREA = 5000
 BLUR_THRESHOLD = 20.0
 _BLUR_NORM_DIM = 512
 
+# A dead/blocked camera (permission denied without an onUserMediaError, stream
+# never actually started, device returning a black test pattern, ...) produces a
+# frame that's flat -- little to no pixel variance. Otsu thresholding on a flat
+# histogram picks an essentially arbitrary cutoff, which can classify the *entire*
+# frame as one foreground blob and get rejected as "contour touches border" --
+# technically true but a misleading message, since there was no finger to cut off
+# in the first place. Catching flatness before thresholding gives that case its
+# own honest reason instead. A real (even blurry) photo of a hand against any
+# background has far more grayscale spread than this; calibrated generously so a
+# genuinely uniform macro shot isn't what trips it -- a functioning camera feed
+# essentially never scores this low.
+FLAT_IMAGE_STD_THRESHOLD = 4.0
+
 
 def decode_base64_image(b64_str):
     img_bytes = base64.b64decode(b64_str)
     arr = np.frombuffer(img_bytes, dtype=np.uint8)
     return cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+
+def is_flat_frame(image_bgr):
+    """True if the frame has ~no pixel variance -- a blank/dead camera feed, not
+    a real photo of anything (in focus or not)."""
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    return float(gray.std()) < FLAT_IMAGE_STD_THRESHOLD
 
 
 def focus_score(image_bgr):

@@ -249,14 +249,13 @@ export default {
   info: {
     intro:
       'NailIQ revisa cada foto en busca de todos estos signos. Toca cualquiera para aprender cómo se ve, por qué ocurre y qué significa tu resultado.',
-    equityTitle: 'Honesto con todos los tonos de piel',
-    equityText:
-      'La mayoría de los conjuntos de datos de análisis de uñas se inclinan hacia pieles más claras. Medimos el nuestro, añadimos una cohorte de piel más oscura a los datos de entrenamiento y, donde la cobertura para un tono de piel aún es limitada, la app reduce su confianza y lo dice en el resultado - nunca finge.',
     close: 'Cerrar',
   },
 
   failure: {
     invalid_image: 'Esa foto no se pudo procesar. Inténtalo de nuevo.',
+    camera_feed_blank:
+      'No recibimos una imagen real de tu cámara. Comprueba que el acceso a la cámara esté permitido y vuelve a cargar la página.',
     too_blurry:
       'Esa foto se ve borrosa. Mantén la mano y la cámara firmes, deja que enfoque y vuelve a tomarla.',
     no_contour_found:
@@ -333,7 +332,9 @@ export default {
       muehrckes_lines:
         'Comparación lado a lado de uñas normales frente a líneas de Muehrcke (un par de bandas blancas transversales que cruzan la lámina de la uña)',
       splinter_hemorrhages:
-        'Comparación de uñas normales frente a hemorragias en astilla típicas y severas (líneas verticales pequeñas, finas y de color marrón rojizo bajo la uña)',
+        'Comparación de uñas normales frente a hemorragias en astilla típicas (líneas verticales pequeñas, finas y de color marrón rojizo bajo la uña)',
+      pitting:
+        'Comparación lado a lado de uñas normales (superficie lisa) frente a piqueteado ungueal (numerosas depresiones pequeñas, definidas e irregulares repartidas por la lámina de la uña)',
     },
     subs: {
       leukonychia: 'manchas blancas',
