@@ -18,8 +18,8 @@ export async function validatePhoto(base64Image, view) {
   return res.data
 }
 
-export async function getHistory() {
-  const res = await axios.get(`${API_BASE}/history`)
+export async function getHistory(limit) {
+  const res = await axios.get(`${API_BASE}/history`, { params: limit ? { limit } : undefined })
   return res.data
 }
 

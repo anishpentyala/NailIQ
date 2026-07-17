@@ -294,6 +294,7 @@ export default {
     "nail_polish_detected": "Il semble y avoir du vernis. Les signes de couleur et de surface ne se lisent pas à travers le vernis - retirez-le et reprenez la photo de dessus.",
     "too_much_glare": "Il y a trop de reflets sur l'ongle pour lire sa couleur. Inclinez-le hors de la lumière directe ou passez à un éclairage plus doux, puis reprenez la photo.",
     "tracks_disagree": "Nos deux vérifications ne concordent pas sur ce point, donc nous ne tranchons pas. Reprenez les deux photos sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
+    "insufficient_data_for_confident_call": "Nous n'avons pas assez de données validées sur ce signe pour trancher avec confiance, et nos deux vérifications ne concordaient pas. Reprenez la photo sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
     "default": "Nous n'avons pas détecté d'ongle sur cette photo. Essayez un fond plus uni, un meilleur éclairage et le doigt entier dans le cadre."
   },
   "status": {
@@ -357,7 +358,21 @@ export default {
     "largeTextDesc": "Augmente la taille du texte dans toute l'application.",
     "reduceMotion": "Réduire les animations",
     "reduceMotionDesc": "Désactive les animations et les transitions.",
-    "note": "Ces paramètres sont enregistrés sur cet appareil."
+    "note": "Ces paramètres sont enregistrés sur cet appareil.",
+    "privacyLink": "Politique de confidentialité"
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "close": "Fermer la politique de confidentialité",
+    "photosTitle": "Vos photos",
+    "photosBody": "Vos deux photos sont analysées en mémoire puis supprimées. Aucune photo n'est jamais enregistrée sur disque ni dans la base de données : seuls les résultats (étiquettes, verdicts, confiance) sont conservés.",
+    "storedTitle": "Ce qui est conservé",
+    "storedBody": "Les résultats des analyses sont enregistrés localement afin que l'Historique et le graphique de tendance de l'angle puissent afficher les analyses passées. Si vous répondez à « est-ce que cela correspond à ce que vous voyez ? », cette réponse est conservée de la même façon pour aider à calibrer l'application plus tard - évitez d'inclure des informations identifiantes dans le champ de note. Les réglages d'affichage et de langue sont enregistrés uniquement sur cet appareil.",
+    "notCollectedTitle": "Ce qui n'est pas collecté",
+    "notCollectedBody": "Aucun compte, nom, e-mail ou identifiant d'appareil n'est demandé ni stocké nulle part dans cette application.",
+    "limitationTitle": "Limite connue",
+    "limitationBody": "Il s'agit d'un prototype à déploiement unique : l'Historique affiche toutes les analyses enregistrées sur ce serveur, sans séparation par utilisateur. Tenez-en compte si ce serveur venait à être partagé au-delà d'une seule personne.",
+    "disclaimer": "Rien dans cette application ne constitue un diagnostic. Chaque résultat est toujours « dans la plage typique », « hors de la plage typique » ou « impossible d'analyser cette photo ». Parlez à un professionnel de santé de tout changement de l'ongle qui vous inquiète."
   },
   "findingNames": {
     "clubbing": "Angle de l'ongle (hippocratisme)",

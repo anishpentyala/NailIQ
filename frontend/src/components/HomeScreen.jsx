@@ -73,7 +73,7 @@ function LastScanCard({ onViewHistory }) {
 
   useEffect(() => {
     let cancelled = false
-    getHistory()
+    getHistory(1)
       .then((data) => { if (!cancelled) setScans(data.scans) })
       .catch(() => { if (!cancelled) setFailed(true) })
     return () => { cancelled = true }

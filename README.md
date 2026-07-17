@@ -173,12 +173,15 @@ Request:
 ```
 `side_image` drives the geometry track; `top_image` is classified by the CNN (fused
 with geometry into the two shape findings) and is measured by the color/texture track
-(eleven standalone or color-CNN-fused findings). A scan returns **thirteen findings** in total.
+(eleven findings - five fused with the color CNN, six classical-heuristic-only). A
+scan returns **thirteen findings** in total.
 
 Response (the two geometry conditions come back `track_used: "fused"` when the CNN is
-available; the six color conditions come back `track_used: "color"`):
+available; five color conditions come back `track_used: "color_fused"`; the remaining
+six come back `track_used: "color"`):
 ```json
 {
+  "scan_id": 42,
   "findings": [
     {
       "label": "clubbing",
@@ -194,6 +197,17 @@ available; the six color conditions come back `track_used: "color"`):
       "failure_reason": null
     },
     {
+      "label": "pitting",
+      "display_name": "Nail surface (pitting)",
+      "value": null,
+      "unit": null,
+      "verdict": "within" | "outside" | "inconclusive",
+      "confidence": 0.65,
+      "track_used": "color_fused",
+      "agreement": "agree" | "color_only" | "ml_primary" | "low_sample_disagree",
+      "failure_reason": null
+    },
+    {
       "label": "leukonychia",
       "display_name": "Nail color (leukonychia)",
       "value": null,
@@ -203,12 +217,16 @@ available; the six color conditions come back `track_used: "color"`):
       "track_used": "color",
       "failure_reason": null
     }
-  ]
+  ],
+  "overlay": { "top_bbox_norm": [0.1, 0.1, 0.9, 0.9], "gradcam": "<base64-jpeg-or-null>" },
+  "image_quality": { "side": { "band": "good", "issues": [] }, "top": { "band": "good", "issues": [] } },
+  "skin_tone": { "band": "...", "tier": "well" | "limited" | "minimal" }
 }
 ```
 Without torch/weights, the two shape findings fall back to plain geometry
-(`track_used: "geometric"`, no `agreement`/`geometry`/`ml` fields); the six
-color/texture findings are unaffected (they never needed torch).
+(`track_used: "geometric"`, no `agreement`/`geometry`/`ml` fields); the eleven
+color/texture findings are unaffected by the shape CNN's absence (the color CNN is a
+separate, independently optional model - see "The color-condition CNN track" below).
 
 `inconclusive` means a track couldn't produce a confident verdict - the geometry
 pipeline couldn't locate the finger/keypoints (`failure_reason` names the failed
@@ -238,9 +256,9 @@ reasonably decide yourself")
 - **Flask app as a single file (`app.py`) for now** - will split into a proper package
   (`blueprints/`, `models.py`) once the SQLite history endpoint (step 5) and the real
   CV tracks (steps 3–4) land; premature structure now would just be empty scaffolding.
-- **CORS wide open in dev** (`CORS(app)` with no origin restriction) since this never
-  leaves localhost during development. Will lock to the deployed frontend origin
-  before any real deployment.
+- **CORS restricted to an explicit origin allowlist** (`ALLOWED_ORIGINS` env var,
+  defaulting to the two local dev origins) rather than left wide open - a deployed
+  frontend's origin can be added without a code change.
 - **`.gitignore` excludes `data/positive`, `data/negative`, `data/augmented`, `data/raw`**
   contents (kept via `.gitkeep`) - clinical/volunteer photos shouldn't live in git
   history, licensing on the clinical images is per-image and needs to stay out of a

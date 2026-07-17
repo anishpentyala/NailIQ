@@ -352,7 +352,7 @@ function NextSteps({ outside, inconclusive }) {
   )
 }
 
-function ResultSummary({ outside, inconclusive }) {
+function ResultSummary({ outside, inconclusive, total }) {
   const { t } = useI18n()
   let verdict = 'within'
   let label = t('result.summaryWithin')
@@ -361,7 +361,7 @@ function ResultSummary({ outside, inconclusive }) {
     label = outside.length === 1
       ? t('result.summaryOutsideOne')
       : t('result.summaryOutside', { n: outside.length })
-  } else if (inconclusive.length > 0 && inconclusive.length === outside.length + inconclusive.length) {
+  } else if (inconclusive.length > 0 && inconclusive.length === total) {
     verdict = 'inconclusive'
     label = t('result.summaryInconclusive')
   }
@@ -400,7 +400,7 @@ export default function ResultView({ result, topImage, onReset }) {
         <h1>{t('result.reportTitle')}</h1>
         <p>{new Date().toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
-      <ResultSummary outside={outside} inconclusive={inconclusive} />
+      <ResultSummary outside={outside} inconclusive={inconclusive} total={findings.length} />
       <ScanDashboard findings={findings} imageQuality={imageQuality} />
       <AnnotatedNailDiagram findings={findings} />
       <NextSteps outside={outside} inconclusive={inconclusive} />

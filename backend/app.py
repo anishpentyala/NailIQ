@@ -101,9 +101,23 @@ def analyze():
     return jsonify(result)
 
 
+_HISTORY_DEFAULT_LIMIT = 100
+_HISTORY_MAX_LIMIT = 500
+
+
 @app.route("/history", methods=["GET"])
 def history():
-    records = ScanRecord.query.order_by(ScanRecord.created_at.desc()).all()
+    # Unbounded history grew a 6000-scan/80MB response during batch-eval testing and
+    # froze the browser tab that fetched it -- always cap the query, not just trust
+    # callers to pass a reasonable limit.
+    try:
+        limit = int(request.args.get("limit", _HISTORY_DEFAULT_LIMIT))
+    except ValueError:
+        limit = _HISTORY_DEFAULT_LIMIT
+    limit = max(1, min(limit, _HISTORY_MAX_LIMIT))
+    records = (
+        ScanRecord.query.order_by(ScanRecord.created_at.desc()).limit(limit).all()
+    )
     return jsonify({"scans": [r.to_dict() for r in records]})
 
 

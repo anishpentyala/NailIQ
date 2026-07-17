@@ -294,6 +294,7 @@ export default {
     "nail_polish_detected": "Parece que há esmalte na unha. Os sinais de cor e superfície não podem ser lidos através do esmalte - remova-o e tire novamente a foto de cima.",
     "too_much_glare": "Há reflexo demais na unha para ler sua cor. Incline-a para longe da luz direta ou procure uma iluminação mais suave e tire a foto novamente.",
     "tracks_disagree": "Nossas duas verificações não concordaram neste sinal, por isso não vamos nos pronunciar. Tire as duas fotos novamente com boa iluminação e, se estiver preocupado, considere mostrar a um médico.",
+    "insufficient_data_for_confident_call": "Não temos dados validados suficientes sobre esse sinal para nos pronunciarmos com confiança, e nossas duas verificações não concordaram. Tire a foto novamente com boa iluminação e, se estiver preocupado, considere mostrar a um médico.",
     "default": "Não conseguimos detectar uma unha nessa foto. Tente um fundo mais liso, uma iluminação melhor e o dedo inteiro no enquadramento."
   },
   "status": {
@@ -357,7 +358,21 @@ export default {
     "largeTextDesc": "Aumenta o tamanho do texto em todo o aplicativo.",
     "reduceMotion": "Reduzir movimento",
     "reduceMotionDesc": "Desativa as animações e transições.",
-    "note": "Essas configurações são salvas neste aparelho."
+    "note": "Essas configurações são salvas neste aparelho.",
+    "privacyLink": "Política de privacidade"
+  },
+  "privacy": {
+    "title": "Política de privacidade",
+    "close": "Fechar política de privacidade",
+    "photosTitle": "Suas fotos",
+    "photosBody": "Suas duas fotos são analisadas na memória e depois descartadas. Nenhuma foto é salva em disco ou no banco de dados - apenas os resultados (rótulos, veredictos, confiança) são armazenados.",
+    "storedTitle": "O que é armazenado",
+    "storedBody": "Os resultados dos escaneamentos são salvos localmente para que o Histórico e o gráfico de tendência do ângulo possam mostrar escaneamentos anteriores. Se você responder \"isso corresponde ao que você vê?\", essa resposta é armazenada da mesma forma para ajudar a calibrar o aplicativo no futuro - evite incluir informações identificáveis no campo de observação. As configurações de exibição e idioma são salvas apenas neste aparelho.",
+    "notCollectedTitle": "O que não é coletado",
+    "notCollectedBody": "Nenhuma conta, nome, e-mail ou identificador de dispositivo é solicitado ou armazenado em nenhuma parte deste aplicativo.",
+    "limitationTitle": "Limitação conhecida",
+    "limitationBody": "Este é um protótipo de implantação única: o Histórico mostra todos os escaneamentos armazenados neste servidor, sem separação por usuário. Leve isso em conta caso este servidor venha a ser compartilhado além de uma pessoa.",
+    "disclaimer": "Nada neste aplicativo é um diagnóstico. Cada resultado é sempre \"dentro do intervalo típico\", \"fora do intervalo típico\" ou \"não foi possível analisar esta foto\". Converse com um profissional de saúde sobre qualquer alteração preocupante na unha."
   },
   "findingNames": {
     "clubbing": "Ângulo da unha (baqueteamento)",

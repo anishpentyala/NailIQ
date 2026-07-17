@@ -366,6 +366,25 @@ export default {
     reduceMotion: 'Reducir movimiento',
     reduceMotionDesc: 'Desactiva las animaciones y transiciones.',
     note: 'Esta configuración se guarda en este dispositivo.',
+    privacyLink: 'Política de privacidad',
+  },
+
+  privacy: {
+    title: 'Política de privacidad',
+    close: 'Cerrar política de privacidad',
+    photosTitle: 'Tus fotos',
+    photosBody:
+      'Tus dos fotos se analizan en memoria y luego se descartan. Ninguna foto se guarda nunca en disco ni en la base de datos: solo se almacenan los resultados (etiquetas, veredictos, confianza).',
+    storedTitle: 'Qué se almacena',
+    storedBody:
+      'Los resultados de los escaneos se guardan localmente para que el Historial y el gráfico de tendencia del ángulo puedan mostrar escaneos anteriores. Si respondes "¿esto coincide con lo que ves?", esa respuesta se almacena de la misma manera para ayudar a calibrar la aplicación más adelante; evita incluir información identificable en el campo de notas. La configuración de pantalla e idioma se guarda solo en este dispositivo.',
+    notCollectedTitle: 'Qué no se recopila',
+    notCollectedBody: 'No se solicita ni almacena ninguna cuenta, nombre, correo electrónico o identificador de dispositivo en ninguna parte de esta aplicación.',
+    limitationTitle: 'Limitación conocida',
+    limitationBody:
+      'Este es un prototipo de implementación única: el Historial muestra todos los escaneos almacenados en este servidor, sin separación por usuario. Ten esto en cuenta si este servidor llega a compartirse más allá de una persona.',
+    disclaimer:
+      'Nada en esta aplicación es un diagnóstico. Cada resultado es siempre "dentro del rango típico", "fuera del rango típico" o "no se pudo analizar esta foto". Habla con un profesional de la salud sobre cualquier cambio preocupante en las uñas.',
   },
 
   findingNames: {
