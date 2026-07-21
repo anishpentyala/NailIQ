@@ -1,7 +1,4 @@
-// Condition structure (keys, icons, point order) lives here; all the copy lives
-// in the locale dictionaries under `conditions.<key>` so it translates. Adding a
-// condition: add its key+icon here and its copy to every file in i18n/.
-
+// the actual copy for each condition lives in the locale dictionaries under `conditions.<key>`
 export const CONDITION_KEYS = [
   'clubbing',
   'koilonychia',
@@ -34,7 +31,6 @@ const CONDITION_ICONS = {
   pitting: 'eye',
 }
 
-// Every condition article has the same four sections, in this order.
 const POINT_ORDER = [
   { id: 'looks', icon: 'eye' },
   { id: 'why', icon: 'pulse' },
@@ -57,15 +53,12 @@ export function getConditions(t) {
   }))
 }
 
-// One-line plain-English description of a condition, or null for unknown labels.
 export function conditionSummary(t, label) {
   const key = `conditions.${label}.summary`
   const text = t(key)
   return text === key ? null : text
 }
 
-// Per-condition "What to do with your result" copy, reused on the result
-// screen's aggregated Next steps block. No new wording is invented.
 export function conditionNextStep(t, label) {
   const key = `conditions.${label}.points.action`
   const text = t(key)

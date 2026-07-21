@@ -7,7 +7,7 @@ db = SQLAlchemy()
 
 
 class ScanRecord(db.Model):
-    """One persisted /analyze result, so users can browse past scans."""
+    """One saved /analyze result, so users can browse past scans."""
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -22,11 +22,7 @@ class ScanRecord(db.Model):
 
 
 class Feedback(db.Model):
-    """A user's "was this finding right?" response. The thresholds in the color and
-    geometry tracks are uncalibrated rough estimates; this is the honest data path
-    for eventually calibrating them against real photos -- captured per finding so a
-    later calibration run can weigh confirmed vs. disputed verdicts. Stores no image
-    and no PII, only the label, the verdict shown, and whether the user agreed."""
+    """A user's "was this finding right?" response, one row per finding."""
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

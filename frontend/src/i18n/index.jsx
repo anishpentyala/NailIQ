@@ -8,9 +8,7 @@ import hi from './hi'
 import fr from './fr'
 import pt from './pt'
 
-// Add a language: import its dictionary and list it here - nothing else to touch.
-// (For DeepL-supported languages, scripts/translate_locales.mjs generates a
-// reviewed-before-shipping draft.)
+// add a language: import its dictionary and list it here
 const DICTIONARIES = { en, es, zh, hi, fr, pt }
 export const LANGUAGES = Object.entries(DICTIONARIES).map(([code, dict]) => ({
   code,
@@ -63,8 +61,7 @@ export function SettingsProvider({ children }) {
   const lang = settings.lang ?? browserLang()
   const isDark = settings.darkMode ?? systemDark
 
-  // Track the OS preference live so an untouched (system-following) setting
-  // updates immediately if the user flips their OS theme mid-session.
+  // keep dark mode in sync if the user flips their OS theme mid-session
   useEffect(() => {
     const mq = window.matchMedia?.('(prefers-color-scheme: dark)')
     if (!mq) return
@@ -79,7 +76,7 @@ export function SettingsProvider({ children }) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       } catch {
-        // Private mode / storage full: settings still apply for this session.
+        // storage might be unavailable, settings still work for this session
       }
       return next
     })
@@ -134,8 +131,7 @@ export function useI18n() {
   return ctx
 }
 
-// Backend findings carry English display_name; prefer our localized name for the
-// label and fall back to whatever the server sent for unknown labels.
+// use the localized name if we have one, otherwise fall back to what the backend sent
 export function findingName(t, finding) {
   const localized = t(`findingNames.${finding.label}`)
   return localized === `findingNames.${finding.label}` ? finding.display_name : localized

@@ -62,10 +62,7 @@ function HeroArt({ label }) {
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
 
-// The home-screen analogue of "today's UV index": a glanceable status from your
-// most recent scan, pulled from the same /history data HistoryView already
-// renders, so it costs no new backend work. Fails quietly (no card) on error --
-// this is a nice-to-have on the landing screen, not something worth an error banner.
+// quick summary of the most recent scan, shown on the home screen
 function LastScanCard({ onViewHistory }) {
   const { t, lang } = useI18n()
   const [scans, setScans] = useState(null)
@@ -103,8 +100,7 @@ function LastScanCard({ onViewHistory }) {
       ? conclusive.reduce((s, f) => s + (f.confidence ?? 0), 0) / conclusive.length
       : null
 
-  // The two most tell-tale measured values, if we have them -- prefer the
-  // geometry findings (they carry a real number, not just a verdict).
+  // just grab the first couple findings that have an actual measured value
   const stats = findings.filter((f) => f.value != null).slice(0, 2)
 
   return (

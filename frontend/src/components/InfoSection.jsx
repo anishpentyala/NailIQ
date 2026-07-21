@@ -16,10 +16,7 @@ function ConditionSheet({ condition, onClose }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Portal to #root so the overlay's containing block is the app viewport, not
-  // the transformed `.tab-fade` tab wrapper (its `animation: ... both` pins a
-  // `transform`, which would otherwise trap this absolute overlay to the padded
-  // tab box and leave the app's edges uncovered).
+  // portal to #root so the overlay covers the full screen
   return createPortal(
     <div className="sheet-overlay" onClick={onClose}>
       <div

@@ -15,10 +15,6 @@ function mlLabelText(t, label) {
   return text === key ? null : text
 }
 
-// Localize the backend's skin-tone caveat by its stable `tone_tier` key (same
-// pattern as findingName()), falling back to the raw English string if the
-// backend didn't send a tier -- backend and frontend can then ship on their
-// own schedules without either one breaking.
 function toneCaveatText(t, finding) {
   if (!finding.tone_caveat) return null
   if (finding.tone_tier) {
@@ -29,8 +25,6 @@ function toneCaveatText(t, finding) {
   return finding.tone_caveat
 }
 
-// "Was this right?" -- the honest data path toward calibrating the heuristic
-// thresholds. Fire-and-forget; a failed send shouldn't bother the user.
 function FeedbackRow({ scanId, finding, showImpact }) {
   const { t } = useI18n()
   const [sent, setSent] = useState(false)
@@ -79,26 +73,25 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   const isColor = finding.track_used === 'color'
   const isColorFused = finding.track_used === 'color_fused'
   const matchLabel = isMl ? mlLabelText(t, finding.predicted_label) : null
-  // Show the model's visual match only when its prediction actually drove this card
-  // (agree / ml_primary); on color_only the top class is a different condition.
-  const mlMatch = isFused
-    ? mlLabelText(t, finding.ml?.predicted_label)
-    : isColorFused && ['agree', 'ml_primary'].includes(finding.agreement)
-      ? mlLabelText(t, finding.ml?.predicted_label)
-      : null
-  const agreementNote = isFused
-    ? finding.agreement && t(`result.agreement.${finding.agreement}`) !== `result.agreement.${finding.agreement}`
-      ? t(`result.agreement.${finding.agreement}`)
-      : null
-    : isColorFused
-      ? finding.agreement && t(`result.colorAgreement.${finding.agreement}`) !== `result.colorAgreement.${finding.agreement}`
-        ? t(`result.colorAgreement.${finding.agreement}`)
-        : null
-      : null
 
-  // A visual reference for what the condition looks like, shown only when there's
-  // something worth a closer look -- a "within" card doesn't need it, and showing
-  // it there would just be clutter on the common case.
+  // only show the model's visual match if its prediction actually drove this card
+  let mlMatch = null
+  if (isFused) {
+    mlMatch = mlLabelText(t, finding.ml?.predicted_label)
+  } else if (isColorFused && ['agree', 'ml_primary'].includes(finding.agreement)) {
+    mlMatch = mlLabelText(t, finding.ml?.predicted_label)
+  }
+
+  let agreementNote = null
+  if (isFused && finding.agreement) {
+    const key = `result.agreement.${finding.agreement}`
+    agreementNote = t(key) !== key ? t(key) : null
+  } else if (isColorFused && finding.agreement) {
+    const key = `result.colorAgreement.${finding.agreement}`
+    agreementNote = t(key) !== key ? t(key) : null
+  }
+
+  // only show the reference diagram when there's something worth a closer look
   const showDiagram = finding.verdict === 'outside' || finding.verdict === 'inconclusive'
   const summary = conditionSummary(t, finding.label)
   const toneCaveat = toneCaveatText(t, finding)
@@ -147,12 +140,8 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   )
 }
 
-// Two views of the same top-down photo: the box showing exactly which nail
-// area the color checks measured, and (when the CNN track ran) a Grad-CAM
-// heatmap showing where the AI model actually looked -- transparency beats a
-// number or a prediction the user can't see the basis for. A toggle switches
-// between them rather than showing both at once, since they're both full-width
-// annotated photos and stacking them would push the result cards far down.
+// shows the photo with a box around the measured nail area, with a toggle to
+// switch to the Grad-CAM heatmap if the AI model ran
 function MeasuredOverlay({ topImage, bbox, gradcam }) {
   const { t } = useI18n()
   const [view, setView] = useState('measured')
@@ -207,14 +196,11 @@ function MeasuredOverlay({ topImage, bbox, gradcam }) {
   )
 }
 
-// --- Top dashboard: scan confidence, attention level, image quality ----------
-
 const QUALITY_ICON = { good: 'checkCircle', fair: 'helpCircle', poor: 'alertTriangle' }
 const QUALITY_ISSUE_KEY = { blurry: 'result.issueBlurry', glare: 'result.issueGlare', polish: 'result.issuePolish' }
 const BAND_ORDER = { good: 2, fair: 1, poor: 0 }
 
-// Overall image quality = the worse of the two photos (a scan is only as good as
-// its weakest shot), with that photo's issues named.
+// overall quality is just the worse of the two photos
 function combineQuality(t, imageQuality) {
   if (!imageQuality) return null
   const photos = [
@@ -234,16 +220,13 @@ function ScanDashboard({ findings, imageQuality }) {
   const conclusive = findings.filter((f) => f.verdict !== 'inconclusive')
   const inconclusiveCount = findings.length - conclusive.length
 
-  // Scan confidence: mean per-finding confidence over findings we could actually
-  // analyze. Reuses the per-finding confidence; not a new model output.
+  // average confidence across the findings we could actually read
   const meanConf =
     conclusive.length > 0
       ? conclusive.reduce((s, f) => s + (f.confidence ?? 0), 0) / conclusive.length
       : null
 
-  // Attention level (NOT a risk score): noisy-OR over outside findings so several
-  // signs accumulate but the total stays bounded at 100. We lead with a plain word
-  // (Low/Some/High) so the number is interpretable at a glance.
+  // attention level (not a risk score) - combines all the "outside" findings into one 0-100 number
   const outside = findings.filter((f) => f.verdict === 'outside')
   const attention = Math.round(
     100 * (1 - outside.reduce((prod, f) => prod * (1 - (f.confidence ?? 0)), 1)),
@@ -303,8 +286,6 @@ function ScanDashboard({ findings, imageQuality }) {
   )
 }
 
-// Aggregated guidance, driven by what the scan actually found. Reuses the
-// per-condition "what to do" copy; invents no new medical wording.
 function NextSteps({ outside, inconclusive }) {
   const { t } = useI18n()
   if (outside.length > 0) {
@@ -387,9 +368,7 @@ export default function ResultView({ result, topImage, onReset }) {
   const inconclusive = findings.filter((f) => f.verdict === 'inconclusive')
   const within = findings.filter((f) => f.verdict === 'within')
 
-  // Show the "your answers help calibrate future results" note once, on the
-  // first feedback prompt the user actually sees -- repeating it under every
-  // card would just be clutter.
+  // only show the feedback-impact note once, on the first card the user sees
   const firstFeedbackLabel = outside[0]?.label ?? within[0]?.label ?? null
 
   let idx = 0

@@ -1,9 +1,4 @@
-// Shared between HistoryView and HomeScreen so "what's the headline status of a
-// scan" and "how long ago was that" are computed once, the same way, everywhere.
-// Both take `t` (and relativeTime the lang) so the output follows the UI language.
-
-// One status for the whole scan: worst verdict wins, but it's still only ever
-// within/outside/inconclusive -- never a named condition or a risk score.
+// one status for the whole scan - worst verdict wins
 export function overallStatus(findings, t) {
   const outsideCount = findings.filter((f) => f.verdict === 'outside').length
   if (outsideCount > 0) {

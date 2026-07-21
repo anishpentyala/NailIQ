@@ -18,8 +18,7 @@ const VERDICT_TEXT_KEY = {
 
 const TRACK_NOTE_KEY = { fused: 'history.fusedNote', color_fused: 'history.colorFusedNote' }
 
-// Labels whose verdict flipped vs. the previous (older) scan -- this is the
-// "any new differences" signal the history view exists to surface.
+// labels whose verdict flipped compared to the previous scan
 function changedLabels(scan, previousScan) {
   const changed = new Set()
   if (!previousScan) return changed
@@ -31,8 +30,6 @@ function changedLabels(scan, previousScan) {
   return changed
 }
 
-// Click a past finding to expand it into the same measured-value / confidence
-// / fused-note shape the result screen uses, so history isn't just a verdict list.
 function FindingDetail({ finding }) {
   const { t } = useI18n()
   const noteKey = TRACK_NOTE_KEY[finding.track_used]
@@ -136,7 +133,7 @@ function AngleTrend({ scans }) {
       date: new Date(scan.created_at).toLocaleDateString(lang, { month: 'short', day: 'numeric' }),
       angle: Math.round(finding.value * 10) / 10,
     }))
-    .reverse() // scans arrive newest-first; the trend reads left-to-right oldest-first
+    .reverse() // put oldest first so the chart reads left-to-right
 
   if (points.length < 2) return null
 
@@ -175,7 +172,7 @@ export default function HistoryView() {
     getHistory()
       .then((data) => {
         if (cancelled) return
-        // No real scans yet -- show examples so the history view isn't just empty.
+        // show example scans if there's no real history yet
         setScans(data.scans.length > 0 ? data.scans : PLACEHOLDER_SCANS)
       })
       .catch(() => { if (!cancelled) setFailed(true) })

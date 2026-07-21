@@ -137,16 +137,9 @@ export default function NailDiagram({ type, sub }) {
   return <NailPlate pattern={type} sub={sub} />
 }
 
-/* ---- Annotated result diagram: every outside-range sign on one figure ----
-   Composition, not new art: the top-down plate reuses plateOverlay() as-is
-   (same coordinate system, just repositioned via a <g transform>), and the
-   side-profile panel reuses the diagram-skin/diagram-nail/diagram-arc/
-   diagram-drop classes that clubbing's old side-view diagram already defined
-   in App.css but nothing currently renders. */
+/* ---- Annotated result diagram: every outside-range sign on one figure ---- */
 
-// Conditions whose whole-plate color IS the sign (no separate overlay mark),
-// in priority order -- a stylized single nail can only show one base tint,
-// so on the rare scan where more than one fires we show the more specific one.
+// if more than one of these fires, just show the more specific one
 const BASE_TINT_PRIORITY = ['cyanosis', 'pallor', 'terrys_nails', 'lindsays_nails']
 const BASE_TINT_CLASS = {
   cyanosis: 'plate-blue',
@@ -155,8 +148,7 @@ const BASE_TINT_CLASS = {
   lindsays_nails: 'plate-white',
 }
 
-// Legend swatch colors, matching each mark's actual fill (mark-white items get
-// a CSS border since white-on-white would otherwise be invisible in the key).
+// legend swatch colors, matching each mark's actual fill
 const SWATCH_COLOR = {
   clubbing: 'var(--warn)',
   koilonychia: 'var(--primary)',
@@ -177,14 +169,11 @@ const PLATE_WITH_PROFILE_TRANSFORM = 'translate(-74.4,-22) scale(1.3)'
 const PLATE_ALONE_TRANSFORM = 'translate(-180,-35) scale(1.5)'
 
 function SideProfilePanel({ clubbing, koilonychia, t }) {
-  // Finger silhouette: normal tapered tip, or a bulbous clubbed tip.
+  // normal tapered tip, or a bulbous clubbed tip
   const skinPath = clubbing
     ? 'M40,20 C25,20 18,60 18,105 C18,150 20,175 55,182 C90,175 92,150 92,105 C92,60 85,20 70,20 Z'
     : 'M40,20 C25,20 20,60 20,100 C20,140 25,165 45,178 L65,178 C85,165 90,140 90,100 C90,60 85,20 70,20 Z'
 
-  // Nail-plate line traced on the front of the finger: clubbing removes the
-  // normal cuticle notch (nail meets skin smoothly, >180 degrees); koilonychia
-  // dips concave along its length instead of the normal gentle outward curve.
   const nailPath = clubbing
     ? 'M70,20 Q95,60 93,105 Q90,160 55,182'
     : koilonychia
@@ -211,10 +200,7 @@ function SideProfilePanel({ clubbing, koilonychia, t }) {
   )
 }
 
-// One figure with every outside-range sign from this scan drawn where it
-// occurs. Shown once, above the individual finding cards -- those still carry
-// their own single-condition reference diagram for the "what does X look
-// like" explanation; this one is the "where did MY signs show up" overview.
+// one figure showing every outside-range sign from this scan
 export function AnnotatedNailDiagram({ findings }) {
   const { t } = useI18n()
   const outside = (findings ?? []).filter((f) => f.verdict === 'outside')

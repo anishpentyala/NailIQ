@@ -6,12 +6,7 @@ import { useI18n } from '../i18n'
 import cameraGuideSide from '../assets/camera-guide-side.png'
 import cameraGuideTop from '../assets/camera-guide-top.png'
 
-// Translucent finger silhouette shown inside the guide ring, so a first-time
-// user knows *what shape* to fill the frame with, not just where the frame's
-// edges are. Both are hand-drawn reference sketches, recolored to
-// white-on-transparent so they read on the dark viewfinder: side-profile
-// shot = a horizontal finger with the nail as a thin edge-on wedge near the
-// tip; top-down shot = a vertical finger with the nail plate near its tip.
+// shows a faint finger outline inside the guide ring so people know what shape to line up
 function FrameGuideSilhouette({ step }) {
   return (
     <img
@@ -66,10 +61,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
 
   const handleCapture = useCallback(async () => {
     const video = webcamRef.current?.video
-    // A stream can resolve (no onUserMediaError) without ever delivering real
-    // frames -- e.g. permission silently blocked, device busy. readyState below
-    // HAVE_CURRENT_DATA (2) or a 0x0 video means there's no actual image behind
-    // the viewfinder yet, so don't let a blank capture through.
+    // make sure the camera is actually giving us a real frame, not a blank one
     if (!video || video.readyState < 2 || video.videoWidth === 0) {
       setCameraError(t('camera.captureFailed'))
       return

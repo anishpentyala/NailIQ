@@ -35,7 +35,6 @@ export default function SettingsSheet({ onClose }) {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
-    // Move focus into the dialog so keyboard/screen-reader users land in it.
     sheetRef.current?.focus()
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])

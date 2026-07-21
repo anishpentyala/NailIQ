@@ -52,7 +52,7 @@ function App() {
     setActiveTab('home')
   }, [])
 
-  // When camera is actively showing (scan tab, no result yet), go full-screen
+  // go full-screen while the camera is active
   const isCameraActive = activeTab === 'scan' && !result && !error
 
   if (isCameraActive) {

@@ -16,18 +16,14 @@ from models import Feedback, ScanRecord, db  # noqa: E402
 
 app = Flask(__name__)
 
-# Wide-open CORS is fine only while everything runs on localhost. Origins are
-# configurable via ALLOWED_ORIGINS (comma-separated) so a deployed frontend can be
-# allow-listed without code changes; the default covers the two local dev origins
-# (Vite's default host and the phone-preview script's explicit 127.0.0.1 bind).
+# allow the frontend to call this API from a different port/domain
 _default_origins = "http://localhost:5173,http://127.0.0.1:5173"
 _allowed_origins = [
     o.strip() for o in os.environ.get("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
 ]
 CORS(app, origins=_allowed_origins)
 
-# Cap the request body. Two base64 photos are ~a few MB; this stops an oversized
-# body from exhausting memory before we ever look at it. Flask raises 413 itself.
+# don't let a huge request through
 app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024
 
 basedir = os.path.dirname(os.path.abspath(__file__))
@@ -37,8 +33,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Simple in-memory per-IP rate limiter (no external dependency). The analysis
-# endpoints are CPU-heavy, so we cap how often one client can hit them.
+# basic rate limit so one person can't spam the analyze endpoint
 _RATE_LIMIT = 30          # requests
 _RATE_WINDOW = 60.0       # seconds
 _rate_hits = {}
@@ -58,8 +53,6 @@ def _rate_limited(ip):
 
 
 def _valid_b64_image(value, max_b64_len=10_000_000):
-    """A non-empty base64 string that actually decodes. Cheap guard before the
-    pipeline tries to turn it into an image."""
     if not isinstance(value, str) or not (0 < len(value) <= max_b64_len):
         return False
     try:
@@ -85,9 +78,6 @@ def analyze():
     if not _valid_b64_image(data["side_image"]) or not _valid_b64_image(data["top_image"]):
         return jsonify({"error": "'side_image' and 'top_image' must be valid base64 image strings"}), 400
 
-    # Geometry runs on the side photo; the trained CNN + color track run on the
-    # top photo. See ml/infer/pipeline.analyze. No image is persisted -- only the
-    # findings are stored (the overlay box is returned but not saved).
     result = run_analysis(data["side_image"], data["top_image"])
 
     try:
@@ -95,7 +85,7 @@ def analyze():
         db.session.add(record)
         db.session.commit()
         result["scan_id"] = record.id
-    except Exception:  # noqa: BLE001 -- history logging must never block a result
+    except Exception:  # noqa: BLE001
         db.session.rollback()
 
     return jsonify(result)
@@ -107,9 +97,7 @@ _HISTORY_MAX_LIMIT = 500
 
 @app.route("/history", methods=["GET"])
 def history():
-    # Unbounded history grew a 6000-scan/80MB response during batch-eval testing and
-    # froze the browser tab that fetched it -- always cap the query, not just trust
-    # callers to pass a reasonable limit.
+    # cap how many scans we return so the response doesn't get huge
     try:
         limit = int(request.args.get("limit", _HISTORY_DEFAULT_LIMIT))
     except ValueError:
@@ -123,8 +111,6 @@ def history():
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
-    """Record a user's "was this finding right?" response. Honest data path toward
-    calibrating the uncalibrated thresholds; stores no image and no PII."""
     data = request.get_json(silent=True) or {}
     label = data.get("label")
     shown_verdict = data.get("shown_verdict")
@@ -165,9 +151,7 @@ def validate_photo_route():
     if data["view"] not in ("side", "top"):
         return jsonify({"error": "'view' must be 'side' or 'top'"}), 400
 
-    # The side view needs full keypoints (fingertip + cuticle vertex) since
-    # that's what /analyze actually measures. The top-down view isn't shaped
-    # like a profile, so it only gets a basic "is there a finger here" check.
+    # side photo needs full keypoint detection, top photo just needs a finger in frame
     require_keypoints = data["view"] == "side"
     ok, failure_reason = validate_photo(data["image"], require_keypoints=require_keypoints)
     return jsonify({"ok": ok, "failure_reason": failure_reason})
