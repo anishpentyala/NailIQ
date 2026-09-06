@@ -17,6 +17,23 @@ NAIL_FOLD_OFFSET_FRAC = 0.12
 MIN_KEYPOINT_DISTANCE = 5
 COLLINEARITY_CROSS_THRESHOLD = 10
 
+# How close (in pixels) the detected tip may sit to the frame edge it isn't
+# entering from before we call it cropped rather than just close to frame. Rough
+# starting estimate, not calibrated against a labeled dataset.
+TIP_BORDER_MARGIN_PX = 8
+
+# Which contour extremum is "farthest from the entry edge" (i.e. the fingertip),
+# keyed by the edge the hand enters the frame from. `argmax(y)` (entry from the
+# top) is also the behavior with no known entry edge at all -- padded dataset
+# crops never touch a border, so they always take that branch unchanged.
+_TIP_SELECTORS = {
+    "top": lambda pts: int(np.argmax(pts[:, 1])),
+    "bottom": lambda pts: int(np.argmin(pts[:, 1])),
+    "left": lambda pts: int(np.argmax(pts[:, 0])),
+    "right": lambda pts: int(np.argmin(pts[:, 0])),
+    None: lambda pts: int(np.argmax(pts[:, 1])),
+}
+
 
 def _fit_circle(points):
     x = points[:, 0].astype(np.float64)
@@ -30,8 +47,19 @@ def _fit_circle(points):
     return (cx, cy), radius
 
 
-def find_fingertip(pts, window=5):
-    tip_idx = int(np.argmax(pts[:, 1]))
+def find_fingertip(pts, window=5, entry_edge=None):
+    """Locate the fingertip as the contour extremum farthest from wherever the
+    hand enters the frame.
+
+    `entry_edge` names the border the contour touches ("top"/"bottom"/"left"/
+    "right", from preprocessing.extract_finger_contour's border_edges) -- the
+    fingertip is the opposite extremum. With `entry_edge=None` (no border
+    contact -- the case for every padded dataset crop today), this falls back
+    to the original `argmax(y)` rule byte-for-byte, so dataset accuracy can't
+    move. Real photos, where the hand always continues off-frame on one side,
+    are the only callers that ever pass a non-None entry_edge.
+    """
+    tip_idx = _TIP_SELECTORS.get(entry_edge, _TIP_SELECTORS[None])(pts)
 
     n = len(pts)
     idxs = [(tip_idx + i) % n for i in range(-window, window + 1)]
@@ -44,6 +72,18 @@ def find_fingertip(pts, window=5):
         prominence = 0.0
 
     return tip_idx, prominence
+
+
+def _tip_is_cropped(pts, tip_idx, frame_size, margin_px=TIP_BORDER_MARGIN_PX):
+    """True if the located tip itself sits within margin_px of any frame edge --
+    i.e. even after picking the extremum farthest from the entry side, the tip
+    is still hugging some border, so it's likely genuinely cut off rather than
+    just entering the frame normally."""
+    if frame_size is None:
+        return False
+    w, h = frame_size
+    x, y = pts[tip_idx]
+    return min(x, w - 1 - x, y, h - 1 - y) < margin_px
 
 
 def _discrete_curvature(pts, idx, step=3):
@@ -82,12 +122,18 @@ def find_cuticle_vertex(pts, tip_idx):
     return best_idx, best_dir, best_score
 
 
-def find_keypoints(pts):
+def find_keypoints(pts, entry_edge=None, frame_size=None):
+    """entry_edge/frame_size come from preprocessing's contour validation dict
+    (border_edges/frame_size) -- see find_fingertip for what entry_edge selects
+    and why entry_edge=None reproduces the original dataset-only behavior."""
     n = len(pts)
-    tip_idx, prominence = find_fingertip(pts)
+    tip_idx, prominence = find_fingertip(pts, entry_edge=entry_edge)
 
     if prominence < MIN_TIP_PROMINENCE:
         return None, {"is_valid": False, "reason": "fingertip_not_clear"}
+
+    if _tip_is_cropped(pts, tip_idx, frame_size):
+        return None, {"is_valid": False, "reason": "fingertip_cropped"}
 
     cuticle_idx, direction, cuticle_curvature_signed = find_cuticle_vertex(pts, tip_idx)
     curvature_score = abs(cuticle_curvature_signed)

@@ -85,12 +85,12 @@ export default {
     steps: {
       side: {
         instructions:
-          'Sostén tu dedo de lado (vista de perfil) contra un fondo liso, con la uña hacia la cámara.',
+          'Sostén tu dedo de lado (vista de perfil) dentro del recuadro guía, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
         shortLabel: 'Perfil lateral',
       },
       top: {
         instructions:
-          'Ahora fotografía tu dedo desde arriba, con la uña hacia la cámara, contra un fondo liso.',
+          'Ahora fotografía tu dedo desde arriba dentro del recuadro guía, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
         shortLabel: 'Desde arriba',
       },
     },
@@ -262,8 +262,10 @@ export default {
       'No pudimos encontrar tu dedo en esa foto. Asegúrate de que llene el cuadro contra un fondo liso.',
     contour_too_small: 'Tu dedo se ve muy pequeño en el cuadro. Acerca la cámara e inténtalo de nuevo.',
     contour_degenerate: 'Esa foto no se pudo procesar. Inténtalo de nuevo.',
-    contour_touches_border:
-      'Tu dedo queda cortado en el borde del cuadro. Vuelve a centrarlo y deja un poco de espacio alrededor.',
+    background_not_filling_frame:
+      'Algo detrás de tu dedo se está leyendo como parte de él. Usa una superficie lisa que llene todo el encuadre y vuelve a tomar la foto.',
+    fingertip_cropped:
+      'La punta de tu dedo queda cortada en el borde del cuadro. Muévela para que quede totalmente visible y vuelve a tomar la foto.',
     fingertip_not_clear:
       'No pudimos ver con claridad la punta de tu dedo. Prueba con mejor iluminación y mantén la cámara firme.',
     cuticle_not_detected:

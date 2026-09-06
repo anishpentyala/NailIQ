@@ -120,13 +120,14 @@ def load_image_padded(image_path, pad_frac=EVAL_PAD_FRAC):
     """Read an image and pad a margin around it for the eval pipeline.
 
     Public nail datasets are tight clinical close-ups where the finger fills the frame
-    edge-to-edge, so preprocessing.extract_best_contour rejects ~100% of them as
-    `contour_touches_border` (a gate that's correct for the app's own capture flow, where
-    the finger is shot with background margin). Padding a constant border so the silhouette
-    no longer touches the edge lets the same unmodified production pipeline localize the
-    nail; verified to rescue ~100% of otherwise-rejected KNM images without distorting the
-    per-pixel color/texture metrics (the pad is background, excluded from the silhouette).
-    A photo that already has margin is unaffected by extra margin.
+    edge-to-edge (touching 3+ borders at once), so preprocessing.extract_best_contour
+    rejects ~100% of them as `background_not_filling_frame` (a gate that's correct for
+    the app's own capture flow, where the finger is shot with background margin).
+    Padding a constant border so the silhouette no longer touches the edge lets the
+    same unmodified production pipeline localize the nail; verified to rescue ~100% of
+    otherwise-rejected KNM images without distorting the per-pixel color/texture
+    metrics (the pad is background, excluded from the silhouette). A photo that
+    already has margin is unaffected by extra margin.
     """
     img = cv2.imread(str(image_path))
     if img is None:

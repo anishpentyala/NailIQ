@@ -145,13 +145,33 @@ this app's photo is a tight single-finger close-up, a framing it wasn't built fo
 
 Pipeline stages, each importable independently:
 - `preprocessing.py` - decode base64 → grayscale/threshold/morphology → largest
-  contour. Rejects (→ inconclusive) on: no contour, contour too small, or contour
-  touching the image border (finger cropped out of frame).
-- `keypoints.py` - finds the fingertip (contour extremum + circle-fit prominence
-  check) and the cuticle vertex (peak of discrete contour curvature near the tip).
-  Also determines `cuticle_is_concave` by comparing the cuticle's curvature sign to
-  the fingertip's (the tip is *always* convex regardless of clubbing status, so it's
-  a reliable reference). Rejects on keypoints too close together or collinear.
+  contour. Rejects (→ inconclusive) on: no contour, contour too small, or the
+  contour touching **3+ frame edges** (`background_not_filling_frame` -
+  the plain backdrop doesn't fill the frame, so whatever's beyond it merged into
+  the foreground blob; genuinely unanalyzable). **Touching 1-2 edges is normal
+  and expected**, not a rejection reason: a real photo of your own hand always
+  has the finger entering the frame somewhere, since your hand continues off-frame.
+  The validation dict on success carries `border_edges` (which edges, if any, the
+  contour touches) and `primary_edge` (the dominant one, by contour-point count,
+  when two are touched at a corner) - `pipeline._extract` threads these into
+  `find_keypoints` as `entry_edge`. This replaced an earlier all-or-nothing "any
+  border contact is a cropped fingertip" rule that rejected every realistically-framed
+  real photo while every padded, pre-cropped dataset/eval image (which never touches
+  an edge) sailed through unnoticed - see "Real-photo framing" below for how this
+  was found and fixed.
+- `keypoints.py` - finds the fingertip and the cuticle vertex (peak of discrete
+  contour curvature near the tip). `find_fingertip(pts, entry_edge=None)`:
+  with an `entry_edge` (the hand entering the frame at a known border),
+  the tip is the extremum **farthest from that edge** - `entry_edge=None` (no
+  border contact, e.g. every padded dataset/eval image) falls back to the
+  original `argmax(y)` rule byte-for-byte, so dataset accuracy can't move.
+  `find_keypoints` also rejects (`fingertip_cropped`) when the *selected* tip
+  still sits within `TIP_BORDER_MARGIN_PX` of any edge even after picking the
+  farthest extremum - a genuinely cropped fingertip, as opposed to normal framing.
+  Once the tip is right, `cuticle_is_concave` (comparing the cuticle's curvature
+  sign to the fingertip's - the tip is *always* convex regardless of clubbing
+  status, so it's a reliable reference) is orientation-free and unchanged.
+  Rejects on keypoints too close together or collinear.
 - `clubbing.py` - angle at the cuticle vertex via the cosine rule. **Important**:
   `arccos` alone is mathematically capped at 180°, so a naive implementation can
   never report a clubbed (>180°) angle. The fix is `cuticle_is_concave`: a concave
@@ -173,6 +193,46 @@ estimate - there's no labeled photo dataset yet to calibrate against.
 Adding a third geometric condition: reuse `preprocessing.py` and `keypoints.py`
 as-is, add a new `<condition>.py` with `build_finding()`/`inconclusive_finding()`
 following the existing pattern, and call it from `pipeline.py`.
+
+**Real-photo framing (found and fixed 2026-07-20).** Every eval/test up to this
+point fed pre-cropped clinical dataset images, most of them explicitly padded
+with a border by the eval script itself before being sent through (e.g.
+`eval_color_sensitivity.py`'s `b64()`) - so nothing ever exercised what a real
+phone photo of a whole hand actually looks like to this pipeline. The first two
+real photos run through `/analyze` came back with **all thirteen findings
+inconclusive**, and forcing them through anyway produced a confident false
+positive: clubbing at 294.7-308.8°, "outside typical range", confidence
+0.97-1.0, on a healthy nail (physically implausible - real angles run ~160°
+normal, >180° clubbed). Two compounding bugs, both now fixed (see above):
+1. The border rule rejected *any* border contact, but a photo of your own hand
+   always has the finger entering the frame at an edge - only 3+ edges touched
+   (background not filling the frame) is genuinely unanalyzable.
+2. `find_fingertip` assumed the tip is always the bottommost contour point
+   (`argmax(y)`), true for the dataset's fixed downward orientation but wrong
+   for a real held-up finger (tip at the *top*) - it silently picked the wrong
+   end, inverting `cuticle_is_concave` and triggering `clubbing.py`'s `360 -
+   raw_angle` reflex branch.
+
+The frontend's capture flow also changed: `CameraCapture.jsx` now crops to the
+on-screen guide box (`frontend/src/cameraGuide.js`) before sending, instead of
+sending the full video frame - both tracks need a tight single-finger
+silhouette, not a whole-hand photo (a whole-hand contour confuses
+`nail_region.py`'s distal-45%-of-length nail estimate the same way it confuses
+keypoint detection). The crop is **deliberately asymmetric**: generous margin
+on the left/right/top of the guide box, but the bottom is never padded away -
+it always extends to the raw frame edge. This was empirically necessary, not a
+guess: a symmetric padded crop (tested first) puts the contour's border contact
+at zero, which reproduces the *same* orientation bug via the `entry_edge=None`
+fallback, since the whole point of the fix is reading the entry edge from where
+the contour touches a border. The "Upload a photo instead" path has no guide box
+to crop to and still sends the full image, which is why the CV-level fix (not
+just the UI change) is load-bearing.
+
+`ml/eval/eval_real_hands.py` is the regression harness for this class of bug -
+it runs real, uncropped phone photos (`data/real_eval/<label>/<subject>_side.jpg`
++ `_top.jpg`, gitignored personal photos) through the actual Flask `/analyze`
+endpoint and flags any confident "outside" verdict on a photo labeled healthy.
+Re-run it after touching `preprocessing.py`, `keypoints.py`, or the capture crop.
 
 ### The trained-CNN track (`ml/infer/classifier.py`)
 
@@ -573,3 +633,8 @@ attribution - CC BY 4.0 requires crediting each source in any submission/README.
 `data/raw/` is gitignored (don't commit the images/licensing); re-run the script to
 repopulate. The other detection datasets (`nail-clubbing`, etc.) are boxes, not
 class folders - not yet wired into training (would need a crop step).
+
+
+## Canonical Obsidian vault — required project memory workflow
+
+User instruction (2026-09-05): the app history and future work belong in `C:\Users\Anish\OneDrive - Lake Washington School District\Desktop\Obsidian Vaults\NailIQ`. Before working, read `Home.md`, `Current State.md`, `Next Actions.md` and relevant historical notes there. Reference this vault first for prior decisions/events. After every meaningful code, research, design, evaluation, dataset/model, outreach or planning change, update the affected notes and append a dated `Change Log.md` entry with evidence, verification and remaining work. Preserve superseded decisions and distinguish proposals from completed actions. Run `backend/venv/Scripts/python.exe scripts/sync_obsidian_vault.py` from the repo root to refresh generated source/history evidence; it does not replace authored notes. Never claim missing history, outreach or unrun tests as completed. Follow `Vault Maintenance.md`.

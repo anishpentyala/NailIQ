@@ -3,6 +3,7 @@ import Webcam from 'react-webcam'
 import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
 import { useI18n } from '../i18n'
+import { cropRect, mapViewportRectToVideoRect } from '../cameraGuide'
 import cameraGuideSide from '../assets/camera-guide-side.png'
 import cameraGuideTop from '../assets/camera-guide-top.png'
 
@@ -66,19 +67,42 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       setCameraError(t('camera.captureFailed'))
       return
     }
-    const screenshot = webcamRef.current?.getScreenshot()
-    if (!screenshot) {
+
+    // Crop to the on-screen guide box (plus margin) rather than sending the
+    // full frame -- both CV tracks need a tight, single-finger silhouette, not
+    // a whole-hand photo. See cameraGuide.js for why the crop is asymmetric
+    // (the bottom edge is deliberately left uncropped).
+    const viewportRect = video.getBoundingClientRect()
+    const videoRect = mapViewportRectToVideoRect(
+      cropRect(step), viewportRect.width, viewportRect.height, video.videoWidth, video.videoHeight,
+    )
+    const sx = Math.round(videoRect.x * video.videoWidth)
+    const sy = Math.round(videoRect.y * video.videoHeight)
+    const sw = Math.round(videoRect.w * video.videoWidth)
+    const sh = Math.round(videoRect.h * video.videoHeight)
+
+    const canvas = document.createElement('canvas')
+    canvas.width = sw
+    canvas.height = sh
+    const ctx = canvas.getContext('2d')
+    if (!ctx || sw <= 0 || sh <= 0) {
       setCameraError(t('camera.captureFailed'))
       return
     }
-    const base64 = screenshot.split(',')[1]
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+    const base64 = dataUrl.split(',')[1]
+    if (!base64) {
+      setCameraError(t('camera.captureFailed'))
+      return
+    }
 
     // Shutter flash animation
     setShutterFlash(true)
     setTimeout(() => setShutterFlash(false), 150)
 
     await processImage(base64)
-  }, [processImage, t])
+  }, [processImage, t, step])
 
   const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click()

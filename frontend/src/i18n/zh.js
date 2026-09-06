@@ -83,11 +83,11 @@ export default {
   camera: {
     steps: {
       side: {
-        instructions: '将手指侧放（侧面视角），背景保持纯色，指甲朝向相机。',
+        instructions: '将手指侧放在引导框内（侧面视角），指甲朝向相机。背景请使用纯色并铺满整个画面。',
         shortLabel: '侧面轮廓',
       },
       top: {
-        instructions: '现在从上方拍摄手指，指甲朝向相机，背景保持纯色。',
+        instructions: '现在在引导框内从上方拍摄手指，指甲朝向相机。背景请使用纯色并铺满整个画面。',
         shortLabel: '俯视拍摄',
       },
     },
@@ -252,7 +252,8 @@ export default {
     no_contour_found: '照片中找不到您的手指。请让手指占满画面，并使用纯色背景。',
     contour_too_small: '画面中的手指太小。请把相机拿近一些再试。',
     contour_degenerate: '这张照片无法处理。请重试。',
-    contour_touches_border: '您的手指被画面边缘切掉了。请重新居中，并在四周留一点空间。',
+    background_not_filling_frame: '您手指后面的一些区域被识别成了手指的一部分。请使用铺满整个画面的纯色背景，然后重新拍摄。',
+    fingertip_cropped: '您的指尖在画面边缘被切掉了。请将它完全移入画面后重新拍摄。',
     fingertip_not_clear: '看不清您的指尖。请改善光线并拿稳相机。',
     cuticle_not_detected: '无法清晰识别您的指甲和甲上皮。请确保整个指甲可见，并朝向相机。',
     points_too_close: '无法清晰读取您的指甲形状。请调整手指位置后重拍。',

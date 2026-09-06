@@ -129,11 +129,11 @@ export default {
   "camera": {
     "steps": {
       "side": {
-        "instructions": "Tenez votre doigt de côté (vue de profil) devant un fond uni, l'ongle face à la caméra.",
+        "instructions": "Tenez votre doigt de côté (vue de profil) dans le cadre guide, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
         "shortLabel": "Profil"
       },
       "top": {
-        "instructions": "Photographiez maintenant votre doigt par le dessus, l'ongle face à la caméra, devant un fond uni.",
+        "instructions": "Photographiez maintenant votre doigt par le dessus dans le cadre guide, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
         "shortLabel": "Vue de dessus"
       }
     },
@@ -284,7 +284,8 @@ export default {
     "no_contour_found": "Nous n'avons pas trouvé votre doigt sur cette photo. Assurez-vous qu'il remplit le cadre devant un fond uni.",
     "contour_too_small": "Votre doigt semble trop petit dans le cadre. Rapprochez la caméra et réessayez.",
     "contour_degenerate": "Cette photo n'a pas pu être traitée. Veuillez réessayer.",
-    "contour_touches_border": "Votre doigt est coupé au bord du cadre. Recentrez-le et laissez un peu d'espace autour.",
+    "background_not_filling_frame": "Quelque chose derrière votre doigt est interprété comme en faisant partie. Utilisez une surface unie qui remplit tout le cadre, puis reprenez la photo.",
+    "fingertip_cropped": "Le bout de votre doigt est coupé au bord du cadre. Repositionnez-le pour qu'il soit entièrement visible, puis reprenez la photo.",
     "fingertip_not_clear": "Nous n'avons pas pu voir clairement le bout de votre doigt. Essayez un meilleur éclairage et gardez la caméra stable.",
     "cuticle_not_detected": "Nous n'avons pas pu repérer clairement votre ongle et votre cuticule. Assurez-vous que tout l'ongle est visible, face à la caméra.",
     "points_too_close": "Nous n'avons pas pu lire clairement la forme de votre ongle. Repositionnez votre doigt et reprenez la photo.",

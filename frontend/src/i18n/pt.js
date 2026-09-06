@@ -129,11 +129,11 @@ export default {
   "camera": {
     "steps": {
       "side": {
-        "instructions": "Coloque o dedo de lado (vista de perfil) contra um fundo liso, com a unha voltada para a câmera.",
+        "instructions": "Coloque o dedo de lado (vista de perfil) dentro do quadro-guia, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
         "shortLabel": "Perfil lateral"
       },
       "top": {
-        "instructions": "Agora, fotografe seu dedo visto de cima, com a unha voltada para a câmera, contra um fundo liso.",
+        "instructions": "Agora, fotografe seu dedo visto de cima dentro do quadro-guia, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
         "shortLabel": "De cima para baixo"
       }
     },
@@ -284,7 +284,8 @@ export default {
     "no_contour_found": "Não conseguimos identificar seu dedo nessa foto. Certifique-se de que ele ocupe todo o quadro, contra um fundo liso.",
     "contour_too_small": "Seu dedo parece muito pequeno no enquadramento. Aproxime a câmera e tente novamente.",
     "contour_degenerate": "Não foi possível processar essa foto. Tente novamente.",
-    "contour_touches_border": "Seu dedo está cortado na borda do quadro. Centralize-o novamente e deixe um pouco de espaço ao redor.",
+    "background_not_filling_frame": "Algo atrás do seu dedo está sendo interpretado como parte dele. Use uma superfície lisa que preencha todo o quadro e tire a foto novamente.",
+    "fingertip_cropped": "A ponta do seu dedo está cortada na borda do quadro. Reposicione-a para que fique totalmente visível e tire a foto novamente.",
     "fingertip_not_clear": "Não conseguimos ver bem a ponta do seu dedo. Tente uma iluminação melhor e segure a câmera com firmeza.",
     "cuticle_not_detected": "Não conseguimos ver claramente sua unha e sua cutícula. Certifique-se de que toda a unha esteja visível, voltada para a câmera.",
     "points_too_close": "Não conseguimos ler claramente o formato da sua unha. Tente reposicionar o dedo e tirar a foto novamente.",

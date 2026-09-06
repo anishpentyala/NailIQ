@@ -84,7 +84,14 @@ def _extract(image_b64, require_keypoints=True):
     if not require_keypoints:
         return contour, None, None
 
-    keypoints, kp_validation = find_keypoints(contour)
+    # primary_edge/frame_size (set only when the contour touched a border --
+    # i.e. never for padded dataset crops) tell find_keypoints which side the
+    # hand continues off-frame on, so it can pick the *opposite* extremum as
+    # the tip instead of assuming the dataset's fixed top-to-bottom orientation.
+    entry_edge = contour_validation.get("primary_edge")
+    frame_size = contour_validation.get("frame_size")
+
+    keypoints, kp_validation = find_keypoints(contour, entry_edge=entry_edge, frame_size=frame_size)
     if not kp_validation["is_valid"]:
         return contour, None, kp_validation["reason"]
 

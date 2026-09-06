@@ -86,12 +86,12 @@ export default {
     steps: {
       side: {
         instructions:
-          'Hold your finger sideways (profile view) against a plain background, nail facing the camera.',
+          'Hold your finger sideways (profile view) inside the guide box, nail facing the camera. Use a plain background that fills the whole frame.',
         shortLabel: 'Side Profile',
       },
       top: {
         instructions:
-          'Now photograph your finger from above, nail facing the camera, against a plain background.',
+          'Now photograph your finger from above inside the guide box, nail facing the camera. Use a plain background that fills the whole frame.',
         shortLabel: 'Top Down',
       },
     },
@@ -263,8 +263,10 @@ export default {
       "We couldn't find your finger in that photo. Make sure it fills the frame against a plain background.",
     contour_too_small: 'Your finger looks too small in the frame. Move the camera closer and try again.',
     contour_degenerate: "That photo couldn't be processed. Please try again.",
-    contour_touches_border:
-      'Your finger is cut off at the edge of the frame. Recenter it and leave a little space around it.',
+    background_not_filling_frame:
+      "Something behind your finger is being read as part of it. Use a plain surface that fills the whole frame, then retake.",
+    fingertip_cropped:
+      'Your fingertip is cut off at the edge of the frame. Move it fully into view and retake.',
     fingertip_not_clear:
       "We couldn't get a clear view of your fingertip. Try better lighting and hold the camera steady.",
     cuticle_not_detected:

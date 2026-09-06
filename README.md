@@ -230,9 +230,13 @@ separate, independently optional model - see "The color-condition CNN track" bel
 
 `inconclusive` means a track couldn't produce a confident verdict - the geometry
 pipeline couldn't locate the finger/keypoints (`failure_reason` names the failed
-check), or the two tracks disagreed (`failure_reason: "tracks_disagree"`). It never
-guesses a verdict it isn't confident in. Geometry `confidence` is a heuristic from
-keypoint-detection quality; ML confidence is a temperature-calibrated probability.
+check, e.g. `background_not_filling_frame` when the plain backdrop doesn't fill the
+photo, or `fingertip_cropped` when the tip itself is cut off - touching 1-2 frame
+edges is normal framing, not a rejection reason, since a photo of your own hand
+always has it entering the frame somewhere), or the two tracks disagreed
+(`failure_reason: "tracks_disagree"`). It never guesses a verdict it isn't confident
+in. Geometry `confidence` is a heuristic from keypoint-detection quality; ML
+confidence is a temperature-calibrated probability.
 
 `POST /validate_photo`
 
@@ -323,3 +327,17 @@ reasonably decide yourself")
   thresholds are rough starting estimates with no labeled dataset yet, so confidences
   are capped modestly and verdicts lean toward within/inconclusive to limit false
   positives - same honesty caveat as koilonychia's threshold.
+- **Reworked the border-contact rule and made the fingertip detector orientation-aware**
+  after the first two real phone photos run through `/analyze` came back with a
+  confident false positive (clubbing ~300°, "outside", on a healthy nail) instead
+  of the expected honest rejection. Every prior eval fed pre-padded dataset images
+  that never touch a frame edge, so a real hand's natural border contact - and the
+  fixed downward-tip orientation those images all share - was never exercised.
+  1-2 edges touched is now normal framing, not a rejection; 3+ means the plain
+  background genuinely doesn't fill the frame. The fingertip is now the contour
+  extremum farthest from wherever the hand enters (falling back to the original
+  rule exactly when there's no border contact, so dataset accuracy is unaffected).
+  `CameraCapture.jsx` now also crops to the on-screen guide box before sending -
+  deliberately asymmetrically (the bottom is never padded away), since a symmetric
+  crop erases the very border-contact signal the fix depends on. See CLAUDE.md's
+  "Real-photo framing" section and `ml/eval/eval_real_hands.py`.

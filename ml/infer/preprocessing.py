@@ -106,16 +106,40 @@ def extract_finger_contour(binary_mask, min_area=MIN_CONTOUR_AREA):
     if pts.ndim != 2:
         return None, {"is_valid": False, "reason": "contour_degenerate"}
 
-    touches_border = (
-        np.any(pts[:, 0] <= 0)
-        or np.any(pts[:, 0] >= w - 1)
-        or np.any(pts[:, 1] <= 0)
-        or np.any(pts[:, 1] >= h - 1)
-    )
-    if touches_border:
-        return None, {"is_valid": False, "reason": "contour_touches_border"}
+    # A photo of your own hand always has the finger entering the frame at one
+    # edge (occasionally a corner, touching two) -- that's normal, not a cropped
+    # fingertip. Rejecting any border contact rejected every realistically-framed
+    # real photo while padded dataset crops (which never touch an edge) sailed
+    # through unnoticed. Three or more edges touched means the background isn't
+    # filling the frame (dark surface beyond the plain backdrop merged into the
+    # foreground blob) -- that photo genuinely can't be analyzed, but the fix is
+    # "fill the frame", not "recenter". A truly cropped fingertip is instead
+    # caught in keypoints.py, where the tip's actual location is known.
+    edge_counts = {
+        "left": int(np.sum(pts[:, 0] <= 0)),
+        "right": int(np.sum(pts[:, 0] >= w - 1)),
+        "top": int(np.sum(pts[:, 1] <= 0)),
+        "bottom": int(np.sum(pts[:, 1] >= h - 1)),
+    }
+    border_edges = [edge for edge, count in edge_counts.items() if count > 0]
 
-    return pts, {"is_valid": True, "reason": None, "area": area}
+    if len(border_edges) >= 3:
+        return None, {"is_valid": False, "reason": "background_not_filling_frame"}
+
+    # When the hand enters at a corner (two edges touched), the edge with more
+    # contour points on it is the one it's more nearly parallel to / entering
+    # from -- keypoints.py uses this as the single "entry edge" to pick the
+    # opposite extremum as the fingertip.
+    primary_edge = max(border_edges, key=lambda e: edge_counts[e]) if border_edges else None
+
+    return pts, {
+        "is_valid": True,
+        "reason": None,
+        "area": area,
+        "border_edges": border_edges,
+        "primary_edge": primary_edge,
+        "frame_size": (w, h),
+    }
 
 
 def extract_best_contour(image_bgr, min_area=MIN_CONTOUR_AREA):
