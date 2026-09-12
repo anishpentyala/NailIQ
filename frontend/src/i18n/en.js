@@ -70,6 +70,8 @@ export default {
       splinter_hemorrhages: { name: 'Splinter hemorrhages', text: 'Tiny dark streaks beneath the nail.' },
       pitting: { name: 'Pitting', text: 'Small dents or pinpricks in the nail surface.' },
     },
+    showAll: 'Show all {n}',
+    showLess: 'Show less',
     dailyTip: 'Daily tip',
     tips: [
       'Good lighting and a plain background make your scan far more accurate.',

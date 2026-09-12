@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import CameraCapture from './components/CameraCapture'
 import ResultView from './components/ResultView'
 import InfoSection from './components/InfoSection'
@@ -6,7 +6,7 @@ import HomeScreen from './components/HomeScreen'
 import HistoryView from './components/HistoryView'
 import BottomNav from './components/BottomNav'
 import SettingsSheet from './components/SettingsSheet'
-import Icon from './components/Icon'
+import NavBar from './components/NavBar'
 import { analyzeImages } from './api'
 import { useI18n } from './i18n'
 import './App.css'
@@ -19,6 +19,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const scrollRef = useRef(null)
 
   const handleCapture = useCallback(async ({ sideImage, topImage }) => {
     setLoading(true)
@@ -65,24 +66,16 @@ function App() {
     )
   }
 
-  return (
-    <div className="app">
-      <button
-        type="button"
-        className="settings-fab"
-        aria-label={t('settings.open')}
-        onClick={() => setSettingsOpen(true)}
-      >
-        <Icon name="settings" size={20} />
-      </button>
+  // Home is titled with the brand (never translated); the rest reuse their tab names.
+  const title = activeTab === 'home' ? 'NailIQ' : t(`nav.${activeTab}`)
 
-      {activeTab !== 'home' && (
-        <header className="app-header">
-          <span className="brand-icon"><Icon name="logo" size={28} /></span>
-          <h1 className="brand">NailIQ</h1>
-          <p className="tagline">{t('app.tagline')}</p>
-        </header>
-      )}
+  return (
+    <div className="app" ref={scrollRef}>
+      <NavBar
+        title={title}
+        scrollRef={scrollRef}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
 
       <div className="tab-fade" key={activeTab}>
         {activeTab === 'home' && (

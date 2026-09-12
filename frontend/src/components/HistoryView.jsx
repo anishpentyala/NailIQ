@@ -181,9 +181,7 @@ export default function HistoryView() {
 
   return (
     <div className="home">
-      <h1 className="home-title">{t('history.title')}</h1>
-
-      {failed && <p className="camera-error" role="alert">{t('history.error')}</p>}
+      {failed &&<p className="camera-error" role="alert">{t('history.error')}</p>}
 
       {!failed && !scans && <p className="result-message" role="status">{t('history.loading')}</p>}
 

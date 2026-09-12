@@ -69,6 +69,8 @@ export default {
       splinter_hemorrhages: { name: 'Hemorragias en astilla', text: 'Pequeñas líneas oscuras bajo la uña.' },
       pitting: { name: 'Piqueteado', text: 'Pequeños hoyuelos en la superficie de la uña.' },
     },
+    showAll: 'Ver los {n}',
+    showLess: 'Ver menos',
     dailyTip: 'Consejo del día',
     tips: [
       'Una buena iluminación y un fondo liso hacen tu escaneo mucho más preciso.',

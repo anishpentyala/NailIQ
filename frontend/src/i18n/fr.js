@@ -115,6 +115,8 @@ export default {
         "text": "Petites dépressions à la surface de l'ongle."
       }
     },
+    "showAll": "Afficher les {n}",
+    "showLess": "Afficher moins",
     "dailyTip": "Conseil du jour",
     "tips": [
       "Un bon éclairage et un fond uni rendent votre scan bien plus précis.",

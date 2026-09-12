@@ -17,6 +17,44 @@
   --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
   --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
 
+  /* Translucent material for the floating bars (nav bar, tab bar). */
+  --glass-bg: rgba(252, 254, 253, 0.82);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* Illustration skin tones, themed so HeroArt doesn't glow in dark mode. */
+  --skin-1: #f3c9a8;
+  --skin-2: #f6d6bb;
+  --skin-3: #fbeee2;
+  --skin-edge: #e3b793;
+
+  /* Layout scales stay in px: a11y-large-text scales the root font size, and
+     rem gutters would inflate every margin ~19% inside a fixed-width phone
+     frame. Only the type scale below is rem, so it scales on purpose. */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-full: 999px;
+
+  /* iOS type scale (pt at a 16px root). */
+  --t-large-title: 2.125rem;
+  --t-title3: 1.25rem;
+  --t-headline: 1.0625rem;
+  --t-body: 1.0625rem;
+  --t-callout: 1rem;
+  --t-subhead: 0.9375rem;
+  --t-footnote: 0.8125rem;
+  --t-caption: 0.75rem;
+  --t-caption2: 0.6875rem;
+
   /* SF Pro on Apple devices, Segoe UI Variable on Windows - both read "native". */
   font: 16px/1.47 -apple-system, BlinkMacSystemFont, 'SF Pro Text',
     'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -130,6 +168,11 @@ button {
   --hairline: rgba(255, 255, 255, 0.14);
   --fill-secondary: rgba(255, 255, 255, 0.08);
   --shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --glass-bg: rgba(16, 20, 22, 0.82);
+  --skin-1: #c79f7f;
+  --skin-2: #cdab8d;
+  --skin-3: #dcc4ad;
+  --skin-edge: #a8815f;
   color-scheme: dark;
 }
 
@@ -153,6 +196,9 @@ button {
   --hairline: #46565a;
   --fill-secondary: #dde4e2;
   --shadow: none;
+  /* Translucency is the main legibility risk here - make the bars opaque. */
+  --glass-bg: var(--surface);
+  --glass-blur: none;
 }
 
 /* Reduce motion: kill animations/transitions both when the user asks the app

@@ -5,15 +5,20 @@
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  padding: 24px 20px 0;
-  gap: 20px;
+  /* No top padding: the sticky nav bar owns the top inset so it can slide
+     under the status bar and blur the content scrolling beneath it. */
+  padding: 0 var(--sp-5);
+  /* No gap: the nav bar and large title set their own tight iOS spacing. */
+  gap: 0;
 }
 
 .tab-fade {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 20px;
+  gap: var(--sp-5);
+  margin-top: var(--sp-4);
+  padding-bottom: var(--sp-5);
   animation: tab-fade-in 0.32s var(--ease-out) both;
 }
 
@@ -30,16 +35,12 @@
   margin: 0 -20px;
   flex-shrink: 0;
   display: flex;
-  background: rgba(252, 254, 253, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-top: 0.5px solid var(--hairline);
-  padding: 8px 0 calc(10px + env(safe-area-inset-bottom));
+  padding: var(--sp-2) 0 calc(10px + env(safe-area-inset-bottom));
   z-index: 10;
-}
-
-:root.theme-dark .bottom-nav {
-  background: rgba(16, 20, 22, 0.82);
 }
 
 .bottom-nav-item {
@@ -75,31 +76,96 @@
   transform: scale(1.12);
 }
 
-.app-header {
-  text-align: center;
-}
-
-.brand-icon {
-  display: flex;
-  justify-content: center;
-  color: var(--primary);
-  margin-bottom: 2px;
-}
-
 .disclaimer-icon {
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.app-header .brand {
-  font-size: 1.375rem;
-  color: var(--primary-dark);
+/* Nav bar: transparent at rest so the large title reads as the page heading,
+   then a glass scroll-edge bar once the title scrolls under it. */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  /* full-bleed past .app's side padding, same trick as .bottom-nav */
+  width: calc(100% + var(--sp-5) * 2);
+  margin: 0 calc(var(--sp-5) * -1);
+  padding: calc(var(--sp-2) + env(safe-area-inset-top)) var(--sp-5) var(--sp-2);
+  background: transparent;
+  border-bottom: 0.5px solid transparent;
+  transition: background 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
 }
 
-.app-header .tagline {
+.navbar.is-collapsed {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom-color: var(--hairline);
+}
+
+.navbar-title-compact {
+  flex: 1;
+  min-width: 0;
+  /* offset the trailing button so the title optically centers */
+  padding-left: 44px;
+  font-size: var(--t-headline);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.22s var(--ease-out);
+}
+
+.navbar.is-collapsed .navbar-title-compact {
+  opacity: 1;
+}
+
+.navbar-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  background: none;
+  border: none;
+  border-radius: 50%;
   color: var(--text-muted);
-  font-size: 0.875rem;
-  margin-top: 4px;
+  transition: color 0.2s ease, transform 0.2s var(--ease-spring);
+}
+
+.navbar-action:hover {
+  color: var(--primary);
+}
+
+.navbar-action:active {
+  transform: scale(0.9);
+}
+
+.navbar-large {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: var(--sp-1);
+  font-size: var(--t-large-title);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+}
+
+/* Watched by NavBar's IntersectionObserver to decide when to collapse. */
+.navbar-sentinel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
 }
 
 .disclaimer-banner {
@@ -120,76 +186,88 @@
 .home {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.home-title {
-  font-size: 2.125rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.022em;
-  line-height: 1.15;
-  margin-top: 2px;
+  gap: var(--sp-6);
 }
 
 .home-hero {
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(47, 125, 107, 0.1), rgba(47, 125, 107, 0) 70%),
+    radial-gradient(120% 90% at 50% 0%, var(--primary-bg), transparent 70%),
     var(--surface);
   border: none;
-  border-radius: 24px;
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow);
-  padding: 8px 20px 22px;
+  padding: var(--sp-2) var(--sp-5) var(--sp-6);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .hero-art {
   width: 100%;
   max-width: 300px;
   height: auto;
+  color: var(--primary-dark);
+  transition: max-width 0.3s var(--ease-out);
 }
 
+/* Once there's real scan history, the illustration steps back for it. */
+.home-hero--compact .hero-art {
+  max-width: 208px;
+}
+
+.hero-grad-a { stop-color: var(--primary); }
+.hero-grad-b { stop-color: var(--primary-dark); }
+.hero-blob { fill: var(--primary-bg); }
+.hero-dot { fill: var(--primary-bg); }
+.hero-screen { fill: var(--surface); opacity: 0.95; }
+.hero-shield { fill: var(--primary); opacity: 0.25; }
+.hero-skin-1 { fill: var(--skin-1); }
+.hero-skin-2 { fill: var(--skin-2); }
+.hero-skin-3 { fill: var(--skin-3); }
+.hero-nail { stroke: var(--skin-edge); }
+.hero-lens { fill: rgba(255, 255, 255, 0.35); }
+.hero-spark { fill: var(--primary); }
+
 .home-hero-title {
-  font-size: 1.1875rem;
+  font-size: var(--t-title3);
   font-weight: 700;
   color: var(--text);
   line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 .home-hero-text {
-  font-size: 0.875rem;
+  font-size: var(--t-subhead);
   color: var(--text-muted);
   line-height: 1.55;
 }
 
 .home-cta {
-  margin-top: 8px;
+  margin-top: var(--sp-3);
   width: 100%;
 }
 
-.home-card {
-  background: var(--surface);
-  border: none;
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  padding: 18px;
+/* A titled group: section header outside, inset-grouped card inside. */
+.home-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }
 
-.home-card-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+/* iOS grouped-list footer: explanatory text under a group, not inside it. */
+.home-group-footnote {
+  padding: 0 var(--sp-4);
+  font-size: var(--t-footnote);
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 
 .home-card-icon {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   background: var(--primary-bg);
   color: var(--primary-dark);
   display: flex;
@@ -203,25 +281,15 @@
   color: var(--warn);
 }
 
-.home-card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
 .home-steps {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
 }
 
-.home-steps li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+/* The step number is narrower than a row icon, so pull its hairline in. */
+.home-steps .info-card + .info-card::before {
+  left: 52px;
 }
 
 .step-num {
@@ -229,54 +297,54 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(180deg, #3a9480, var(--primary-dark));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 88%, white),
+    var(--primary-dark)
+  );
   color: #fff;
-  font-size: 0.8125rem;
+  font-size: var(--t-footnote);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.home-steps strong,
-.screen-row strong {
+.info-row-text strong {
   display: block;
-  font-size: 0.875rem;
+  font-size: var(--t-subhead);
   font-weight: 600;
   color: var(--text);
 }
 
-.home-steps p,
-.screen-row p {
-  font-size: 0.8125rem;
+.info-row-text p {
+  font-size: var(--t-footnote);
   color: var(--text-muted);
   margin-top: 2px;
+  line-height: 1.45;
 }
 
-.home-screen-rows {
+/* Daily tip: one tinted row rather than another full card. */
+.home-tip {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.home-who-for {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--text-muted);
-  font-style: italic;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  background: var(--warn-bg);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
 }
 
 .home-last-scan {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-3);
   width: 100%;
   text-align: left;
   border: none;
+  border-radius: var(--r-lg);
   background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: var(--sp-4);
   font: inherit;
   transition: transform 0.25s var(--ease-spring), opacity 0.15s ease;
 }
@@ -286,8 +354,6 @@
   opacity: 0.85;
 }
 
-.home-last-scan-icon { margin: 0; flex-shrink: 0; }
-
 .home-last-scan-info {
   display: flex;
   flex-direction: column;
@@ -295,23 +361,34 @@
   min-width: 0;
 }
 
-.home-last-scan-status { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-.home-last-scan-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
-.home-last-scan-chevron { flex-shrink: 0; color: var(--text-muted); }
+.home-last-scan-status { font-size: var(--t-subhead); font-weight: 600; color: var(--text-muted); }
+.home-last-scan-time { font-size: var(--t-caption); color: var(--text-muted); margin-top: 1px; }
 
-.home-last-scan--empty .home-last-scan-status { color: var(--text-muted); font-weight: 600; }
+/* Holds the assessment card's space while history loads, so nothing jumps. */
+.home-assessment-skeleton {
+  /* Sized to the populated assessment card, the common returning-user case. */
+  min-height: 200px;
+  border-radius: var(--r-lg);
+  background: var(--fill-secondary);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
 
 .home-assessment {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-3);
   width: 100%;
   text-align: left;
   background: var(--surface);
   border: none;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
-  padding: 18px;
+  padding: var(--sp-4);
   font: inherit;
   cursor: pointer;
   transition: transform 0.25s var(--ease-spring), opacity 0.15s ease;
@@ -636,25 +713,6 @@
   line-height: 1.5;
 }
 
-.screen-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.screen-emoji {
-  display: flex;
-  align-items: center;
-  color: var(--primary-dark);
-  flex-shrink: 0;
-}
-
-.home-tip-text {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
 /* Info section */
 .info-section {
   display: flex;
@@ -718,7 +776,36 @@
   background: rgba(23, 43, 39, 0.06);
 }
 
-.info-card:hover .info-chevron {
+/* Rows that only present information - no tap target, two lines of text. */
+.info-card--static {
+  align-items: flex-start;
+  cursor: default;
+}
+
+.info-card--static:active {
+  background: transparent;
+}
+
+.info-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Progressive-disclosure toggle closing a long list. */
+.list-expander .info-name {
+  color: var(--primary-dark);
+}
+
+.list-expander .info-chevron {
+  transition: transform 0.2s var(--ease-out);
+}
+
+.list-expander[aria-expanded='true'] .info-chevron {
+  transform: rotate(90deg);
+}
+
+/* The nudge is for navigable rows; the expander rotates its chevron instead. */
+.info-card:hover:not(.list-expander) .info-chevron {
   transform: translateX(2px);
 }
 
@@ -1529,12 +1616,16 @@
 }
 
 .primary-btn {
-  background: linear-gradient(180deg, #368a76, var(--primary));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 88%, white),
+    var(--primary)
+  );
   color: #fff;
   border: none;
-  border-radius: 15px;
+  border-radius: var(--r-md);
   padding: 15px;
-  font-size: 1.0625rem;
+  font-size: var(--t-headline);
   font-weight: 600;
   letter-spacing: -0.015em;
   box-shadow: 0 6px 18px rgba(47, 125, 107, 0.28);
@@ -2045,38 +2136,6 @@
 
 /* Pinned to the phone frame (containing block is #root), so it stays put while
    .app scrolls beneath it. */
-.settings-fab {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  z-index: 60;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  color: var(--text-muted);
-  box-shadow: var(--shadow);
-  transition: transform 0.25s var(--ease-spring), color 0.15s ease;
-}
-
-:root.theme-dark .settings-fab {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.settings-fab:active {
-  transform: scale(0.9);
-}
-
-.settings-fab:hover {
-  color: var(--primary);
-}
-
 .settings-sheet {
   height: auto;
   max-height: 88%;
@@ -2210,15 +2269,17 @@
 
 /* High contrast: give cards/tiles real borders (the soft shadow is gone) so
    surfaces stay distinguishable from the page. */
-:root.a11y-contrast .home-card,
+/* Bordering the group, not each row, keeps a grouped list reading as one card. */
 :root.a11y-contrast .home-hero,
 :root.a11y-contrast .home-assessment,
+:root.a11y-contrast .home-last-scan,
+:root.a11y-contrast .home-tip,
 :root.a11y-contrast .finding-card,
 :root.a11y-contrast .dashboard-tile,
 :root.a11y-contrast .result-card,
 :root.a11y-contrast .result-summary,
 :root.a11y-contrast .next-steps,
-:root.a11y-contrast .info-card,
+:root.a11y-contrast .info-group,
 :root.a11y-contrast .sheet {
   border: 1.5px solid var(--border);
 }

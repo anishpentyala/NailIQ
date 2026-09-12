@@ -115,6 +115,8 @@ export default {
         "text": "Pequenas depressões ou pontinhos na superfície da unha."
       }
     },
+    "showAll": "Ver todos os {n}",
+    "showLess": "Ver menos",
     "dailyTip": "Dica do dia",
     "tips": [
       "Uma boa iluminação e um fundo liso tornam seu escaneamento muito mais preciso.",

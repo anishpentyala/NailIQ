@@ -68,6 +68,8 @@ export default {
       splinter_hemorrhages: { name: '裂片形出血', text: '甲下细小的深色条纹。' },
       pitting: { name: '甲凹点', text: '指甲表面的小凹坑或针刺样小点。' },
     },
+    showAll: '查看全部 {n} 项',
+    showLess: '收起',
     dailyTip: '每日提示',
     tips: [
       '良好的光线和纯色背景能让扫描准确得多。',
