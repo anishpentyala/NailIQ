@@ -277,6 +277,16 @@ export default {
       "We couldn't get a clear read on your nail shape. Try repositioning your finger and retaking the photo.",
     points_collinear:
       "We couldn't get a clear read on your nail shape. Try repositioning your finger and retaking the photo.",
+    measurement_unstable:
+      "We couldn't measure your nail's side profile consistently - small changes to the photo gave different results, so we're not calling it. Retake the side photo steady, in even light, against a plain background.",
+    angle_implausible:
+      "The nail angle we measured isn't physically plausible, so the outline was probably misread. Retake the side photo with your finger fully side-on to the camera.",
+    measurement_borderline:
+      "Your nail angle measured right at the edge of the typical range, too close to call reliably. Retake the side photo steady and side-on; consider showing a doctor if you're concerned.",
+    not_validated:
+      "We haven't yet shown this check is reliable enough on held-out photos, so we're not giving a result for it rather than risk a wrong one. If you're concerned about this sign, show a doctor.",
+    heuristic_uncorroborated:
+      "Only the simpler color check flagged this, and the AI model saw no sign of it, so we're not calling it either way. Retake the top-down photo in even light; consider showing a doctor if you're concerned.",
     low_confidence:
       "The AI model wasn't confident enough about this photo to give a read. Try a clearer, well-lit shot of a single nail.",
     nail_region_unclear:

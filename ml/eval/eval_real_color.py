@@ -28,6 +28,7 @@ track's true phone-photo accuracy remains unmeasured; do not claim otherwise. Ev
 meaningful - the geometry track's eval_real.py needed no more than that.
 """
 import base64
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -38,10 +39,11 @@ REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
+_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_real_color.db"
+# must be set before importing app (Flask-SQLAlchemy builds the engine at import)
+os.environ["NAILIQ_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 import app as app_module  # noqa: E402
 
-_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_real_color.db"
-app_module.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 app_module._rate_limited = lambda ip: False  # test client shares one IP; not a real client
 with app_module.app.app_context():
     app_module.db.create_all()

@@ -10,6 +10,7 @@ MIN_TIP_PROMINENCE = 0.02
 CUTICLE_SEARCH_START_FRAC = 0.08
 CUTICLE_SEARCH_END_FRAC = 0.35
 CUTICLE_MIN_CURVATURE_SCORE = 0.05
+CURVATURE_STEP_FRAC = 0.012
 
 # Point A (proximal skin) is sampled further along the same direction past B.
 NAIL_FOLD_OFFSET_FRAC = 0.12
@@ -86,8 +87,20 @@ def _tip_is_cropped(pts, tip_idx, frame_size, margin_px=TIP_BORDER_MARGIN_PX):
     return min(x, w - 1 - x, y, h - 1 - y) < margin_px
 
 
-def _discrete_curvature(pts, idx, step=3):
+def _curvature_step(n):
+    """Curvature neighbourhood as a fraction of contour length (never below 3 points).
+
+    A fixed 3-point step made the cuticle vertex scale-dependent: the same synthetic
+    finger rasterized at a different size, or the same real photo rescaled 0.8x/1.25x,
+    picked a different vertex and flipped verdict (5/12 synthetic shapes unstable vs
+    12/12 stable with this, measured 2026-09-12). Small synthetic test contours keep
+    step 3, so their behaviour is unchanged."""
+    return max(3, int(round(n * CURVATURE_STEP_FRAC)))
+
+
+def _discrete_curvature(pts, idx, step=None):
     n = len(pts)
+    step = _curvature_step(n) if step is None else step
     prev_pt = pts[(idx - step) % n].astype(np.float64)
     cur_pt = pts[idx].astype(np.float64)
     next_pt = pts[(idx + step) % n].astype(np.float64)

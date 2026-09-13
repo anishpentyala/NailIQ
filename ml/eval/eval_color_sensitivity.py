@@ -22,6 +22,7 @@ noise and the classical heuristic's own weakness are folded back in. Re-run this
 any retrain or threshold change; test-set-only numbers are not the real story.
 """
 import base64
+import os
 import hashlib
 import re
 import sys
@@ -36,10 +37,11 @@ REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
+_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_color_sensitivity.db"
+# must be set before importing app (Flask-SQLAlchemy builds the engine at import)
+os.environ["NAILIQ_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 import app as app_module  # noqa: E402
 
-_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_color_sensitivity.db"
-app_module.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 app_module._rate_limited = lambda ip: False  # test client shares one IP; not a real client
 with app_module.app.app_context():
     app_module.db.create_all()

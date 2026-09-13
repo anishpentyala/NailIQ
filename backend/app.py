@@ -27,7 +27,12 @@ CORS(app, origins=_allowed_origins)
 app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024
 
 basedir = os.path.dirname(os.path.abspath(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'nailiq.db')}"
+# NAILIQ_DATABASE_URI must be set BEFORE importing this module: Flask-SQLAlchemy 3.x
+# builds the engine in init_app below, so changing app.config afterwards is silently
+# ignored -- which is how eval scripts and tests that did that wrote to (and the
+# endpoint tests' drop_all() could wipe) the real history database.
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "NAILIQ_DATABASE_URI", f"sqlite:///{os.path.join(basedir, 'nailiq.db')}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 with app.app_context():

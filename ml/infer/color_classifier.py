@@ -208,8 +208,15 @@ def predict_from_region(image_bgr, region):
     nail = _crop_to_bbox(image_bgr, bbox) if bbox is not None else image_bgr
     if nail is None or nail.size == 0:
         return None
-    label, prob, all_probs = classify_nail_bgr(nail)
+    _, _, all_probs = classify_nail_bgr(nail)
+    return opinion_from_probs(all_probs)
+
+
+def opinion_from_probs(all_probs):
+    """Top class if it clears its confidence floor, else no opinion. Split out so
+    ml/eval/tune_color_decision.py replays exactly this rule from cached probs."""
+    label = max(all_probs, key=all_probs.get)
+    prob = all_probs[label]
     threshold = CLASS_CONFIDENCE_THRESHOLD.get(label, CONFIDENCE_THRESHOLD)
-    if prob < threshold:
-        return {"predicted_label": None, "confidence": round(prob, 3), "probs": all_probs}
-    return {"predicted_label": label, "confidence": round(prob, 3), "probs": all_probs}
+    return {"predicted_label": label if prob >= threshold else None,
+            "confidence": round(prob, 3), "probs": all_probs}

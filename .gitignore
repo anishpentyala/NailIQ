@@ -38,6 +38,9 @@ ml/models/*.json
 
 # ML eval artifacts + real-photo eval set (personal images)
 ml/eval/gradcam_out/
+# regenerable per-image caches from eval_end_to_end.py / tune_color_decision.py
+ml/eval/e2e_*.json
+ml/eval/color_decision_*.json
 data/real_eval/
 data/real_eval_color/
 

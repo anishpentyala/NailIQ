@@ -276,6 +276,13 @@ export default {
       'No pudimos obtener una lectura clara de la forma de tu uña. Reposiciona el dedo y vuelve a tomar la foto.',
     points_collinear:
       'No pudimos obtener una lectura clara de la forma de tu uña. Reposiciona el dedo y vuelve a tomar la foto.',
+    measurement_unstable: 'No pudimos medir el perfil lateral de tu uña de forma consistente: pequeños cambios en la foto dieron resultados distintos, así que no damos un resultado. Vuelve a tomar la foto lateral con la mano quieta, buena luz y un fondo liso.',
+    angle_implausible: 'El ángulo de la uña que medimos no es físicamente posible, así que probablemente el contorno se leyó mal. Vuelve a tomar la foto lateral con el dedo completamente de perfil.',
+    measurement_borderline: 'El ángulo de tu uña quedó justo en el límite del rango típico, demasiado cerca para decidir con fiabilidad. Vuelve a tomar la foto lateral de perfil y sin moverte; si te preocupa, consulta a un médico.',
+    not_validated:
+      "Todavía no hemos demostrado que esta comprobación sea lo bastante fiable en fotos de prueba, así que no damos un resultado en lugar de arriesgarnos a uno incorrecto. Si te preocupa este signo, consulta a un médico.",
+    heuristic_uncorroborated:
+      "Solo la comprobación de color más simple lo detectó y el modelo de IA no vio indicios, así que no damos un resultado. Vuelve a tomar la foto desde arriba con luz uniforme; si te preocupa, consulta a un médico.",
     low_confidence:
       'El modelo de IA no tuvo suficiente confianza con esta foto para dar una lectura. Prueba con una toma más clara y bien iluminada de una sola uña.',
     nail_region_unclear:

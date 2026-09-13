@@ -51,6 +51,8 @@ backend/venv/Scripts/python.exe ml/train/train_color_classifier.py --backbone ef
 backend/venv/Scripts/python.exe ml/eval/eval_color_ensemble.py  # color ensemble accuracy (what ships)
 backend/venv/Scripts/python.exe ml/eval/grad_cam.py           # attention overlays
 backend/venv/Scripts/python.exe ml/eval/eval_real.py          # real-photo confusion matrix
+backend/venv/Scripts/python.exe ml/eval/eval_end_to_end.py --split valid --cache ml/eval/e2e_valid.json  # color track: recall + FP + abstention via /analyze
+backend/venv/Scripts/python.exe ml/eval/tune_color_decision.py --valid ml/eval/e2e_valid.json --test ml/eval/e2e_test.json  # pick decision tables on valid, score on test
 ```
 
 ### Frontend (Vite + React)
@@ -233,6 +235,35 @@ it runs real, uncropped phone photos (`data/real_eval/<label>/<subject>_side.jpg
 + `_top.jpg`, gitignored personal photos) through the actual Flask `/analyze`
 endpoint and flags any confident "outside" verdict on a photo labeled healthy.
 Re-run it after touching `preprocessing.py`, `keypoints.py`, or the capture crop.
+
+**The framing fix did not fix real photos - the measurement gate does (2026-09-12).**
+Re-running `eval_real_hands.py` after the framing fix still gave clubbing 214.3°,
+"outside", confidence 0.97 on the healthy photo. Root cause: the cuticle vertex was
+the peak of a 3-point discrete curvature, i.e. pixel noise - the same photo measured
+126.6° as captured, 246.4° after a JPEG re-save, 230.9° at 0.8x scale, and the
+"cuticle" landed on the finger pad / knuckle crease, never the nail fold. Two fixes:
+- `keypoints.CURVATURE_STEP_FRAC`: the curvature neighbourhood scales with contour
+  length (min 3 points, so small synthetic test contours are unchanged). Rasterized
+  synthetic fingers went from 5/12 to 12/12 verdict-stable under rescaling.
+- `ml/infer/measurement_gate.py`, called from `pipeline._extract` (so `/validate_photo`
+  asks for a retake too): re-measures under JPEG re-encode / blur / 0.8x / 1.25x and
+  returns inconclusive unless every copy agrees on both verdicts with angle spread
+  <= 10° (`measurement_unstable`), the angle is physiologically plausible, 140-220°
+  (`angle_implausible` - top-down photos gave "stable" 237-298° on healthy nails), and
+  it is not within 5° of 180° (`measurement_borderline`, a guard band; after the
+  step fix the healthy photo measured a *stable* 182.6°, a systematic keypoint error
+  stability alone can't catch).
+Net effect: the healthy photo is now inconclusive, not a false positive. **Geometry is
+still unvalidated** - there is no labeled side-profile photo set at all, so the gate
+makes it abstain rather than making it accurate. Labeled lateral photos are the
+blocker. Two ideas were tried and rejected, don't redo them without new data:
+- *CNN-only clubbing verdict when geometry abstains*: the shape CNN's clubbing calls at
+  >=0.9 were 43/43 correct on valid, yet it called the healthy phone photo clubbing at
+  0.938 (raw) / 0.626 (guide crop). Dataset precision does not transfer to phone photos,
+  so fusion still requires geometry.
+- *Mahalanobis out-of-distribution gate* on the ensembles' penultimate features (fit on
+  train, 95% valid quantile; test pass-rate 95.4% so it generalized): it rated that same
+  phone photo *in* distribution, so it cost 5% coverage for no protection. Reverted.
 
 ### The trained-CNN track (`ml/infer/classifier.py`)
 
@@ -459,6 +490,33 @@ Pipeline:
 Same honesty caveats as the geometry CNN: trained on KNM **clinical** photos, not phone
 photos - real-world accuracy is unknown/lower and never clinical-grade; output stays
 within / outside / inconclusive, never a diagnosis.
+
+**Tuned decision tables + validation policy (2026-09-12).** The first unified
+recall-*and*-false-positive run (`ml/eval/eval_end_to_end.py`, which scores every
+condition on healthy images from all three sources: Ghana non-anemic, KNM healthy,
+nail-disease normal) showed the shipped rules false-positived badly on healthy nails -
+TEST: pitting 32.7%, leukonychia 30.3%, pallor 28.5%, cyanosis 18.2%. The older ~1%
+figures did not include this healthy mix. Attribution on valid: every
+pitting/cyanosis/leukonychia/splinter false positive was `color_only` - mostly
+darker-skin healthy nails the CNN read as "pallor", which fusion treated as "no
+opinion" on the other conditions, handing them to the near-chance heuristic.
+`ml/eval/tune_color_decision.py` replays cached probabilities through the production
+`color_classifier.opinion_from_probs` + `color_fusion._fuse_one` (parity check: 0
+mismatches) and picks, per condition on VALID only, `color_fusion.OVR_THRESHOLD` (vote
+"outside" when p(C) is high even if C isn't the top class - the white-band cluster is
+often a close second) and `color_fusion.HEURISTIC_MIN_CNN_SUPPORT` (heuristic-only
+"outside" needs p(C) >= support, else `heuristic_uncorroborated` inconclusive). Metrics
+are strict (inconclusive positives count as misses) and new healthy abstentions may only
+replace removed false alarms, so abstaining can't game the score. TEST, shipped -> tuned:
+cyanosis recall 75.9->89.7% / FP 17.4->3.5%; pitting 78.1->81.2% / 31.4->1.2% (but abstains
+on 34% of healthy test nails); muehrckes 37.5->75.0% / 0.6->2.3%; terrys 66.7->83.3% /
+0->2.3%; beaus 63.6->77.3% / 0.6->1.2%; lindsays 29.0->41.9% / 0->2.3%.
+`ml/infer/validation_policy.py` then withholds verdicts (`not_validated`, original kept
+as `unvalidated_verdict` for /feedback) for conditions that miss recall >= 50% and FP <= 5%
+on VALID: **pallor** (best trade-off is a data ceiling: FP 5.3% only at recall 7.7%),
+leukonychia, onycholysis, splinter_hemorrhages, and melanonychia (no licensed data, 0/6
+test positives found). Re-run both scripts after any retrain, threshold or data change,
+and update the tables and `UNVALIDATED_CONDITIONS` together.
 
 ### Eval / diagnostics (`ml/eval/`)
 

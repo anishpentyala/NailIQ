@@ -11,6 +11,7 @@ from . import (
     koilonychia,
     leukonychia,
     lindsays_nails,
+    measurement_gate,
     melanonychia,
     muehrckes_lines,
     nail_region,
@@ -20,6 +21,7 @@ from . import (
     skin_tone,
     splinter_hemorrhages,
     terrys_nails,
+    validation_policy,
 )
 from .keypoints import find_keypoints
 from .preprocessing import (
@@ -94,6 +96,13 @@ def _extract(image_b64, require_keypoints=True):
     keypoints, kp_validation = find_keypoints(contour, entry_edge=entry_edge, frame_size=frame_size)
     if not kp_validation["is_valid"]:
         return contour, None, kp_validation["reason"]
+
+    # Keypoints that move to a different verdict when the photo is re-saved/blurred/
+    # rescaled are noise, not anatomy -- see measurement_gate.py.
+    gate_failure, stability = measurement_gate.check(image, contour, keypoints)
+    if gate_failure:
+        return contour, None, gate_failure
+    keypoints = {**keypoints, "confidence": round(keypoints["confidence"] * stability, 3)}
 
     return contour, keypoints, None
 
@@ -198,6 +207,8 @@ def analyze_top_color(top_image_b64):
     # tones (see ml/eval/audit_skin_tone.py), so cap confidence + attach a caveat
     # when this scan's skin tone is under-represented in our data.
     findings = skin_tone.apply_coverage(findings, region["skin_ita"])
+    # Conditions that failed the end-to-end evidence bar don't get to assert a verdict.
+    findings = validation_policy.apply(findings)
 
     overlay = {
         "top_bbox_norm": list(region["bbox_norm"]),

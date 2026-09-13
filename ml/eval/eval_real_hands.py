@@ -36,6 +36,7 @@ Two things are checked per pair:
     backend/venv/Scripts/python.exe ml/eval/eval_real_hands.py
 """
 import base64
+import os
 import re
 import sys
 import tempfile
@@ -48,10 +49,11 @@ REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
+_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_real_hands.db"
+# must be set before importing app (Flask-SQLAlchemy builds the engine at import)
+os.environ["NAILIQ_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 import app as app_module  # noqa: E402
 
-_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_real_hands.db"
-app_module.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
 # See CLAUDE.md's rate-limiter trap: the test client shares one IP, and /analyze
 # is capped at 30 req/60s, which silently truncates a batch run if not disabled.
 app_module._rate_limited = lambda ip: False

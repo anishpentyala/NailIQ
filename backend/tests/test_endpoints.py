@@ -12,7 +12,12 @@ import pytest
 # Add backend to path so we can import app
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-import app as app_module
+# Must precede the app import (see app.py): the fixture's drop_all() runs against this
+# temp database, never the real nailiq.db.
+_TEST_DB = os.path.join(tempfile.mkdtemp(), 'nailiq_test.db')
+os.environ['NAILIQ_DATABASE_URI'] = f'sqlite:///{_TEST_DB}'
+
+import app as app_module  # noqa: E402
 
 
 def _make_tiny_jpeg():
@@ -27,26 +32,15 @@ def _make_tiny_jpeg():
 
 @pytest.fixture
 def client():
-    """Fixture: Flask test client with a temporary database."""
-    # Create a temporary database file
-    db_fd, db_path = tempfile.mkstemp(suffix='.db')
-
-    # Configure the app for testing
+    """Fixture: Flask test client with a fresh temporary database."""
     app_module.app.config['TESTING'] = True
-    app_module.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-
-    # Re-initialize the database for the test
     with app_module.app.app_context():
+        assert app_module.db.engine.url.database == _TEST_DB  # never the real DB
         app_module.db.drop_all()
         app_module.db.create_all()
 
-    # Create and yield the test client
     with app_module.app.test_client() as test_client:
         yield test_client
-
-    # Cleanup
-    os.close(db_fd)
-    os.unlink(db_path)
 
 
 class TestAnalyzeEndpoint:

@@ -48,10 +48,56 @@ still real corroborating evidence regardless of sample size.
 
 LOW_SAMPLE_CONDITIONS = {"onycholysis", "splinter_hemorrhages"}
 
+# The two tables below are chosen by ml/eval/tune_color_decision.py on the VALID split
+# of the end-to-end /analyze eval (ml/eval/eval_end_to_end.py) and scored once on TEST;
+# re-run it after any retrain. An absent condition keeps the original behaviour.
+#
+# OVR_THRESHOLD: p(C) at which the CNN votes "outside" on C even when C isn't its top
+# class. The pale/white-band conditions are routinely a close second to a neighbouring
+# class, so top-class-only voting threw real positives away.
+OVR_THRESHOLD = {
+    "cyanosis": 0.15,
+    "terrys_nails": 0.25,
+    "beaus_lines": 0.15,
+    "muehrckes_lines": 0.15,
+    "pitting": 0.15,
+    "leukonychia": 0.30,
+    "lindsays_nails": 0.15,
+}
+
+# HEURISTIC_MIN_CNN_SUPPORT: a heuristic-only "outside" on C (CNN has no opinion on C)
+# stands only if the CNN gives C at least this probability; otherwise inconclusive.
+# Measured 2026-09-12 on valid: 100% of pitting/cyanosis/leukonychia/splinter false
+# positives on healthy nails were heuristic-only, mostly on darker-skin healthy nails
+# the CNN read as "pallor" -- which fusion treated as no opinion, handing those
+# conditions to a near-chance heuristic.
+HEURISTIC_MIN_CNN_SUPPORT = {
+    "cyanosis": 0.02,
+    "beaus_lines": 0.02,
+    "pitting": 0.05,
+    "pallor": 0.20,
+    "leukonychia": 0.05,
+    "splinter_hemorrhages": 0.02,
+}
+# Resulting strict end-to-end numbers (recall incl. abstentions as misses / FP over all
+# healthy images), shipped rule -> these tables. VALID chose them; TEST was not used:
+#   cyanosis        test recall 75.9%->89.7%, FP 17.4%->3.5%
+#   pitting         test recall 78.1%->81.2%, FP 31.4%->1.2% (healthy abstention 4%->34%)
+#   muehrckes_lines test recall 37.5%->75.0%, FP  0.6%->2.3%
+#   terrys_nails    test recall 66.7%->83.3%, FP  0.0%->2.3%
+#   beaus_lines     test recall 63.6%->77.3%, FP  0.6%->1.2%
+#   lindsays_nails  test recall 29.0%->41.9%, FP  0.0%->2.3%
+
 
 def _cnn_signal_for(condition, pred):
     """Map a CNN prediction onto one condition's within/outside axis (or no opinion)."""
-    if pred is None or pred.get("predicted_label") is None:
+    if pred is None:
+        return None, None
+    ovr = OVR_THRESHOLD.get(condition)
+    p_condition = (pred.get("probs") or {}).get(condition, 0.0)
+    if ovr is not None and p_condition >= ovr:
+        return "outside", p_condition
+    if pred.get("predicted_label") is None:
         return None, None
     label = pred["predicted_label"]
     if label == "healthy":
@@ -90,6 +136,12 @@ def _fuse_one(heur, pred):
     cnn_verdict, cnn_conf = _cnn_signal_for(heur["label"], pred)
 
     if cnn_verdict is None:  # CNN has no confident opinion on this condition
+        support = HEURISTIC_MIN_CNN_SUPPORT.get(heur["label"])
+        probs = (pred or {}).get("probs")
+        if heur["verdict"] == "outside" and support is not None and probs \
+                and probs.get(heur["label"], 0.0) < support:
+            return {**base, "verdict": "inconclusive", "confidence": 0.0,
+                    "agreement": "heuristic_uncorroborated", "failure_reason": "heuristic_uncorroborated"}
         return {**base, "verdict": heur["verdict"], "confidence": heur["confidence"],
                 "agreement": "color_only", "failure_reason": None}
 
