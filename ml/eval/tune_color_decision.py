@@ -111,6 +111,13 @@ def parity(records):
 
 def tune_condition(valid, c):
     base = strict(valid, c)
+    if base["recall"] is None:
+        # No held-out positives at all for this condition on this split (e.g. its only
+        # vetted source is licensed for local eval, not a resplit -- or, as with
+        # leukonychia/onycholysis/lindsays_nails after the nail-disease removal, it has
+        # no vetted source at all). Nothing to tune against; report the shipped
+        # (no-op) config so the caller's fails-validation-policy check still applies.
+        return (None, None, None), base
     cands = []
     for floor, ovr, support in itertools.product(FLOORS, OVRS, SUPPORTS):
         with patched(c, floor, ovr, support):
@@ -156,7 +163,7 @@ def main():
     for c in color_classifier.app_conditions():
         cfg, vm = tune_condition(valid, c)
         chosen[c] = cfg
-        if vm["recall"] < MIN_RECALL or vm["fp"] > MAX_POLICY_FP:
+        if vm["recall"] is None or vm["recall"] < MIN_RECALL or vm["fp"] > MAX_POLICY_FP:
             unvalidated.append(c)
         for name, recs in (("valid", valid), ("test", test)):
             if recs is None:

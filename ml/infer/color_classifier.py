@@ -56,18 +56,20 @@ CLASS_CONFIDENCE_THRESHOLD = {
     # recall to 76.2% while the healthy-image false-positive rate stayed exactly the
     # same (0.9%) -- the confidence range this floor change opens up (0.45-0.70) turned
     # out to hold real anemic cases, not borderline healthy ones. Re-verify both numbers
-    # (not just the isolated CNN test) if this ever gets re-swept.
+    # (not just the isolated CNN test) if this ever gets re-swept. NOTE: the isolated
+    # P/R figures above predate the 2026-09 nail-disease-removal retrain (below); only
+    # ml/eval/tune_color_decision.py's end-to-end recall/FP were re-verified against the
+    # new model, and confirmed 0.45 is still valid-optimal for this condition.
     "pallor": 0.45,
-    "leukonychia": 0.45,           # test: P 0.692 / R 0.818 (n=33)
-    # onycholysis: tried overriding down to 0.35 the same way pallor was (end-to-end
-    # sensitivity: recall 19.0%->28.6%), but unlike pallor this cost a real
-    # false-positive increase (2.6%->7.9% on healthy images) for a recall that's still
-    # poor either way -- not a free win, so left at the valid-picked value. This
-    # condition needs more/better data (see the data-search note in DATASETS_DIVERSITY.md),
-    # not a threshold tweak.
-    "onycholysis": 0.70,           # test: P 0.647 / R 0.458 (n=24)
-    "splinter_hemorrhages": 0.45,  # test: P 0.750 / R 0.333 (n=18)
-    "lindsays_nails": 0.40,        # test: P 0.629 / R 0.667 (n=33)
+    # splinter_hemorrhages: chosen by ml/eval/tune_color_decision.py on VALID after the
+    # chaa dataset (scripts/build_color_classification_dataset.py) replaced nail-disease
+    # as this condition's CNN training source in 2026-09 -- see that script's module
+    # docstring. End-to-end (through /analyze), VALID: recall 73.2%->75.6%, FP
+    # 4.6%->2.1% at this floor (n_pos=41). This is the first cutoff for this condition
+    # chosen against real, uncontaminated positives (previously nail-disease supplied
+    # both the training data AND the eval positives, so its watermark-contamination risk
+    # was invisible to every past number here).
+    "splinter_hemorrhages": 0.40,
     # melanonychia has NO entry: its only ever training source
     # (data/raw/nail-dataset-arthitaya) was dropped from
     # scripts/build_color_classification_dataset.py because its Kaggle license is
@@ -75,6 +77,16 @@ CLASS_CONFIDENCE_THRESHOLD = {
     # might be shared. The class no longer exists in the manifest, so
     # predict_from_region never returns it and color_fusion.py never fuses it;
     # melanonychia stays on the classical heuristic alone (ml/infer/melanonychia.py).
+    #
+    # leukonychia/onycholysis/lindsays_nails had entries here until 2026-09: their only
+    # CNN training source (data/raw/nail-disease) was removed after a watermark audit
+    # found real, visually-confirmed stock-photo contamination in it beyond the 4 source
+    # photos its own filenames flagged (see scripts/build_color_classification_dataset.py).
+    # None of the three has a replacement data source, so they no longer exist as model
+    # classes -- a CLASS_CONFIDENCE_THRESHOLD entry for a class the model can't predict
+    # would be dead code. All three fall back to the classical heuristic alone and are
+    # in ml/infer/validation_policy.UNVALIDATED_CONDITIONS (lindsays_nails newly added
+    # there for the same reason). Re-add an entry only alongside a real data source.
 }
 
 # Must match scripts/build_color_classification_dataset.py's BOX_PAD_FRAC so the

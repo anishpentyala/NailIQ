@@ -12,7 +12,7 @@ split, for every CNN/heuristic color condition:
 Methodology rule this exists to enforce: anything tuned (thresholds, fusion rules,
 ensemble weights) is chosen on `--split valid`; `--split test` is run once, afterwards,
 to report. Split membership replicates scripts/build_color_classification_dataset.py
-(KNM native split, nail-disease md5 re-split by stem, Ghana patient-grouped re-split),
+(KNM native split, chaa md5 re-split by stem, Ghana patient-grouped re-split),
 so no image here was seen in training.
 
 Every response is cached (`--cache`) with the CNN probs, heuristic verdicts and nail
@@ -36,16 +36,20 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
 from ml.eval.eval_color_sensitivity import (  # noqa: E402
-    ARTHITAYA, ARTHITAYA_SLUGS, GHANA, KNM, KNM_SLUGS, NAIL_DISEASE, NAIL_DISEASE_SLUGS,
+    ARTHITAYA, ARTHITAYA_SLUGS, CHAA, CHAA_SLUGS, GHANA, KNM, KNM_SLUGS,
     SPLITS, b64, bucket_split, find_image_file, ghana_label, ghana_patient_key, load_names,
 )
 
 KNM_ALL = {**KNM_SLUGS, "Healthy Nail": "healthy"}
-ND_ALL = {**NAIL_DISEASE_SLUGS, "Normal-nail": "healthy"}
+CHAA_ALL = {**CHAA_SLUGS, "Healthy": "healthy"}
 
 
 def _yolo_labels(root, slugs, split, resplit):
-    """{image_path: set(slugs)} for one YOLO dataset's images in `split`."""
+    """{image_path: set(slugs)} for one YOLO dataset's images in `split`. Handles both
+    fixed 5-field detection rows (KNM) and variable-length segmentation polygon rows
+    (chaa: class + >=3 x/y point pairs) -- see scripts/build_color_classification_
+    dataset.py's _row_bbox for the training-side counterpart of this `>= 5` filter.
+    """
     if not root.exists():
         return {}
     names = load_names(root)
@@ -59,7 +63,7 @@ def _yolo_labels(root, slugs, split, resplit):
             if resplit and bucket_split(label_file.stem) != split:
                 continue
             rows = [r.split() for r in label_file.read_text().splitlines()]
-            here = {idx_to_slug[int(r[0])] for r in rows if len(r) == 5 and int(r[0]) in idx_to_slug}
+            here = {idx_to_slug[int(r[0])] for r in rows if len(r) >= 5 and int(r[0]) in idx_to_slug}
             img = find_image_file(label_file) if here else None
             if img:
                 out[img] = here
@@ -70,7 +74,7 @@ def gather(split):
     """{image_path: set(labels)} over every held-out source for `split`."""
     items = {}
     items.update(_yolo_labels(KNM, KNM_ALL, split, resplit=False))
-    items.update(_yolo_labels(NAIL_DISEASE, ND_ALL, split, resplit=True))
+    items.update(_yolo_labels(CHAA, CHAA_ALL, split, resplit=True))
     if GHANA.exists():
         for p in sorted(GHANA.glob("*.png")):
             label = ghana_label(p.name)
@@ -95,7 +99,12 @@ def run(split):
 
     app_module._rate_limited = lambda ip: False  # test client = one IP; see CLAUDE.md
     with app_module.app.app_context():
-        assert tempfile.gettempdir() in (app_module.db.engine.url.database or ""), "eval would write the real DB"
+        # normalize separators -- the URI is built with forward slashes (see
+        # eval_color_sensitivity.py) but tempfile.gettempdir() returns OS-native ones,
+        # so a raw substring check false-negatives on Windows even when the DB is
+        # correctly scratch-scoped.
+        db_path = (app_module.db.engine.url.database or "").replace("\\", "/")
+        assert tempfile.gettempdir().replace("\\", "/") in db_path, "eval would write the real DB"
         app_module.db.create_all()
     client = app_module.app.test_client()
 

@@ -1,15 +1,27 @@
 """Build data/raw/color_cls/{train,valid,test}/<slug>/ -- nail-plate crops for the
 color-condition CNN (ml/train/train_color_classifier.py).
 
-Sources (all Roboflow Universe, CC BY 4.0, YOLO detection format), merged by slug:
-  1. data/raw/nail-disease-detection-mxoqy (KNM, 11 classes) -- kept in its OWN clean
-     image-level train/valid/test split (no reshuffle, no leakage).
-  2. data/raw/nail-disease (25 classes) -- supplies the four conditions that had no CNN
-     backing and false-positived as pure heuristics (leukonychia, onycholysis,
-     splinter_hemorrhages, lindsays_nails), plus extra examples for existing classes.
-     Its shipped split is unusable (~all boxes of these classes are in `train`), so it
-     is RE-SPLIT by image stem (leakage-safe: every box of one image goes to one split).
-  3. data/raw/fingernails-ghana-anemia -- pallor / darker-cohort healthy (see below).
+Sources (all Roboflow Universe, CC BY 4.0), merged by slug:
+  1. data/raw/nail-disease-detection-mxoqy (KNM, 11 classes, YOLO detection) -- kept in
+     its OWN clean image-level train/valid/test split (no reshuffle, no leakage).
+  2. data/raw/fingernails-ghana-anemia -- pallor / darker-cohort healthy (see below).
+  3. data/raw/yolov8-nails-segmentation-ckvkd (chaa, YOLO segmentation, 4 classes) --
+     supplies splinter_hemorrhages (previously heuristic-only/false-positive-prone) and
+     extra terrys_nails/koilonychia examples. RE-SPLIT by image stem, same reasoning as
+     the removed nail-disease source below.
+
+data/raw/nail-disease (25 classes) used to be a fourth source here, supplying
+leukonychia, onycholysis, splinter_hemorrhages and lindsays_nails. It was REMOVED
+2026-09 after a watermark audit: the June 2026 rejection of the similarly-named
+tugas-akhir-kx2jl/nail-disease project (see scripts/download_data.py) never actually
+covered this dataset, and a corner-watermark heuristic scan (ml/eval/ isn't where this
+lives -- see the Obsidian vault Change Log) found visually-confirmed stock-photo
+watermarks in it beyond the 4 photos its filenames alone flagged. Don't re-add it
+without re-running that screen. chaa above backfills splinter_hemorrhages; onycholysis
+and lindsays_nails currently have no CNN-covered source and fall back to the (already
+near-chance) classical heuristic -- both are already in
+ml/infer/validation_policy.UNVALIDATED_CONDITIONS, so this doesn't change what's shown
+to users, only what trains the model.
 Each labeled box is cropped (with a small pad) to the nail plate and written as one
 classification sample.
 
@@ -56,24 +68,28 @@ OUT = REPO / "data" / "raw" / "color_cls"
 # drop straight into the same classifier dataset with no box step.
 GHANA = REPO / "data" / "raw" / "fingernails-ghana-anemia" / "Fingernails"
 
-# Third source: the nail-disease detection set (data/raw/nail-disease, Roboflow
-# Universe, CC BY 4.0, YOLO detection, 25 classes). It carries labeled boxes for the
-# four conditions that had NO CNN backing and so false-positived badly as pure
-# heuristics (measured on healthy photos: leukonychia ~61%, onycholysis/splinter ~21%,
-# plus lindsays_nails, whose KNM class was only 2 boxes). Folding it in makes those
-# four CNN-covered app conditions, so color_fusion.py's CNN-primary rule can override
-# the trigger-happy heuristic -- the same mechanism that gave cyanosis/beaus/muehrckes
-# their ~0% false-positive rate. Its OWN train/valid/test split is unusable (nearly
-# every box of these classes sits in `train`, valid/test hold only a few unrelated
-# classes), so unlike KNM we IGNORE its split and re-split by image (see resplit=True).
-NAIL_DISEASE = REPO / "data" / "raw" / "nail-disease"
+# Third source: the chaa nails-segmentation set (data/raw/yolov8-nails-segmentation-ckvkd,
+# Roboflow Universe, CC BY 4.0, YOLO segmentation, 4 classes: Healthy, Splinter
+# Hemorrhage, Spoon Nail, Terry's Nail). Added 2026-09 to backfill splinter_hemorrhages
+# CNN coverage after the nail-disease source (which used to supply it) was removed for
+# watermark contamination -- see the module docstring. Its labels are polygon
+# segmentation rows (class + variable-length x/y vertex list), not fixed-length YOLO
+# detection boxes, so ingestion derives an axis-aligned bounding box from the polygon
+# before reusing crop_box(). Its OWN split isn't reused -- same rationale as the old
+# nail-disease source: re-split by image stem for a clean, leakage-safe train/valid/test
+# (see resplit=True).
+CHAA = REPO / "data" / "raw" / "yolov8-nails-segmentation-ckvkd"
 
 SPLITS = ["train", "valid", "test"]
 BOX_PAD_FRAC = 0.15        # pad each side of the box; a little nail-fold context helps
 MIN_CROP_PX = 24           # drop slivers that carry no usable colour/texture signal
 
-# KNM class name -> internal slug. Lindsay-s Nail is intentionally absent (2 boxes in
-# KNM -- but nail-disease below supplies 176, so lindsays_nails becomes a real class).
+# KNM class name -> internal slug. Lindsay-s Nail is intentionally absent (only 2 boxes
+# in KNM; the nail-disease source that used to supply 176 more was removed for watermark
+# contamination -- see the module docstring -- so lindsays_nails is now a near-empty
+# class. It's already in ml/infer/validation_policy.UNVALIDATED_CONDITIONS, so this
+# doesn't change what users see, but retrain output showing ~0 lindsays_nails examples
+# is expected, not a bug.
 # Slugs match the app's condition labels where one exists; the rest are
 # discrimination-only classes (no app finding emitted for them).
 CLASS_SLUGS = {
@@ -89,25 +105,13 @@ CLASS_SLUGS = {
     "Terry-s Nail": "terrys_nails",
 }
 
-# nail-disease class name -> internal slug. The first four are the newly-covered app
-# conditions this whole ingestion exists for; the rest either strengthen an existing
-# class or stay discrimination-only. Classes with no clean slug mapping (Onychomycosis,
-# Psoriasis, pale-nail, white-nail, yellow-nail, etc.) are intentionally dropped rather
-# than risk confusing them with leukonychia/pallor/Terry's.
-NAIL_DISEASE_SLUGS = {
-    "Leukonychia": "leukonychia",                # NEW app condition (was heuristic-only)
-    "Onycholysis": "onycholysis",                # NEW app condition (was heuristic-only)
-    "Splinter-hemmorrage": "splinter_hemorrhages",  # NEW app condition (was heuristic-only)
-    "Lindsays-nail": "lindsays_nails",           # NEW app condition (KNM had too few)
-    "Normal-nail": "healthy",
-    "Terrys-nail": "terrys_nails",
-    "Muehrckes-Lines": "muehrckes_lines",
-    "beaus-lines": "beaus_lines",
-    "bluish-nail": "cyanosis",
-    "Melanoma": "melanoma",                      # discrimination only
-    "Koilonychia": "koilonychia",               # discrimination only
-    "Onychogryphosis": "onychogryphosis",        # discrimination only
-    "clubbing-nail": "clubbing",                 # discrimination only
+# chaa class name -> internal slug. splinter_hemorrhages is the newly-covered app
+# condition this ingestion exists for; the other three strengthen existing classes.
+CHAA_SLUGS = {
+    "Healthy": "healthy",
+    "Splinter Hemorrhage": "splinter_hemorrhages",  # NEW app condition (was heuristic-only)
+    "Spoon Nail": "koilonychia",                  # discrimination only (geometry owns it)
+    "Terry-s nail": "terrys_nails",
 }
 
 # A fourth source, data/raw/nail-dataset-arthitaya (Kaggle, the only dataset found
@@ -144,6 +148,22 @@ def crop_box(img, cx, cy, bw, bh):
         return None
     crop = img[y1:y2, x1:x2]
     return crop if crop.size else None
+
+
+def _row_bbox(coords):
+    """A label row's coordinate values (everything after the class index) -> a
+    normalized (cx, cy, bw, bh) box. `coords` is either a 4-value YOLO detection box
+    (cx, cy, bw, bh, used as-is) or a >=6-value, even-length YOLO segmentation polygon
+    (x1, y1, x2, y2, ...), reduced to its axis-aligned bounding box -- chaa (the only
+    polygon source so far) still crops the nail-plate box, not a pixel-accurate mask, so
+    an AABB is all crop_box() needs."""
+    if len(coords) == 4:
+        return coords
+    if len(coords) < 6 or len(coords) % 2:
+        return None
+    xs, ys = coords[0::2], coords[1::2]
+    x1, x2, y1, y2 = min(xs), max(xs), min(ys), max(ys)
+    return (x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1
 
 
 # --- Ghana fingernail-anemia ingestion --------------------------------------
@@ -183,11 +203,13 @@ def bucket_split(key):
 
 
 def ingest_yolo(root, class_slugs, prefix, totals, resplit=False):
-    """Crop every mapped box in a YOLO detection dataset into OUT/<split>/<slug>/.
+    """Crop every mapped box/polygon in a YOLO dataset into OUT/<split>/<slug>/. Handles
+    both detection (fixed 5-field rows) and segmentation (variable-length polygon rows)
+    label formats -- see _row_bbox().
 
     resplit=False: keep the dataset's own train/valid/test split (KNM ships a clean one).
     resplit=True:  ignore the source split and re-split by image stem via bucket_split
-                   (for nail-disease, whose shipped split dumps ~all data into train).
+                   (for chaa, whose shipped split isn't leakage-checked against ours).
     """
     if not root.exists():
         print(f"  {prefix}: dataset not found at {root} -- skipping")
@@ -204,10 +226,13 @@ def ingest_yolo(root, class_slugs, prefix, totals, resplit=False):
             split = bucket_split(label_file.stem) if resplit else src_split
             for li, line in enumerate(label_file.read_text().splitlines()):
                 parts = line.strip().split()
-                if len(parts) != 5:
+                if len(parts) < 5:
                     continue
                 slug = idx_to_slug.get(int(parts[0]))
                 if slug is None:
+                    continue
+                box = _row_bbox([float(v) for v in parts[1:]])
+                if box is None:
                     continue
                 if img is None:            # lazily load image only when a box is kept
                     img_file = find_image_file(label_file)
@@ -216,8 +241,7 @@ def ingest_yolo(root, class_slugs, prefix, totals, resplit=False):
                     img = cv2.imread(str(img_file), cv2.IMREAD_COLOR)
                     if img is None:
                         break
-                cx, cy, bw, bh = map(float, parts[1:])
-                crop = crop_box(img, cx, cy, bw, bh)
+                crop = crop_box(img, *box)
                 if crop is None:
                     continue
                 dst_dir = OUT / split / slug
@@ -263,9 +287,8 @@ def main():
     totals = {}
     print("Ingesting KNM box crops (keep source split)...")
     ingest_yolo(KNM, CLASS_SLUGS, "knm", totals, resplit=False)
-    print("Ingesting nail-disease box crops (re-split by image; adds leukonychia, "
-          "onycholysis, splinter_hemorrhages, lindsays_nails)...")
-    ingest_yolo(NAIL_DISEASE, NAIL_DISEASE_SLUGS, "nd", totals, resplit=True)
+    print("Ingesting chaa segmentation crops (re-split by image; adds splinter_hemorrhages)...")
+    ingest_yolo(CHAA, CHAA_SLUGS, "chaa", totals, resplit=True)
     print("Adding Ghana fingernail-anemia crops (pallor / darker-cohort healthy)...")
     add_ghana(totals)
     # arthitaya (data/raw/nail-dataset-arthitaya) was DROPPED as a training source: its

@@ -448,12 +448,15 @@ Pipeline:
   final word; always re-check with `eval_color_sensitivity.py` + a false-positive
   check before trusting a picked cutoff.** Re-sweep whenever the dataset OR the
   training weighting scheme changes.
-- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for **ten
+- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for **seven
   app conditions**: cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting
   (from KNM), pallor (Ghana fingernail-anemia set, see `data/DATASETS_DIVERSITY.md`),
-  leukonychia/onycholysis/splinter_hemorrhages/lindsays_nails (from the
-  `nail-disease` Roboflow set, added because as pure heuristics they false-positived
-  badly on healthy nails). **melanonychia is deliberately NOT in this list** - it was
+  and splinter_hemorrhages (from the chaa Roboflow set as of 2026-09, see "Dataset
+  contamination" below - previously from `nail-disease`, added because as a pure
+  heuristic it false-positived badly on healthy nails). leukonychia/onycholysis/
+  lindsays_nails lost their only CNN source when `nail-disease` was removed and are
+  back to classical-heuristic-only, same as melanonychia below.
+  **melanonychia is deliberately NOT in this list** - it was
   briefly CNN-covered via `data/raw/nail-dataset-arthitaya` (the only dataset found
   anywhere with this label), then that data source was **removed** from
   `scripts/build_color_classification_dataset.py` once its Kaggle license turned out
@@ -468,13 +471,16 @@ Pipeline:
   - when it has a confident call it sets the verdict, and the heuristic can only
   corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
   confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
-  (`"ml_primary"`). Exception: for **`LOW_SAMPLE_CONDITIONS`** (`onycholysis`,
-  `splinter_hemorrhages` - test-set n of 24 and 18, where a single example flips
-  precision/recall by 5-15 points), disagreement instead falls back to `inconclusive`
-  (`"low_sample_disagree"`, `failure_reason: "insufficient_data_for_confident_call"`)
-  rather than letting the CNN unilaterally overrule the heuristic - neither signal has
-  enough held-out evidence to justify asserting a verdict against the other for these
-  two. Agreement (both signals concur) is unaffected by this exception. A confident
+  (`"ml_primary"`). Exception: for **`LOW_SAMPLE_CONDITIONS`** (`onycholysis` only as
+  of 2026-09 - it has no CNN class at all since `nail-disease`'s removal, so it's
+  CNN-uncovered by construction rather than by this exception; `splinter_hemorrhages`
+  was removed from this set once chaa grew its held-out test count to n=50 with 0.98
+  isolated-crop recall, see "Dataset contamination" below), disagreement instead falls
+  back to `inconclusive` (`"low_sample_disagree"`, `failure_reason:
+  "insufficient_data_for_confident_call"`) rather than letting the CNN unilaterally
+  overrule the heuristic - there isn't enough held-out evidence to justify asserting a
+  verdict against the other signal. Agreement (both signals concur) is unaffected by
+  this exception. A confident
   prediction of a *different* condition is treated as "no opinion" (single-label can't
   rule out a co-occurring sign). `ResultView.jsx` renders `color_fused` with a "Color +
   AI" badge.
@@ -513,10 +519,72 @@ on 34% of healthy test nails); muehrckes 37.5->75.0% / 0.6->2.3%; terrys 66.7->8
 0->2.3%; beaus 63.6->77.3% / 0.6->1.2%; lindsays 29.0->41.9% / 0->2.3%.
 `ml/infer/validation_policy.py` then withholds verdicts (`not_validated`, original kept
 as `unvalidated_verdict` for /feedback) for conditions that miss recall >= 50% and FP <= 5%
-on VALID: **pallor** (best trade-off is a data ceiling: FP 5.3% only at recall 7.7%),
-leukonychia, onycholysis, splinter_hemorrhages, and melanonychia (no licensed data, 0/6
-test positives found). Re-run both scripts after any retrain, threshold or data change,
-and update the tables and `UNVALIDATED_CONDITIONS` together.
+on VALID. The numbers and the unvalidated set below are as of 2026-09-12; both changed
+in the retrain described next.
+
+**Dataset contamination found and fixed; splinter_hemorrhages newly validated
+(2026-09-15).** `scripts/download_data.py` already documented one rejected Roboflow
+project (`tugas-akhir-kx2jl/nail-disease`, Google-scraped + watermarked, explicitly
+never re-added) - but a *different*, similarly-named project, `data/raw/nail-disease`,
+had been pulled and used in training for leukonychia/onycholysis/splinter_hemorrhages/
+lindsays_nails for about three months without ever getting that same scrutiny. An
+audit (algorithmic, at the user's explicit request - EXIF extraction, a broadened
+filename regex for Google-Images/stock-photo URL fragments, an HSV-desaturation x
+Canny-edge-density corner-watermark heuristic, and pytesseract OCR, run over all 1,310
+raw images) found: EXIF stripped from 100% of images (uninformative - Roboflow does
+this universally); filename regex caught only the same 4 source photos (10 files)
+already known; OCR found no stock-photo/watermark keyword matches at all (629/1310
+images had *some* OCR text, all confirmed noise from skin-texture JPEG artifacts); the
+corner heuristic flagged 20 additional candidates (score 0.24-0.31), and full-resolution
+visual inspection of the top 2 confirmed real, legible stock-photo watermark fragments
+(e.g. "...er.com") that neither the filename check nor OCR caught. Given this dataset
+had already been rejected once for exactly this failure mode and a second, independent
+audit found more of it, `data/raw/nail-disease` was dropped entirely as both a training
+source (`scripts/build_color_classification_dataset.py`) and an eval source
+(`ml/eval/eval_color_sensitivity.py`, `ml/eval/eval_end_to_end.py`) - not just for the
+licensing reason that got `nail-dataset-arthitaya` dropped, but because its CC BY
+relicense claim itself isn't trustworthy, which taints local-only eval use too, unlike
+a pure licensing gap.
+
+The `chaa/yolov8-nails-segmentation-ckvkd` Roboflow set (CC BY 4.0, YOLO **segmentation**
+format - polygon labels, not fixed-length boxes; `scripts/build_color_classification_
+dataset.py`'s `_row_bbox` reduces a polygon to its axis-aligned bounding box before the
+existing crop step) replaced it for splinter_hemorrhages: Healthy/Splinter Hemorrhage/
+Spoon Nail/Terry's-nail, ~1,947 images, re-split by image stem like the source it
+replaced. leukonychia, onycholysis and lindsays_nails have no replacement source and
+lost their only CNN backing and their only eval positives; onycholysis was already
+CNN-uncovered-caliber (see `LOW_SAMPLE_CONDITIONS` above), but leukonychia and
+especially lindsays_nails (previously borderline-*passing* the validation policy on
+nail-disease-sourced eval data) are a real, if small, capability loss - the honest
+trade for removing data whose provenance can't be trusted, not a free win.
+
+Effect on the retrained ensemble (`ml/eval/eval_color_ensemble.py`, isolated CNN,
+12 classes now instead of 16): overall test accuracy 0.757 (app conditions + healthy
+0.772); splinter_hemorrhages recall 0.980 (n=50, up from a training pool an order of
+magnitude smaller under nail-disease). End-to-end, through `/analyze`
+(`ml/eval/eval_end_to_end.py` + `ml/eval/tune_color_decision.py`, chosen on VALID,
+reported on TEST): splinter_hemorrhages valid 83.8%/2.4% FP -> test 71.7%/1.5% FP,
+clearing the 50%/5% policy bar for the first time (previously 11.8%/1.7% test on the
+nail-disease-sourced model) - it moved OUT of `UNVALIDATED_CONDITIONS`.
+`color_fusion.LOW_SAMPLE_CONDITIONS` dropped splinter_hemorrhages too (test n grew from
+18 to 46-48). lindsays_nails moved INTO `UNVALIDATED_CONDITIONS` (0 eval positives with
+no source left). cyanosis/terrys_nails/beaus_lines/muehrckes_lines/pitting were
+re-tuned against the retrained model and stayed validated, though beaus_lines and
+muehrckes_lines have a real valid->test recall gap worth watching on the next retrain
+(small test-split n) - see `ml/infer/validation_policy.py`'s and `ml/infer/
+color_fusion.py`'s comments for the exact numbers. Full before/after and audit
+methodology: `Decision Log.md` and `Change Log.md` in the Obsidian vault, dated
+2026-09-15/16.
+
+Two eval-script bugs were fixed as part of this, unrelated to the dataset change but
+found while re-running these evals: `ml/eval/eval_end_to_end.py`'s real-DB-write guard
+did a raw substring check of `tempfile.gettempdir()` against a forward-slash-normalized
+URI, which always failed on Windows (backslash vs. forward-slash separators) - fixed by
+normalizing both sides before comparing. `ml/eval/tune_color_decision.py` crashed
+(`max() of empty sequence`) on any condition with zero held-out positives, a case that
+didn't exist before this retrain (every app condition used to have at least a few
+nail-disease-sourced positives) - fixed to skip tuning and report `n/a` for such a
+condition instead.
 
 ### Eval / diagnostics (`ml/eval/`)
 
@@ -690,7 +758,14 @@ classes, already train/valid/test split). `data/raw/LICENSES.md` (generated) tra
 attribution - CC BY 4.0 requires crediting each source in any submission/README.
 `data/raw/` is gitignored (don't commit the images/licensing); re-run the script to
 repopulate. The other detection datasets (`nail-clubbing`, etc.) are boxes, not
-class folders - not yet wired into training (would need a crop step).
+class folders - not yet wired into training (would need a crop step). `ROBOFLOW_API_KEY`
+can also live in `backend/.env` (the script loads it via `python-dotenv` if the plain
+env var isn't set) - the same file `DEEPL_API_KEY` already lives in.
+
+`data/raw/nail-disease` was a training/eval source until 2026-09-15, when it was removed
+for confirmed watermark contamination - see "Dataset contamination found and fixed" under
+the color-condition CNN track above. It is deliberately absent from `download_data.py`'s
+`DATASETS` list; don't re-add it without re-running that audit.
 
 
 ## Canonical Obsidian vault — required project memory workflow

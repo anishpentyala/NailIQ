@@ -34,35 +34,45 @@ sign) rather than as evidence C is absent -- the screener-safe choice. The outpu
 within / outside / inconclusive, never a diagnosis.
 
 LOW_SAMPLE_CONDITIONS is a deliberate exception to "CNN is primary" above. onycholysis
-(test n=24) and splinter_hemorrhages (n=18) have precision/recall numbers computed on so
-few images that a single test example flips them by 5-15 points (ml/eval/eval_color_ensemble.py,
-ml/eval/eval_color_sensitivity.py) -- there isn't enough evidence to say the CNN's call is
-more trustworthy than the heuristic's for these two specifically. Letting the CNN silently
-overrule the heuristic on disagreement, as it does for the well-sampled conditions, would
-assert a verdict neither signal can actually back. So for this subset, disagreement falls
-back to inconclusive (`agreement: "low_sample_disagree"`) instead of `ml_primary` --
-still screener-safe, and honest about the data gap CLAUDE.md documents rather than papering
-over it with a confidence float. Agreement (both signals concur) is unaffected -- that's
-still real corroborating evidence regardless of sample size.
+has precision/recall numbers computed on so few images that a single test example flips
+them by 5-15 points (ml/eval/eval_color_ensemble.py, ml/eval/eval_color_sensitivity.py)
+-- there isn't enough evidence to say the CNN's call is more trustworthy than the
+heuristic's for it specifically. Letting the CNN silently overrule the heuristic on
+disagreement, as it does for the well-sampled conditions, would assert a verdict neither
+signal can actually back. So for this subset, disagreement falls back to inconclusive
+(`agreement: "low_sample_disagree"`) instead of `ml_primary` -- still screener-safe, and
+honest about the data gap CLAUDE.md documents rather than papering over it with a
+confidence float. Agreement (both signals concur) is unaffected -- that's still real
+corroborating evidence regardless of sample size.
+
+splinter_hemorrhages was in this set (test n=18) until the chaa dataset (2026-09) grew
+its CNN-covered test count to n=50 with 0.98 isolated-crop recall -- see
+scripts/build_color_classification_dataset.py's module docstring. onycholysis has no
+CNN class at all anymore (its only source, nail-disease, was removed for the same
+reason splinter_hemorrhages needed chaa in the first place -- watermark contamination),
+so it stays low-sample/CNN-uncovered by construction, not by choice.
 """
 
-LOW_SAMPLE_CONDITIONS = {"onycholysis", "splinter_hemorrhages"}
+LOW_SAMPLE_CONDITIONS = {"onycholysis"}
 
 # The two tables below are chosen by ml/eval/tune_color_decision.py on the VALID split
 # of the end-to-end /analyze eval (ml/eval/eval_end_to_end.py) and scored once on TEST;
 # re-run it after any retrain. An absent condition keeps the original behaviour.
+# leukonychia/lindsays_nails were dropped from both tables in 2026-09 (see
+# color_classifier.CLASS_CONFIDENCE_THRESHOLD's comment): their only CNN source
+# (nail-disease) was removed for watermark contamination and neither class exists in
+# the model anymore, so an entry for either would be dead code (the CNN can never vote
+# for a class it wasn't trained on).
 #
 # OVR_THRESHOLD: p(C) at which the CNN votes "outside" on C even when C isn't its top
 # class. The pale/white-band conditions are routinely a close second to a neighbouring
 # class, so top-class-only voting threw real positives away.
 OVR_THRESHOLD = {
     "cyanosis": 0.15,
-    "terrys_nails": 0.25,
+    "terrys_nails": 0.4,   # 2026-09 retrain: was 0.25, re-tuned alongside chaa's addition
     "beaus_lines": 0.15,
     "muehrckes_lines": 0.15,
     "pitting": 0.15,
-    "leukonychia": 0.30,
-    "lindsays_nails": 0.15,
 }
 
 # HEURISTIC_MIN_CNN_SUPPORT: a heuristic-only "outside" on C (CNN has no opinion on C)
@@ -72,21 +82,32 @@ OVR_THRESHOLD = {
 # the CNN read as "pallor" -- which fusion treated as no opinion, handing those
 # conditions to a near-chance heuristic.
 HEURISTIC_MIN_CNN_SUPPORT = {
-    "cyanosis": 0.02,
+    "cyanosis": 0.05,       # 2026-09 retrain: was 0.02
     "beaus_lines": 0.02,
-    "pitting": 0.05,
+    "pitting": 0.02,        # 2026-09 retrain: was 0.05
     "pallor": 0.20,
-    "leukonychia": 0.05,
-    "splinter_hemorrhages": 0.02,
+    "muehrckes_lines": 0.2,     # NEW 2026-09 retrain
+    "terrys_nails": 0.2,        # NEW 2026-09 retrain
+    "splinter_hemorrhages": 0.2,  # 2026-09 retrain: was 0.02, chaa-backed re-tune
 }
-# Resulting strict end-to-end numbers (recall incl. abstentions as misses / FP over all
-# healthy images), shipped rule -> these tables. VALID chose them; TEST was not used:
-#   cyanosis        test recall 75.9%->89.7%, FP 17.4%->3.5%
-#   pitting         test recall 78.1%->81.2%, FP 31.4%->1.2% (healthy abstention 4%->34%)
-#   muehrckes_lines test recall 37.5%->75.0%, FP  0.6%->2.3%
-#   terrys_nails    test recall 66.7%->83.3%, FP  0.0%->2.3%
-#   beaus_lines     test recall 63.6%->77.3%, FP  0.6%->1.2%
-#   lindsays_nails  test recall 29.0%->41.9%, FP  0.0%->2.3%
+# Resulting strict end-to-end numbers as of the 2026-09-15 retrain (data/raw/nail-disease
+# removed for watermark contamination, chaa added for splinter_hemorrhages -- see
+# scripts/build_color_classification_dataset.py). VALID chose these tables; TEST was
+# never used for selection, only reported here for honesty:
+#   cyanosis             valid 58.0%/2.4%   test 61.5%/3.3%
+#   pitting              valid 84.9%/2.9%   test 86.2%/6.2%  (test FP over the 5% policy
+#                        cap despite valid being under it -- small-n test noise, watch
+#                        on next retrain, see ml/infer/validation_policy.py)
+#   muehrckes_lines      valid 51.7%/0.4%   test 40.0%/0.5%  (test recall below 50%; n=15
+#                        on test, one of the smallest positive pools here)
+#   terrys_nails         valid 54.0%/2.6%   test 50.6%/2.9%
+#   beaus_lines          valid 58.1%/2.3%   test 45.5%/2.4%  (test recall below 50%; n=22)
+#   splinter_hemorrhages valid 83.8%/2.4%   test 71.7%/1.5%  -- NEWLY VALIDATED (see
+#                        ml/infer/validation_policy.py); previously test 11.8%/1.7% on
+#                        the pre-chaa/nail-disease-sourced model.
+# These are all measured through the real /analyze pipeline (region detection + bbox
+# crop + fusion), not the isolated CNN -- see ml/eval/eval_color_sensitivity.py's module
+# docstring for why that gap matters.
 
 
 def _cnn_signal_for(condition, pred):

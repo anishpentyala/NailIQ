@@ -12,6 +12,18 @@ classification_dataset.py's exact split logic (bucket_split / KNM's own shipped 
 over the ORIGINAL, uncropped source images, so these are genuinely held-out, not
 train-leaked, and comparable to the CNN-only numbers.
 
+data/raw/nail-disease (used to supply leukonychia/onycholysis/splinter_hemorrhages/
+lindsays_nails positives here) was REMOVED 2026-09 after a watermark audit found
+visually-confirmed stock-photo watermarks in it -- see scripts/build_color_
+classification_dataset.py's module docstring. This script no longer draws from it, for
+the same provenance reason, not just the training-side licensing concern: measuring
+"recall" against images that may not even be genuine nail photos isn't a real number.
+chaa (data/raw/yolov8-nails-segmentation-ckvkd) replaces it for splinter_hemorrhages;
+leukonychia, onycholysis and lindsays_nails currently have no vetted source and are
+absent from `positives` entirely rather than measured against a) an image confirmedly
+contaminated or b) with a silent zero -- see CLAUDE.md for what that means for those
+three conditions' validation status.
+
     cd <repo root>
     backend/venv/Scripts/python.exe ml/eval/eval_color_sensitivity.py
 
@@ -50,14 +62,14 @@ client = app_module.app.test_client()
 SPLITS = ("train", "valid", "test")
 
 KNM = REPO / "data" / "raw" / "nail-disease-detection-mxoqy"
-NAIL_DISEASE = REPO / "data" / "raw" / "nail-disease"
+CHAA = REPO / "data" / "raw" / "yolov8-nails-segmentation-ckvkd"
 GHANA = REPO / "data" / "raw" / "fingernails-ghana-anemia" / "Fingernails"
 ARTHITAYA = REPO / "data" / "raw" / "nail-dataset-arthitaya" / "Nail"
 
-# Must mirror scripts/build_color_classification_dataset.py's CLASS_SLUGS /
-# NAIL_DISEASE_SLUGS / ARTHITAYA_SLUGS -- only the app-reported conditions are needed
-# here (discrimination-only classes like melanoma/koilonychia/clubbing are irrelevant
-# to a recall check).
+# Must mirror scripts/build_color_classification_dataset.py's CLASS_SLUGS / CHAA_SLUGS /
+# ARTHITAYA_SLUGS -- only the app-reported conditions are needed here (discrimination-only
+# classes like melanoma/koilonychia/clubbing are irrelevant to a recall check, though
+# chaa's koilonychia entry is skipped below for the same reason).
 KNM_SLUGS = {
     "Beaus Line": "beaus_lines",
     "Blue Finger": "cyanosis",
@@ -65,11 +77,9 @@ KNM_SLUGS = {
     "Pitting": "pitting",
     "Terry-s Nail": "terrys_nails",
 }
-NAIL_DISEASE_SLUGS = {
-    "Leukonychia": "leukonychia",
-    "Onycholysis": "onycholysis",
-    "Splinter-hemmorrage": "splinter_hemorrhages",
-    "Lindsays-nail": "lindsays_nails",
+CHAA_SLUGS = {
+    "Splinter Hemorrhage": "splinter_hemorrhages",
+    "Terry-s nail": "terrys_nails",
 }
 ARTHITAYA_SLUGS = {
     "black line": "melanonychia",
@@ -133,19 +143,22 @@ def gather_positives():
                     for slug in slugs_here:
                         positives[slug].append(img)
 
-    # nail-disease was re-split by image stem via bucket_split (ingest_yolo resplit=True)
-    if NAIL_DISEASE.exists():
-        names = load_names(NAIL_DISEASE)
-        idx_to_slug = {i: NAIL_DISEASE_SLUGS[n] for i, n in enumerate(names) if n in NAIL_DISEASE_SLUGS}
+    # chaa was re-split by image stem via bucket_split (ingest_yolo resplit=True). Its
+    # labels are YOLO segmentation polygons (class + variable-length x/y list), not
+    # fixed 5-field detection boxes like KNM, so the row filter below is `>= 5` (has a
+    # class index plus at least one point), not `== 5`.
+    if CHAA.exists():
+        names = load_names(CHAA)
+        idx_to_slug = {i: CHAA_SLUGS[n] for i, n in enumerate(names) if n in CHAA_SLUGS}
         for src_split in SPLITS:
-            labels_dir = NAIL_DISEASE / src_split / "labels"
+            labels_dir = CHAA / src_split / "labels"
             if not labels_dir.exists():
                 continue
             for label_file in sorted(labels_dir.glob("*.txt")):
                 if bucket_split(label_file.stem) != "test":
                     continue
                 slugs_here = {idx_to_slug.get(int(p.split()[0])) for p in label_file.read_text().splitlines()
-                              if len(p.split()) == 5 and idx_to_slug.get(int(p.split()[0]))}
+                              if len(p.split()) >= 5 and idx_to_slug.get(int(p.split()[0]))}
                 if slugs_here:
                     img = find_image_file(label_file)
                     if img:
