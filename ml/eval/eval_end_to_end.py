@@ -36,8 +36,9 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
 from ml.eval.eval_color_sensitivity import (  # noqa: E402
-    ARTHITAYA, ARTHITAYA_SLUGS, CHAA, CHAA_SLUGS, GHANA, KNM, KNM_SLUGS,
-    SPLITS, b64, bucket_split, find_image_file, ghana_label, ghana_patient_key, load_names,
+    ANEMIA, ARTHITAYA, ARTHITAYA_SLUGS, CHAA, CHAA_SLUGS, GHANA, KNM, KNM_SLUGS, NIHATI,
+    SPLITS, anemia_source_key, b64, bucket_split, find_image_file, ghana_label,
+    ghana_patient_key, load_names,
 )
 
 KNM_ALL = {**KNM_SLUGS, "Healthy Nail": "healthy"}
@@ -89,6 +90,35 @@ def gather(split):
                     if p.suffix.lower() in (".jpg", ".jpeg", ".png") and \
                             bucket_split(f"{cls_dir.name}-{p.stem}") == split:
                         items[p] = {"melanonychia"}
+    # NIHATI: folder name is already the slug (see eval_color_sensitivity.gather_positives'
+    # comment); re-split by image id, same as training.
+    if NIHATI.exists():
+        for src_split_dir in NIHATI.iterdir():
+            if not src_split_dir.is_dir():
+                continue
+            for slug_dir in src_split_dir.iterdir():
+                if not slug_dir.is_dir():
+                    continue
+                for p in slug_dir.iterdir():
+                    if p.suffix.lower() not in (".jpg", ".jpeg", ".png"):
+                        continue
+                    image_id = p.stem.split("_", 1)[0]
+                    if bucket_split(image_id) == split:
+                        items.setdefault(p, set()).add(slug_dir.name)
+    # anemia: only `anemic_nail` (class 0) -> pallor, re-split by source-photo key.
+    if ANEMIA.exists():
+        for src_split in SPLITS:
+            labels_dir = ANEMIA / src_split / "labels"
+            if not labels_dir.exists():
+                continue
+            for label_file in sorted(labels_dir.glob("*.txt")):
+                has_anemic = any(p.split()[0] == "0" for p in label_file.read_text().splitlines()
+                                  if len(p.split()) == 5)
+                if not has_anemic or bucket_split(anemia_source_key(label_file.stem)) != split:
+                    continue
+                img = find_image_file(label_file)
+                if img:
+                    items.setdefault(img, set()).add("pallor")
     return items
 
 

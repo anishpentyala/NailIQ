@@ -9,8 +9,11 @@ covers thirteen conditions across four tracks: digital clubbing and koilonychia/
 nails (side-profile geometry, fused with a top-down CNN), and eleven top-down
 color/texture signs - leukonychia, melanonychia, pallor, cyanosis, Terry's nails,
 Lindsay's nails, onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages,
-and pitting - five of which (cyanosis, Terry's nails, Beau's lines, Muehrcke's
-lines, pitting) are further fused with a second color-condition CNN ensemble.
+and pitting - ten of which (all but melanonychia) are further fused with a second
+color-condition CNN ensemble, though three of those ten (leukonychia, Lindsay's
+nails, onycholysis) currently have too little held-out evidence to clear the
+validation bar and so still show "couldn't analyze this photo" - see
+`ml/infer/validation_policy.py`.
 A user photographs
 their finger and gets a finding per condition, each one only ever "within typical range,"
 "outside typical range," or "couldn't analyze this photo" - **never** a named
@@ -448,14 +451,18 @@ Pipeline:
   final word; always re-check with `eval_color_sensitivity.py` + a false-positive
   check before trusting a picked cutoff.** Re-sweep whenever the dataset OR the
   training weighting scheme changes.
-- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for **seven
+- `ml/infer/color_fusion.py` - fuses the CNN with the classical findings for **ten
   app conditions**: cyanosis, terrys_nails, beaus_lines, muehrckes_lines, pitting
-  (from KNM), pallor (Ghana fingernail-anemia set, see `data/DATASETS_DIVERSITY.md`),
-  and splinter_hemorrhages (from the chaa Roboflow set as of 2026-09, see "Dataset
+  (from KNM), pallor (Ghana fingernail-anemia set + the `anemia` Roboflow set's
+  `anemic_nail` class as of 2026-09-16, see `data/DATASETS_DIVERSITY.md`),
+  splinter_hemorrhages (from the chaa Roboflow set as of 2026-09, see "Dataset
   contamination" below - previously from `nail-disease`, added because as a pure
-  heuristic it false-positived badly on healthy nails). leukonychia/onycholysis/
-  lindsays_nails lost their only CNN source when `nail-disease` was removed and are
-  back to classical-heuristic-only, same as melanonychia below.
+  heuristic it false-positived badly on healthy nails), and leukonychia/onycholysis/
+  lindsays_nails (restored as of 2026-09-16 via the independently-audited `nihati`
+  Roboflow set, after losing their only CNN source when `nail-disease` was removed -
+  see "Dataset contamination" below). All three are still in `LOW_SAMPLE_CONDITIONS`
+  (below) because NIHATI's eval-positive counts for them are tiny (n=4-6) - restoring
+  the CNN class did not clear `validation_policy.py`'s bar, see that file.
   **melanonychia is deliberately NOT in this list** - it was
   briefly CNN-covered via `data/raw/nail-dataset-arthitaya` (the only dataset found
   anywhere with this label), then that data source was **removed** from
@@ -471,12 +478,13 @@ Pipeline:
   - when it has a confident call it sets the verdict, and the heuristic can only
   corroborate (boost confidence on `agreement: "agree"`), never veto. CNN with no
   confident call → heuristic stands (`"color_only"`); CNN disagrees → CNN leads
-  (`"ml_primary"`). Exception: for **`LOW_SAMPLE_CONDITIONS`** (`onycholysis` only as
-  of 2026-09 - it has no CNN class at all since `nail-disease`'s removal, so it's
-  CNN-uncovered by construction rather than by this exception; `splinter_hemorrhages`
-  was removed from this set once chaa grew its held-out test count to n=50 with 0.98
-  isolated-crop recall, see "Dataset contamination" below), disagreement instead falls
-  back to `inconclusive` (`"low_sample_disagree"`, `failure_reason:
+  (`"ml_primary"`). Exception: for **`LOW_SAMPLE_CONDITIONS`** (`onycholysis`,
+  `leukonychia`, `lindsays_nails` as of 2026-09-16 - all three have a CNN class again
+  via the `nihati` dataset but only n=4-6 held-out eval positives, an order of
+  magnitude below the n=18 that used to gate `splinter_hemorrhages`'s membership here;
+  `splinter_hemorrhages` itself was removed from this set once chaa grew its held-out
+  test count to n=50 with 0.98 isolated-crop recall, see "Dataset contamination"
+  below), disagreement instead falls back to `inconclusive` (`"low_sample_disagree"`, `failure_reason:
   "insufficient_data_for_confident_call"`) rather than letting the CNN unilaterally
   overrule the heuristic - there isn't enough held-out evidence to justify asserting a
   verdict against the other signal. Agreement (both signals concur) is unaffected by
@@ -585,6 +593,59 @@ normalizing both sides before comparing. `ml/eval/tune_color_decision.py` crashe
 didn't exist before this retrain (every app condition used to have at least a few
 nail-disease-sourced positives) - fixed to skip tuning and report `n/a` for such a
 condition instead.
+
+**Two more datasets vetted and added; validated set unchanged despite the added data
+(2026-09-16).** Following the `nail-disease` contamination above, two candidate
+replacements suggested by independent research were each put through the same
+algorithmic audit (EXIF, filename/stock-site regex, OCR, corner-watermark heuristic)
+before being trusted, rather than taking a license tag at face value:
+- **`nihati` (nail-disease-classification-nihati, Roboflow, CC BY 4.0)** - 2,047 images,
+  folder-classification format. No exportable Roboflow "version" existed
+  (`.version(1).download()` failed, `proj.versions()` returned `[]`), so it was pulled
+  via the SDK's public `Project.search()`/`Project.image()` methods instead (no sign-in
+  needed). The audit found EXIF stripped universally (uninformative, as with every
+  Roboflow set), no stock-site filename matches, no OCR watermark-keyword hits, and the
+  corner-watermark heuristic's top scores (0.30-0.41) were all confirmed, on visual
+  inspection, to be textured fabric backgrounds, not watermarks - a different false-
+  positive mechanism than `nail-disease`'s but correctly distinguished by looking at the
+  actual images rather than trusting the score. Ingested into
+  `scripts/build_color_classification_dataset.py` (`add_nihati`) re-split by image id
+  (md5 bucket, same scheme as chaa) since its own split isn't a trusted signal here.
+  Restores leukonychia (40/5/4 train/valid/test), lindsays_nails (27/6/5), and
+  onycholysis (27/5/8) as CNN classes for the first time since `nail-disease`'s removal.
+- **`anemia` (anemia-hv9cy/nails-pceph v1, Roboflow, YOLO detection)** - only the
+  `anemic_nail` class (1,043 train + 41 valid + 20 test boxes) is ingested, mapped to
+  `pallor`; `anemic_toung`/`non_anemic_tounge` boxes are skipped as out-of-scope. Note:
+  this export's `data.yaml` is missing a `non_anemic_nail` class that its name implies
+  should exist - confirmed absent by auditing every label file's class indices (only
+  0/1/2 ever appear) - a transparency note, not a blocker, since only the labeled
+  `anemic_nail` positives are used. Also found: ~8.5% of the dataset's *unlabeled*
+  background images are Pexels/Unsplash stock photos by filename pattern - cross-checked
+  that none of the actual ingested `anemic_nail` boxes come from those files, so it
+  doesn't taint what's actually trained on, but it's noted here rather than silently
+  ignored.
+
+Both sources are also wired into `ml/eval/eval_color_sensitivity.py` and
+`ml/eval/eval_end_to_end.py`'s eval-positive gatherers (re-split the same way as
+training, filtered to the eval split, so no leakage). Net effect on the retrained
+15-class ensemble (`ml/eval/eval_color_ensemble.py`): test accuracy 0.745–0.756
+(mobilenet/efficientnet solo numbers), leukonychia/onycholysis/lindsays_nails now have
+real (if small, n=4-8) isolated-CNN precision/recall instead of not existing as classes.
+**End-to-end, the validated set did not change**: `leukonychia` and `lindsays_nails`
+initially looked like they cleared `validation_policy.py`'s 50%/5% bar on VALID (recall
+80%/83%), but that number relied on letting the CNN's `ml_primary` override the
+heuristic on disagreement with only n=5/6 held-out positives backing it - adding both
+(and `onycholysis`) to `color_fusion.LOW_SAMPLE_CONDITIONS` (matching the precedent that
+gated `splinter_hemorrhages` there until its test-n reached 50) dropped their honest
+strict recall to 40%/0%/0%. All three stay in `validation_policy.UNVALIDATED_CONDITIONS`
+- NIHATI meaningfully improved isolated-CNN accuracy and gave the app real CNN coverage
+for these conditions again, but not enough held-out evidence yet to trust an end-to-end
+verdict. `terrys_nails` did move: a lower floor (0.25, was the 0.45 default) and OVR
+(0.3, was 0.4) picked by `ml/eval/tune_color_decision.py` against the larger eval pool
+raised its valid recall 44.1%->50.0% (test 44.7%), keeping it just inside the policy
+bar. Full numbers: `ml/infer/color_fusion.py`'s and `ml/infer/validation_policy.py`'s
+table/docstring comments; audit methodology and before/after in the Obsidian vault's
+`Change Log.md`/`Decision Log.md`, dated 2026-09-16.
 
 ### Eval / diagnostics (`ml/eval/`)
 
@@ -766,6 +827,16 @@ env var isn't set) - the same file `DEEPL_API_KEY` already lives in.
 for confirmed watermark contamination - see "Dataset contamination found and fixed" under
 the color-condition CNN track above. It is deliberately absent from `download_data.py`'s
 `DATASETS` list; don't re-add it without re-running that audit.
+
+`data/raw/nail-disease-classification-nihati` and `data/raw/anemia-nails-detection` were
+added 2026-09-16 as vetted replacements/backfill - see "Two more datasets vetted and
+added" under the color-condition CNN track above for the audit methodology and why the
+validated set didn't change despite the new data. NIHATI has no exportable Roboflow
+version, so it isn't in `download_data.py`'s normal `DATASETS`/`.download()` flow; it was
+pulled via the Roboflow SDK's `Project.search()`/`Project.image()` public API instead
+(one-off, not yet folded into `download_data.py` as a repeatable step - re-downloading it
+would need the same approach). `anemia-nails-detection` is a normal YOLO-detection
+Roboflow export and could be added to `DATASETS` if it needs to be repeatable.
 
 
 ## Canonical Obsidian vault — required project memory workflow

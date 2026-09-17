@@ -47,32 +47,37 @@ corroborating evidence regardless of sample size.
 
 splinter_hemorrhages was in this set (test n=18) until the chaa dataset (2026-09) grew
 its CNN-covered test count to n=50 with 0.98 isolated-crop recall -- see
-scripts/build_color_classification_dataset.py's module docstring. onycholysis has no
-CNN class at all anymore (its only source, nail-disease, was removed for the same
-reason splinter_hemorrhages needed chaa in the first place -- watermark contamination),
-so it stays low-sample/CNN-uncovered by construction, not by choice.
+scripts/build_color_classification_dataset.py's module docstring.
+
+leukonychia, onycholysis, and lindsays_nails joined/rejoined this set 2026-09-16: the
+NIHATI dataset (see scripts/build_color_classification_dataset.py's add_nihati)
+restored all three as CNN classes after nail-disease's removal took them away, but its
+eval-positive counts are minuscule (n=4-6 on the VALID split, ml/eval/e2e_valid.json) --
+an order of magnitude smaller than splinter_hemorrhages' old n=18 threshold for this
+same exception. onycholysis in particular measured 0% end-to-end recall (0/4) on this
+retrain. None of the three have enough held-out evidence yet to let the CNN unilaterally
+overrule the heuristic; re-evaluate for removal only once a retrain grows their test-set
+n meaningfully (see ml/infer/validation_policy.py for the parallel caveat on trusting
+their verdicts at all).
 """
 
-LOW_SAMPLE_CONDITIONS = {"onycholysis"}
+LOW_SAMPLE_CONDITIONS = {"onycholysis", "leukonychia", "lindsays_nails"}
 
 # The two tables below are chosen by ml/eval/tune_color_decision.py on the VALID split
 # of the end-to-end /analyze eval (ml/eval/eval_end_to_end.py) and scored once on TEST;
 # re-run it after any retrain. An absent condition keeps the original behaviour.
-# leukonychia/lindsays_nails were dropped from both tables in 2026-09 (see
-# color_classifier.CLASS_CONFIDENCE_THRESHOLD's comment): their only CNN source
-# (nail-disease) was removed for watermark contamination and neither class exists in
-# the model anymore, so an entry for either would be dead code (the CNN can never vote
-# for a class it wasn't trained on).
 #
 # OVR_THRESHOLD: p(C) at which the CNN votes "outside" on C even when C isn't its top
 # class. The pale/white-band conditions are routinely a close second to a neighbouring
 # class, so top-class-only voting threw real positives away.
 OVR_THRESHOLD = {
-    "cyanosis": 0.15,
-    "terrys_nails": 0.4,   # 2026-09 retrain: was 0.25, re-tuned alongside chaa's addition
+    "cyanosis": 0.3,        # 2026-09-16 retrain: was 0.15
+    "terrys_nails": 0.3,    # 2026-09-16 retrain: was 0.4
     "beaus_lines": 0.15,
     "muehrckes_lines": 0.15,
     "pitting": 0.15,
+    "splinter_hemorrhages": 0.3,  # NEW 2026-09-16 retrain
+    "lindsays_nails": 0.15,       # NEW 2026-09-16 retrain -- class restored via NIHATI
 }
 
 # HEURISTIC_MIN_CNN_SUPPORT: a heuristic-only "outside" on C (CNN has no opinion on C)
@@ -82,29 +87,40 @@ OVR_THRESHOLD = {
 # the CNN read as "pallor" -- which fusion treated as no opinion, handing those
 # conditions to a near-chance heuristic.
 HEURISTIC_MIN_CNN_SUPPORT = {
-    "cyanosis": 0.05,       # 2026-09 retrain: was 0.02
+    "cyanosis": 0.02,       # 2026-09-16 retrain: was 0.05
     "beaus_lines": 0.02,
-    "pitting": 0.02,        # 2026-09 retrain: was 0.05
-    "pallor": 0.20,
-    "muehrckes_lines": 0.2,     # NEW 2026-09 retrain
-    "terrys_nails": 0.2,        # NEW 2026-09 retrain
-    "splinter_hemorrhages": 0.2,  # 2026-09 retrain: was 0.02, chaa-backed re-tune
+    "pitting": 0.02,
+    "pallor": 0.05,         # 2026-09-16 retrain: was 0.20
+    "muehrckes_lines": 0.2,
+    "terrys_nails": 0.2,
+    "splinter_hemorrhages": 0.2,
+    "leukonychia": 0.2,     # NEW 2026-09-16 retrain -- class restored via NIHATI
+    "onycholysis": 0.2,     # NEW 2026-09-16 retrain -- class restored via NIHATI
 }
-# Resulting strict end-to-end numbers as of the 2026-09-15 retrain (data/raw/nail-disease
-# removed for watermark contamination, chaa added for splinter_hemorrhages -- see
-# scripts/build_color_classification_dataset.py). VALID chose these tables; TEST was
-# never used for selection, only reported here for honesty:
-#   cyanosis             valid 58.0%/2.4%   test 61.5%/3.3%
-#   pitting              valid 84.9%/2.9%   test 86.2%/6.2%  (test FP over the 5% policy
-#                        cap despite valid being under it -- small-n test noise, watch
-#                        on next retrain, see ml/infer/validation_policy.py)
-#   muehrckes_lines      valid 51.7%/0.4%   test 40.0%/0.5%  (test recall below 50%; n=15
-#                        on test, one of the smallest positive pools here)
-#   terrys_nails         valid 54.0%/2.6%   test 50.6%/2.9%
-#   beaus_lines          valid 58.1%/2.3%   test 45.5%/2.4%  (test recall below 50%; n=22)
-#   splinter_hemorrhages valid 83.8%/2.4%   test 71.7%/1.5%  -- NEWLY VALIDATED (see
-#                        ml/infer/validation_policy.py); previously test 11.8%/1.7% on
-#                        the pre-chaa/nail-disease-sourced model.
+# Resulting strict end-to-end numbers as of the 2026-09-16 NIHATI/anemia retrain
+# (scripts/build_color_classification_dataset.py's add_nihati/add_anemia) -- VALID chose
+# these tables (parity-confirmed: shipped == tuner's own pick, 0 mismatches); TEST was
+# never used for selection, reported here for honesty. valid -> test:
+#   cyanosis             56.9%/2.6%  -> 67.7%/2.5%   (n_pos 65 -> 31)
+#   terrys_nails         50.0%/2.6%  -> 44.7%/3.0%   (n_pos 148 -> 85; test recall dips
+#                        below the 50% policy bar, but the policy gates on VALID only --
+#                        this is the same valid->test gap documented in 2026-09-15, watch
+#                        on the next retrain)
+#   beaus_lines          55.3%/0.3%  -> 50.0%/0.4%   (n_pos 47 -> 28)
+#   muehrckes_lines      58.3%/0.3%  -> 38.9%/0.4%   (n_pos 36 -> 18; same valid->test
+#                        gap pattern as terrys_nails, smallest positive pool here)
+#   pitting              60.7%/1.0%  -> 71.9%/1.7%   (n_pos 61 -> 32)
+#   pallor               57.9%/15.7% -> 55.9%/21.9%  (n_pos 356 -> 365) -- fails the
+#                        FP<=5% policy bar on both splits, stays unvalidated
+#   leukonychia          40.0%/1.6%  -> 25.0%/1.3%   (n_pos 5 -> 4) -- fails on both;
+#                        the LOW_SAMPLE_CONDITIONS fix (see above) is what makes this an
+#                        honest 40%/25% instead of an inflated 80%/100% that ignored how
+#                        few examples back it
+#   onycholysis          0.0%/0.0%   -> 0.0%/0.4%    (n_pos 5 -> 8) -- 0% recall on both
+#                        splits; the CNN is not yet catching real onycholysis positives
+#   splinter_hemorrhages 71.4%/3.0%  -> 73.6%/2.1%   (n_pos 49 -> 53) -- validated on both
+#   lindsays_nails       0.0%/0.0%   -> 0.0%/0.0%    (n_pos 6 -> 5) -- 0% recall on both,
+#                        same LOW_SAMPLE_CONDITIONS honesty fix as leukonychia
 # These are all measured through the real /analyze pipeline (region detection + bbox
 # crop + fusion), not the isolated CNN -- see ml/eval/eval_color_sensitivity.py's module
 # docstring for why that gap matters.

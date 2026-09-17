@@ -19,10 +19,11 @@ classification_dataset.py's module docstring. This script no longer draws from i
 the same provenance reason, not just the training-side licensing concern: measuring
 "recall" against images that may not even be genuine nail photos isn't a real number.
 chaa (data/raw/yolov8-nails-segmentation-ckvkd) replaces it for splinter_hemorrhages;
-leukonychia, onycholysis and lindsays_nails currently have no vetted source and are
-absent from `positives` entirely rather than measured against a) an image confirmedly
-contaminated or b) with a silent zero -- see CLAUDE.md for what that means for those
-three conditions' validation status.
+NIHATI (data/raw/nail-disease-classification-nihati, independently vetted -- full
+EXIF/filename/OCR/corner-watermark scan, 0 hits -- see the Obsidian vault Change Log
+2026-09-16) restores leukonychia/onycholysis/lindsays_nails coverage; an anemia YOLO
+set (data/raw/anemia-nails-detection, only its `anemic_nail` class) adds more pallor
+positives.
 
     cd <repo root>
     backend/venv/Scripts/python.exe ml/eval/eval_color_sensitivity.py
@@ -65,6 +66,8 @@ KNM = REPO / "data" / "raw" / "nail-disease-detection-mxoqy"
 CHAA = REPO / "data" / "raw" / "yolov8-nails-segmentation-ckvkd"
 GHANA = REPO / "data" / "raw" / "fingernails-ghana-anemia" / "Fingernails"
 ARTHITAYA = REPO / "data" / "raw" / "nail-dataset-arthitaya" / "Nail"
+NIHATI = REPO / "data" / "raw" / "nail-disease-classification-nihati"
+ANEMIA = REPO / "data" / "raw" / "anemia-nails-detection"
 
 # Must mirror scripts/build_color_classification_dataset.py's CLASS_SLUGS / CHAA_SLUGS /
 # ARTHITAYA_SLUGS -- only the app-reported conditions are needed here (discrimination-only
@@ -89,6 +92,15 @@ ARTHITAYA_SLUGS = {
     "white spot": "leukonychia",
 }
 _ANEMIC_TOKENS = ("anemic", "anaemic", "pallor")
+
+# Must mirror scripts/build_color_classification_dataset.py's `_anemia_source_key` --
+# anemia-nails-detection filenames are Roboflow-augmented copies of one source photo
+# ("p102_jpg.rf.<hash>.jpg"), so this strips the suffix to get the shared source key.
+_ANEMIA_SUFFIX_RE = re.compile(r"(_jpg)?\.rf\.[0-9a-f]+$", re.IGNORECASE)
+
+
+def anemia_source_key(stem):
+    return _ANEMIA_SUFFIX_RE.sub("", stem)
 
 
 def bucket_split(key):
@@ -186,6 +198,40 @@ def gather_positives():
                 if bucket_split(f"{cls_dir.name}-{img_path.stem}") != "test":
                     continue
                 positives[slug].append(img_path)
+
+    # NIHATI: folder name IS the slug already (reorganized that way -- see
+    # scripts/build_color_classification_dataset.py's add_nihati). Re-split by image id
+    # (the prefix before the first "_" in each filename), same as training.
+    if NIHATI.exists():
+        for src_split_dir in NIHATI.iterdir():
+            if not src_split_dir.is_dir():
+                continue
+            for slug_dir in src_split_dir.iterdir():
+                if not slug_dir.is_dir():
+                    continue
+                for img_path in slug_dir.iterdir():
+                    if img_path.suffix.lower() not in (".jpg", ".jpeg", ".png"):
+                        continue
+                    image_id = img_path.stem.split("_", 1)[0]
+                    if bucket_split(image_id) != "test":
+                        continue
+                    positives[slug_dir.name].append(img_path)
+
+    # anemia: only `anemic_nail` (class 0) -> pallor, re-split by source-photo key
+    # (add_anemia's grouping, since many files are augmented copies of one photo).
+    if ANEMIA.exists():
+        for label_file in sorted((ANEMIA / "test" / "labels").glob("*.txt")) + \
+                sorted((ANEMIA / "valid" / "labels").glob("*.txt")) + \
+                sorted((ANEMIA / "train" / "labels").glob("*.txt")):
+            has_anemic = any(p.split()[0] == "0" for p in label_file.read_text().splitlines()
+                              if len(p.split()) == 5)
+            if not has_anemic:
+                continue
+            if bucket_split(anemia_source_key(label_file.stem)) != "test":
+                continue
+            img = find_image_file(label_file)
+            if img:
+                positives["pallor"].append(img)
 
     return positives
 

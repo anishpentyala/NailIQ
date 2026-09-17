@@ -9,6 +9,23 @@ Sources (all Roboflow Universe, CC BY 4.0), merged by slug:
      supplies splinter_hemorrhages (previously heuristic-only/false-positive-prone) and
      extra terrys_nails/koilonychia examples. RE-SPLIT by image stem, same reasoning as
      the removed nail-disease source below.
+  4. data/raw/nail-disease-classification-nihati (NIHATI, folder classification,
+     Roboflow has no generated export for this project -- see scripts/download_
+     nihati notes in the Obsidian vault Change Log for how it was pulled via the
+     public search/image API instead) -- RESTORES leukonychia/onycholysis/
+     lindsays_nails coverage lost when data/raw/nail-disease was removed, using a
+     DIFFERENT, independently-vetted source. RE-SPLIT by image id (its own split
+     field wasn't leakage-audited the way KNM's was).
+  5. data/raw/anemia-nails-detection (Roboflow, YOLO detection) -- adds 1,043+
+     `anemic_nail` boxes to `pallor`. Only that one class is used: the dataset's
+     other classes are tongue photos (irrelevant), and ~8.5% of its UNLABELED
+     background images are traceable by filename to Pexels/Unsplash stock photos
+     (a real, if minor, "CC BY 4.0 claim doesn't quite hold for the whole dataset"
+     issue) -- but none of the labeled `anemic_nail` boxes come from those files
+     (verified), so only the clinically-labeled crops are ingested here. RE-SPLIT
+     by source-photo prefix (many images are Roboflow-augmented copies of the same
+     underlying photo sharing a filename prefix before `_jpg.rf.<hash>`; splitting
+     by raw filename would leak augmented copies of one photo across splits).
 
 data/raw/nail-disease (25 classes) used to be a fourth source here, supplying
 leukonychia, onycholysis, splinter_hemorrhages and lindsays_nails. It was REMOVED
@@ -79,6 +96,21 @@ GHANA = REPO / "data" / "raw" / "fingernails-ghana-anemia" / "Fingernails"
 # nail-disease source: re-split by image stem for a clean, leakage-safe train/valid/test
 # (see resplit=True).
 CHAA = REPO / "data" / "raw" / "yolov8-nails-segmentation-ckvkd"
+
+# Fourth source: NIHATI's folder-classification set (data/raw/nail-disease-
+# classification-nihati). Restores leukonychia/onycholysis/lindsays_nails coverage
+# lost when nail-disease was removed, from a source independently vetted the same
+# way (full EXIF/filename-regex/OCR/corner-watermark scan, 0 hits on all three;
+# see Obsidian vault Change Log 2026-09-16). Images already sit in
+# <split>/<slug>/ folders (reorganized from NIHATI's raw label tuples -- see the
+# one-off reorganize script referenced in the vault), so ingestion is a straight
+# copy, not a box crop.
+NIHATI = REPO / "data" / "raw" / "nail-disease-classification-nihati"
+
+# Fifth source: an anemia-detection YOLO set (data/raw/anemia-nails-detection).
+# Only its `anemic_nail` class is used -- see the module docstring for why the
+# other classes/images are excluded.
+ANEMIA = REPO / "data" / "raw" / "anemia-nails-detection"
 
 SPLITS = ["train", "valid", "test"]
 BOX_PAD_FRAC = 0.15        # pad each side of the box; a little nail-fold context helps
@@ -277,6 +309,82 @@ def add_ghana(totals):
     print(f"  ghana: +{added}  (skipped {skipped})")
 
 
+def add_nihati(totals):
+    """Copy NIHATI's pre-sorted <split>/<slug>/*.png crops into OUT, re-splitting by
+    image id (the id prefix already on each filename) via bucket_split -- each id is a
+    distinct photo here, so no patient-grouping is needed, just a leakage-safe re-split
+    independent of NIHATI's own (unaudited) split assignment."""
+    if not NIHATI.exists():
+        print(f"  nihati: dataset not found at {NIHATI} -- skipping")
+        return
+    added = {s: 0 for s in SPLITS}
+    for src_split_dir in NIHATI.iterdir():
+        if not src_split_dir.is_dir():
+            continue
+        for slug_dir in src_split_dir.iterdir():
+            if not slug_dir.is_dir():
+                continue
+            for img_path in slug_dir.iterdir():
+                if img_path.suffix.lower() not in (".jpg", ".jpeg", ".png"):
+                    continue
+                image_id = img_path.stem.split("_", 1)[0]
+                split = bucket_split(image_id)
+                dst_dir = OUT / split / slug_dir.name
+                dst_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(img_path, dst_dir / f"nihati__{img_path.name}")
+                added[split] += 1
+                totals[split] = totals.get(split, 0) + 1
+    print(f"  nihati: +{added}")
+
+
+# anemia-nails-detection filenames are Roboflow-augmented copies of one source photo,
+# e.g. "p102_jpg.rf.<hash>.jpg" -- strip the "_jpg.rf.<hash>" (or ".rf.<hash>") suffix
+# to get the shared source-photo key so augmented copies never straddle a split.
+_ANEMIA_SUFFIX_RE = re.compile(r"(_jpg)?\.rf\.[0-9a-f]+$", re.IGNORECASE)
+
+
+def _anemia_source_key(stem):
+    return _ANEMIA_SUFFIX_RE.sub("", stem)
+
+
+def add_anemia(totals):
+    """Crop only the `anemic_nail` boxes from the anemia YOLO set into OUT/<split>/pallor/.
+    The dataset's other classes are tongue photos (not a nail condition) and its
+    unlabeled background images include some Pexels/Unsplash stock photos -- neither is
+    ingested here (see module docstring)."""
+    if not ANEMIA.exists():
+        print(f"  anemia: dataset not found at {ANEMIA} -- skipping")
+        return
+    added = {s: 0 for s in SPLITS}
+    for src_split in SPLITS:
+        labels_dir = ANEMIA / src_split / "labels"
+        if not labels_dir.exists():
+            continue
+        for label_file in labels_dir.glob("*.txt"):
+            lines = [ln.split() for ln in label_file.read_text().splitlines()]
+            boxes = [(float(p[1]), float(p[2]), float(p[3]), float(p[4]))
+                     for p in lines if len(p) == 5 and p[0] == "0"]
+            if not boxes:
+                continue
+            img_file = find_image_file(label_file)
+            if img_file is None:
+                continue
+            img = cv2.imread(str(img_file), cv2.IMREAD_COLOR)
+            if img is None:
+                continue
+            split = bucket_split(_anemia_source_key(label_file.stem))
+            for bi, box in enumerate(boxes):
+                crop = crop_box(img, *box)
+                if crop is None:
+                    continue
+                dst_dir = OUT / split / "pallor"
+                dst_dir.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(dst_dir / f"anemia__{label_file.stem}__b{bi}.jpg"), crop)
+                added[split] += 1
+                totals[split] = totals.get(split, 0) + 1
+    print(f"  anemia: +{added}")
+
+
 def main():
     if not KNM.exists():
         raise SystemExit(f"KNM dataset not found at {KNM} -- run scripts/download_data.py first.")
@@ -291,6 +399,10 @@ def main():
     ingest_yolo(CHAA, CHAA_SLUGS, "chaa", totals, resplit=True)
     print("Adding Ghana fingernail-anemia crops (pallor / darker-cohort healthy)...")
     add_ghana(totals)
+    print("Adding NIHATI crops (re-split by id; restores leukonychia/onycholysis/lindsays_nails)...")
+    add_nihati(totals)
+    print("Adding anemia anemic_nail crops (pallor)...")
+    add_anemia(totals)
     # arthitaya (data/raw/nail-dataset-arthitaya) was DROPPED as a training source: its
     # Kaggle license is "Unknown" (see data/raw/LICENSES.md), an unresolved legal blocker
     # for any model whose weights might be shared or shipped. Rather than keep training on
@@ -307,7 +419,8 @@ def main():
         split_dir = OUT / split
         if not split_dir.exists():
             continue
-        per = {d.name: len(list(d.glob("*.jpg"))) for d in sorted(split_dir.iterdir()) if d.is_dir()}
+        per = {d.name: sum(1 for p in d.iterdir() if p.suffix.lower() in (".jpg", ".jpeg", ".png"))
+               for d in sorted(split_dir.iterdir()) if d.is_dir()}
         print(f"  {split}: {per}")
     print("\nNext: backend/venv/Scripts/python.exe ml/train/train_color_classifier.py "
           "--backbone mobilenet_v3_large")

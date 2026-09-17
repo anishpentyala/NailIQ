@@ -70,6 +70,10 @@ CLASS_CONFIDENCE_THRESHOLD = {
     # both the training data AND the eval positives, so its watermark-contamination risk
     # was invisible to every past number here).
     "splinter_hemorrhages": 0.40,
+    # terrys_nails: chosen by ml/eval/tune_color_decision.py after the 2026-09-16
+    # NIHATI/anemia retrain -- lowering the top-class floor from the 0.45 default to
+    # 0.25 raised end-to-end valid recall 44.1%->50.0% at FP 1.7%->2.6%.
+    "terrys_nails": 0.25,
     # melanonychia has NO entry: its only ever training source
     # (data/raw/nail-dataset-arthitaya) was dropped from
     # scripts/build_color_classification_dataset.py because its Kaggle license is
@@ -78,15 +82,16 @@ CLASS_CONFIDENCE_THRESHOLD = {
     # predict_from_region never returns it and color_fusion.py never fuses it;
     # melanonychia stays on the classical heuristic alone (ml/infer/melanonychia.py).
     #
-    # leukonychia/onycholysis/lindsays_nails had entries here until 2026-09: their only
-    # CNN training source (data/raw/nail-disease) was removed after a watermark audit
-    # found real, visually-confirmed stock-photo contamination in it beyond the 4 source
-    # photos its own filenames flagged (see scripts/build_color_classification_dataset.py).
-    # None of the three has a replacement data source, so they no longer exist as model
-    # classes -- a CLASS_CONFIDENCE_THRESHOLD entry for a class the model can't predict
-    # would be dead code. All three fall back to the classical heuristic alone and are
-    # in ml/infer/validation_policy.UNVALIDATED_CONDITIONS (lindsays_nails newly added
-    # there for the same reason). Re-add an entry only alongside a real data source.
+    # leukonychia/onycholysis/lindsays_nails lost their CNN class entirely in 2026-09
+    # when nail-disease (their only training source) was removed for watermark
+    # contamination. As of 2026-09-16 the NIHATI dataset (a separately vetted,
+    # algorithmically-audited Roboflow source, see scripts/build_color_classification_
+    # dataset.py's add_nihati) restored all three as model classes -- none of the three
+    # needed a floor override here (VALID-picked floor for all three was "keep the 0.45
+    # default"; only their OVR/support tables changed, see color_fusion.py). Their eval
+    # positive counts from NIHATI are still tiny (n=4-6 on VALID) -- see
+    # ml/infer/validation_policy.py and color_fusion.LOW_SAMPLE_CONDITIONS for how that
+    # caveat is handled.
 }
 
 # Must match scripts/build_color_classification_dataset.py's BOX_PAD_FRAC so the
