@@ -95,11 +95,15 @@ Re-run the tuner after any retrain or data change and update UNVALIDATED_CONDITI
 # the phone photo would drop dataset recall to ~33%. terrys_nails is withheld too: it was the largest source
 # of false alarms (3.0% of healthy nails) and a tighter rule drops VALID recall to 48.7% (<50% bar); its
 # labels were also found mostly not visually Terry's (Haiku audit, 2026-10-17).
+# 2026-10-18: muehrckes_lines withheld too. On the independent Hb skin+nail photo set (real camera, 750 nails,
+# ml/eval/scan_hb_nails.py) it flagged 22 of the 45 readable nails (49%) that show no visible paired white bands,
+# against 0.4% on the dataset healthy scan -- the dataset numbers (and a 38.9% test recall) do not transfer.
 UNVALIDATED_CONDITIONS = {
     "pallor",
     "lindsays_nails",
     "melanonychia",
     "terrys_nails",
+    "muehrckes_lines",
 }
 
 
