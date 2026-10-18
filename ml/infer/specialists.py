@@ -18,6 +18,7 @@ Lazy + optional like classifier.py: the Flask app never hard-depends on torch.
 
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 import cv2
@@ -100,8 +101,8 @@ def _finding(sign, prev, p, thr):
 
 def apply(findings, image_bgr, bbox_norm):
     """Replace each enabled sign's finding with its specialist's call; pass everything else through."""
-    if bbox_norm is None:
-        return findings
+    if bbox_norm is None or os.environ.get("NAILIQ_DISABLE_SPECIALISTS"):
+        return findings  # the env switch lets color-CNN evals isolate the shared model
     signs = [s for s in ENABLED if is_available(s) and any(f["label"] == s for f in findings)]
     if not signs:
         return findings
