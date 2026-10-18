@@ -4,6 +4,22 @@
 // for skin tone; "plage typique" kept deliberately instead of "normale" to match
 // the non-diagnostic framing of the English copy).
 export default {
+  crop: {
+    clubbing: "Forme de l’ongle (hippocratisme)",
+    koilonychia: "Forme de l’ongle (cuillère)",
+    appearanceNote: "Ce résultat décrit l’aspect de l’ongle sur la photo du dessus. Aucun angle ni profondeur du profil latéral n’a été mesuré.",
+  "title": "Sélectionnez l’ongle",
+  "instructions": "Déplacez et ajustez le cadre autour d’un ongle. Incluez ses bords et un peu de peau.",
+  "photo": "Photo de l’ongle",
+  "move": "Déplacer le cadre",
+  "nw": "Ajuster le coin supérieur gauche",
+  "ne": "Ajuster le coin supérieur droit",
+  "sw": "Ajuster le coin inférieur gauche",
+  "se": "Ajuster le coin inférieur droit",
+  "confirm": "Utiliser cet ongle",
+  "retake": "Reprendre la photo",
+  "appearance": "Aspect sur la photo"
+},
   "langName": "Français",
   "app": {
     "tagline": "Un outil de dépistage préventif de la santé des ongles",
@@ -22,7 +38,7 @@ export default {
     "title": "Accueil",
     "heroAlt": "Illustration d'un téléphone scannant un ongle",
     "heroTitle": "Repérez les changements d'ongles qui méritent un avis médical",
-    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles - mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient treize.",
+    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles - mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient quatorze.",
     "cta": "Lancer un scan",
     "whyTitle": "Pourquoi est-ce important ?",
     "whyRows": {
@@ -113,6 +129,10 @@ export default {
       "pitting": {
         "name": "Ponctuations",
         "text": "Petites dépressions à la surface de l'ongle."
+      },
+      "onychogryphosis": {
+        "name": "Onychogryphose",
+        "text": "Ongle épaissi et trop long qui se recourbe."
       }
     },
     "showAll": "Afficher les {n}",
@@ -238,7 +258,8 @@ export default {
     "colorAgreement": {
       "agree": "La vérification de couleur et le modèle IA sont d'accord sur ce point.",
       "color_only": "Basé sur la vérification de couleur ; le modèle IA n'était pas concluant ici.",
-      "ml_primary": "Basé principalement sur le modèle IA."
+      "ml_primary": "Basé principalement sur le modèle IA.",
+      "ml_only": "Basé uniquement sur le modèle IA : il n'existe pas de vérification de couleur plus simple pour ce signe."
     },
     "mlLabels": {
       "clubbing": "une apparence de type hippocratisme",
@@ -249,6 +270,7 @@ export default {
       "beaus_lines": "un sillon de type ligne de Beau",
       "muehrckes_lines": "des bandes de type lignes de Muehrcke",
       "pitting": "une surface ponctuée",
+      "onychogryphosis": "un ongle épaissi et trop long (de type onychogryphose)",
       "pallor": "une apparence pâle (type pâleur)"
     }
   },
@@ -303,6 +325,8 @@ export default {
     "too_much_glare": "Il y a trop de reflets sur l'ongle pour lire sa couleur. Inclinez-le hors de la lumière directe ou passez à un éclairage plus doux, puis reprenez la photo.",
     "tracks_disagree": "Nos deux vérifications ne concordent pas sur ce point, donc nous ne tranchons pas. Reprenez les deux photos sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
     "insufficient_data_for_confident_call": "Nous n'avons pas assez de données validées sur ce signe pour trancher avec confiance, et nos deux vérifications ne concordaient pas. Reprenez la photo sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
+    "requires_ai_model": "Ce signe ne peut être vérifié que par le modèle IA, qui n'est pas disponible pour le moment ; nous ne donnons donc pas de résultat.",
+    "no_confident_ai_call": "Le modèle IA n'était pas assez sûr de ce signe sur votre photo pour se prononcer. Reprenez la photo du dessus sous une lumière uniforme avec l'ongle entier visible ; consultez un médecin si vous êtes inquiet.",
     "default": "Nous n'avons pas détecté d'ongle sur cette photo. Essayez un fond plus uni, un meilleur éclairage et le doigt entier dans le cadre."
   },
   "status": {
@@ -349,7 +373,8 @@ export default {
       "beaus_lines": "sillon transversal",
       "muehrckes_lines": "bandes blanches",
       "splinter_hemorrhages": "fines stries",
-      "pitting": "petites dépressions"
+      "pitting": "petites dépressions",
+      "onychogryphosis": "épais, recourbé"
     }
   },
   "settings": {
@@ -395,7 +420,8 @@ export default {
     "beaus_lines": "Surface de l'ongle (lignes de Beau)",
     "muehrckes_lines": "Marques de l'ongle (lignes de Muehrcke)",
     "splinter_hemorrhages": "Marques de l'ongle (hémorragies filiformes)",
-    "pitting": "Surface de l'ongle (ponctuations)"
+    "pitting": "Surface de l'ongle (ponctuations)",
+    "onychogryphosis": "Épaississement de l'ongle (onychogryphose)"
   },
   "pointTitles": {
     "looks": "À quoi ça ressemble",
@@ -545,6 +571,17 @@ export default {
         "why": "Les ponctuations sont le plus souvent liées au psoriasis (une maladie de peau) et à la pelade (perte de cheveux par plaques). Elles peuvent aussi survenir avec des maladies du tissu conjonctif, des mycoses, ou parfois sans autre cause. Les ponctuations liées au psoriasis touchent souvent plusieurs ongles.",
         "how": "Nous analysons la surface de l'ongle à la recherche de petites dépressions et de motifs de ponctuation. C'est une vérification visuelle basée sur la texture de surface, même si la résolution de l'appareil photo et l'éclairage influencent la visibilité des piqûres fines.",
         "action": "Si vous remarquez des ponctuations sur plusieurs ongles, mentionnez-le à un médecin, surtout si vous avez aussi des symptômes cutanés comme des plaques ou des démangeaisons, ou une perte de cheveux. Votre médecin pourra vous examiner et décider si des examens supplémentaires sont utiles."
+      }
+    },
+    "onychogryphosis": {
+      "name": "Onychogryphose (ongle en corne de bélier)",
+      "summary": "Ongle épaissi et trop long qui se recourbe.",
+      "lead": "L'onychogryphose est un ongle devenu très épais et trop long, qui se recourbe souvent comme une corne. Elle touche le plus souvent l'ongle du gros orteil, mais peut aussi apparaître sur les ongles des mains. Elle est généralement due à une pression prolongée, à une blessure ou au vieillissement, et est parfois liée à une mauvaise circulation.",
+      "points": {
+        "looks": "L'ongle est beaucoup plus épais que la normale, souvent jaune ou brun, et peut présenter des stries transversales. En poussant, il peut se recourber sur le côté ou vers le bas par-dessus le bout du doigt ou de l'orteil, parfois comme une corne de bélier.",
+        "why": "Elle vient le plus souvent d'une pression ou de blessures répétées sur l'ongle (les chaussures trop serrées sont une cause fréquente pour les orteils), du vieillissement ou d'un manque prolongé de coupe des ongles. Elle peut aussi être liée à une mauvaise circulation, au diabète, au psoriasis ou à une mycose. Contrairement à la plupart des signes vérifiés par NailIQ, c'est généralement un problème local de l'ongle plutôt que le signe d'une maladie générale.",
+        "how": "Cette vérification repose uniquement sur le modèle IA : il a appris à reconnaître les ongles épaissis et trop longs à partir de photos cliniques annotées. Il n'y a pas de mesure de couleur séparée ; si le modèle n'est pas sûr, nous indiquons que nous n'avons pas pu l'analyser plutôt que de deviner.",
+        "action": "Un ongle épais et trop long mérite d'être montré à un médecin ou à un podologue, surtout s'il fait mal, s'il est difficile à couper ou si vous avez du diabète ou une mauvaise circulation. Ils peuvent le couper en toute sécurité et vérifier ce qu'il y a dessous."
       }
     }
   }

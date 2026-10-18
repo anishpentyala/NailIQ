@@ -1,5 +1,21 @@
 // Spanish translations. Keys mirror en.js; any missing key falls back to English.
 export default {
+  crop: {
+    clubbing: "Forma de la uña (acropaquia)",
+    koilonychia: "Forma de la uña (cuchara)",
+    appearanceNote: "Este resultado describe el aspecto de la uña en la foto superior. No se midió el ángulo ni la profundidad del perfil lateral.",
+  "title": "Selecciona la uña",
+  "instructions": "Mueve y ajusta el recuadro alrededor de una uña. Incluye sus bordes y un poco de piel.",
+  "photo": "Foto de la uña",
+  "move": "Mover recuadro",
+  "nw": "Ajustar esquina superior izquierda",
+  "ne": "Ajustar esquina superior derecha",
+  "sw": "Ajustar esquina inferior izquierda",
+  "se": "Ajustar esquina inferior derecha",
+  "confirm": "Usar esta uña",
+  "retake": "Repetir foto",
+  "appearance": "Aspecto en la foto"
+},
   langName: 'Español',
 
   app: {
@@ -23,7 +39,7 @@ export default {
     heroAlt: 'Ilustración de un teléfono escaneando una uña',
     heroTitle: 'Detecta cambios en tus uñas que merecen una revisión médica',
     heroText:
-      'Algunos signos de anemia y de condiciones del corazón, los pulmones y el hígado aparecen primero en las uñas, pero cambian tan lento que es difícil notarlo por tu cuenta. Dos fotos rápidas revisan trece de ellos.',
+      'Algunos signos de anemia y de condiciones del corazón, los pulmones y el hígado aparecen primero en las uñas, pero cambian tan lento que es difícil notarlo por tu cuenta. Dos fotos rápidas revisan catorce de ellos.',
     cta: 'Iniciar un escaneo',
     whyTitle: 'Por qué importa',
     whyRows: {
@@ -68,6 +84,10 @@ export default {
       muehrckes_lines: { name: 'Líneas de Muehrcke', text: 'Bandas pálidas que cruzan el lecho ungueal.' },
       splinter_hemorrhages: { name: 'Hemorragias en astilla', text: 'Pequeñas líneas oscuras bajo la uña.' },
       pitting: { name: 'Piqueteado', text: 'Pequeños hoyuelos en la superficie de la uña.' },
+      onychogryphosis: {
+        name: 'Onicogrifosis',
+        text: 'Uña engrosada y crecida que se curva.',
+      },
     },
     showAll: 'Ver los {n}',
     showLess: 'Ver menos',
@@ -208,6 +228,7 @@ export default {
       agree: 'La revisión de color y el modelo de IA coinciden en esto.',
       color_only: 'Basado en la revisión de color; el modelo de IA no fue concluyente aquí.',
       ml_primary: 'Basado principalmente en el modelo de IA.',
+      ml_only: 'Basado solo en el modelo de IA: no hay una revisión de color más simple para este signo.',
     },
     mlLabels: {
       clubbing: 'apariencia tipo acropaquia',
@@ -218,6 +239,7 @@ export default {
       beaus_lines: 'un surco tipo línea de Beau',
       muehrckes_lines: 'un bandeado tipo líneas de Muehrcke',
       pitting: 'una superficie con piqueteado',
+      onychogryphosis: 'una uña engrosada y crecida (tipo onicogrifosis)',
       pallor: 'una apariencia pálida (tipo palidez)',
     },
   },
@@ -295,6 +317,8 @@ export default {
       'Nuestras dos revisiones no coincidieron en este signo, así que no lo llamamos en ningún sentido. Vuelve a tomar ambas fotos con buena luz, y considera mostrárselo a un médico si te preocupa.',
     insufficient_data_for_confident_call:
       'No tenemos suficientes datos validados sobre este signo para determinarlo con confianza, y nuestras dos revisiones no coincidieron. Vuelve a tomar la foto con buena luz, y considera mostrárselo a un médico si te preocupa.',
+    requires_ai_model: 'Este signo solo lo puede revisar el modelo de IA, que no está disponible en este momento, así que no damos un resultado.',
+    no_confident_ai_call: 'El modelo de IA no estuvo lo bastante seguro sobre este signo en tu foto para dar un resultado. Vuelve a tomar la foto desde arriba con buena luz y la uña completa a la vista; considera consultar a un médico si te preocupa.',
     default:
       'No pudimos detectar una uña en esa foto. Prueba con un fondo más liso, mejor iluminación y todo el dedo dentro del cuadro.',
   },
@@ -359,6 +383,7 @@ export default {
       muehrckes_lines: 'bandas blancas',
       splinter_hemorrhages: 'líneas diminutas',
       pitting: 'hoyuelos pequeños',
+      onychogryphosis: 'gruesa, curva',
     },
   },
 
@@ -412,6 +437,7 @@ export default {
     muehrckes_lines: 'Marcas en la uña (líneas de Muehrcke)',
     splinter_hemorrhages: 'Marcas en la uña (hemorragias en astilla)',
     pitting: 'Superficie de la uña (piqueteado)',
+    onychogryphosis: 'Engrosamiento de la uña (onicogrifosis)',
   },
 
   pointTitles: {
@@ -628,6 +654,17 @@ export default {
           'Analizamos la superficie de la uña en busca de pequeñas hendiduras y patrones de piqueteado. Es una revisión visual de detección basada en la textura de la superficie, aunque la resolución de la cámara y la iluminación afectan lo visibles que son los hoyuelos finos.',
         action:
           'Si notas piqueteado en varias uñas, vale la pena mencionárselo a un médico, sobre todo si también tienes síntomas en la piel como placas o picazón, o pérdida de cabello. Tu médico puede examinarte y decidir si hacen falta pruebas o una evaluación adicional.',
+      },
+    },
+    onychogryphosis: {
+      name: 'Onicogrifosis (uña en cuerno de carnero)',
+      summary: 'Uña engrosada y crecida que se curva.',
+      lead: 'La onicogrifosis es una uña que se ha vuelto muy gruesa y crecida, y que a menudo se curva como un cuerno. Afecta con más frecuencia la uña del dedo gordo del pie, pero también puede aparecer en las uñas de las manos. Suele deberse a presión prolongada, lesiones o la edad, y a veces se relaciona con mala circulación.',
+      points: {
+        looks: 'La uña es mucho más gruesa de lo normal, a menudo amarilla o marrón, y puede tener crestas transversales. Al crecer puede curvarse hacia un lado o hacia abajo sobre la punta del dedo, a veces como un cuerno de carnero.',
+        why: 'Suele deberse a presión o lesiones repetidas en la uña (los zapatos apretados son una causa común en los pies), la edad o la falta prolongada de corte de uñas. También puede relacionarse con mala circulación, diabetes, psoriasis o infección por hongos. A diferencia de la mayoría de los signos que revisa NailIQ, suele ser un problema local de la uña y no un signo de una afección de todo el cuerpo.',
+        how: 'Esta revisión proviene solo del modelo de IA: aprendió cómo se ven las uñas engrosadas y crecidas a partir de fotos clínicas etiquetadas. No hay una medición de color aparte, así que si el modelo no está seguro, decimos que no pudimos analizarla en lugar de adivinar.',
+        action: 'Vale la pena mostrar una uña gruesa y crecida a un médico o podólogo, sobre todo si duele, es difícil de cortar o si tienes diabetes o mala circulación. Pueden cortarla de forma segura y revisar si hay algo debajo.',
       },
     },
   },

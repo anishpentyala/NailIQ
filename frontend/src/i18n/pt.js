@@ -4,6 +4,22 @@
 // "faixa típica" kept deliberately instead of "normal" to match the non-diagnostic
 // framing of the English copy).
 export default {
+  crop: {
+    clubbing: "Forma da unha (baqueteamento)",
+    koilonychia: "Forma da unha (colher)",
+    appearanceNote: "Este resultado descreve a aparência da unha na foto superior. Nenhum ângulo ou profundidade do perfil lateral foi medido.",
+  "title": "Selecione a unha",
+  "instructions": "Mova e ajuste a caixa ao redor de uma unha. Inclua as bordas e um pouco de pele.",
+  "photo": "Foto da unha",
+  "move": "Mover caixa",
+  "nw": "Ajustar canto superior esquerdo",
+  "ne": "Ajustar canto superior direito",
+  "sw": "Ajustar canto inferior esquerdo",
+  "se": "Ajustar canto inferior direito",
+  "confirm": "Usar esta unha",
+  "retake": "Tirar outra foto",
+  "appearance": "Aparência na foto"
+},
   "langName": "Português",
   "app": {
     "tagline": "Uma triagem preventiva da saúde das unhas",
@@ -22,7 +38,7 @@ export default {
     "title": "Início",
     "heroAlt": "Ilustração de um celular escaneando uma unha",
     "heroTitle": "Identifique alterações nas unhas que merecem uma consulta médica",
-    "heroText": "Alguns sinais de anemia e de doenças cardíacas, pulmonares e hepáticas surgem cedo nas unhas - mas se desenvolvem tão lentamente que é difícil percebê-los por conta própria. Duas fotos rápidas verificam treze desses sinais.",
+    "heroText": "Alguns sinais de anemia e de doenças cardíacas, pulmonares e hepáticas surgem cedo nas unhas - mas se desenvolvem tão lentamente que é difícil percebê-los por conta própria. Duas fotos rápidas verificam catorze desses sinais.",
     "cta": "Iniciar um escaneamento",
     "whyTitle": "Por que isso é importante",
     "whyRows": {
@@ -113,6 +129,10 @@ export default {
       "pitting": {
         "name": "Depressões (pitting)",
         "text": "Pequenas depressões ou pontinhos na superfície da unha."
+      },
+      "onychogryphosis": {
+        "name": "Onicogrifose",
+        "text": "Unha espessada e crescida que se curva."
       }
     },
     "showAll": "Ver todos os {n}",
@@ -238,7 +258,8 @@ export default {
     "colorAgreement": {
       "agree": "A verificação de cor e o modelo de IA concordam nisso.",
       "color_only": "Com base na verificação de cor; o modelo de IA não foi conclusivo aqui.",
-      "ml_primary": "Baseado principalmente no modelo de IA."
+      "ml_primary": "Baseado principalmente no modelo de IA.",
+      "ml_only": "Baseado apenas no modelo de IA - não há uma verificação de cor mais simples para este sinal."
     },
     "mlLabels": {
       "clubbing": "uma aparência do tipo baqueteamento",
@@ -249,6 +270,7 @@ export default {
       "beaus_lines": "um sulco do tipo linha de Beau",
       "muehrckes_lines": "faixas do tipo linhas de Muehrcke",
       "pitting": "uma superfície com depressões (pitting)",
+      "onychogryphosis": "uma unha espessada e crescida (tipo onicogrifose)",
       "pallor": "uma aparência pálida (do tipo palidez)"
     }
   },
@@ -303,6 +325,8 @@ export default {
     "too_much_glare": "Há reflexo demais na unha para ler sua cor. Incline-a para longe da luz direta ou procure uma iluminação mais suave e tire a foto novamente.",
     "tracks_disagree": "Nossas duas verificações não concordaram neste sinal, por isso não vamos nos pronunciar. Tire as duas fotos novamente com boa iluminação e, se estiver preocupado, considere mostrar a um médico.",
     "insufficient_data_for_confident_call": "Não temos dados validados suficientes sobre esse sinal para nos pronunciarmos com confiança, e nossas duas verificações não concordaram. Tire a foto novamente com boa iluminação e, se estiver preocupado, considere mostrar a um médico.",
+    "requires_ai_model": "Este sinal só pode ser verificado pelo modelo de IA, que não está disponível no momento, então não estamos dando um resultado para ele.",
+    "no_confident_ai_call": "O modelo de IA não teve confiança suficiente sobre este sinal na sua foto para dar um resultado. Tire novamente a foto de cima com luz uniforme e a unha inteira visível; considere mostrar a um médico se estiver preocupado.",
     "default": "Não conseguimos detectar uma unha nessa foto. Tente um fundo mais liso, uma iluminação melhor e o dedo inteiro no enquadramento."
   },
   "status": {
@@ -349,7 +373,8 @@ export default {
       "beaus_lines": "sulco transversal",
       "muehrckes_lines": "faixas brancas",
       "splinter_hemorrhages": "listras finas",
-      "pitting": "pequenas depressões"
+      "pitting": "pequenas depressões",
+      "onychogryphosis": "grossa, curvada"
     }
   },
   "settings": {
@@ -395,7 +420,8 @@ export default {
     "beaus_lines": "Superfície da unha (linhas de Beau)",
     "muehrckes_lines": "Marcas na unha (linhas de Muehrcke)",
     "splinter_hemorrhages": "Marcas na unha (hemorragias em lasca)",
-    "pitting": "Superfície da unha (depressões)"
+    "pitting": "Superfície da unha (depressões)",
+    "onychogryphosis": "Espessamento da unha (onicogrifose)"
   },
   "pointTitles": {
     "looks": "Como se parece",
@@ -545,6 +571,17 @@ export default {
         "why": "O pitting está mais comumente associado à psoríase (uma doença de pele) e à alopecia areata (queda de cabelo em áreas localizadas). Também pode ocorrer em doenças do tecido conjuntivo, infecções fúngicas ou, às vezes, isoladamente, sem qualquer outra causa. O pitting relacionado à psoríase geralmente afeta várias unhas.",
         "how": "Analisamos a superfície da unha em busca de pequenas depressões e padrões de pitting. Trata-se de uma verificação visual baseada na textura da superfície, embora a resolução da câmera e a iluminação afetem a visibilidade das depressões mais finas.",
         "action": "Se você notar depressões em várias unhas, vale a pena mencionar a um médico, especialmente se também tiver sintomas na pele, como placas ou coceira, ou queda de cabelo. Seu médico poderá examiná-lo e decidir se são necessários exames ou uma avaliação mais aprofundada."
+      }
+    },
+    "onychogryphosis": {
+      "name": "Onicogrifose (unha em chifre de carneiro)",
+      "summary": "Unha espessada e crescida que se curva.",
+      "lead": "A onicogrifose é uma unha que ficou muito grossa e crescida, muitas vezes curvando-se como um chifre. Afeta com mais frequência a unha do dedão do pé, mas também pode aparecer nas unhas das mãos. Geralmente é causada por pressão prolongada, lesão ou envelhecimento e, às vezes, está ligada à má circulação.",
+      "points": {
+        "looks": "A unha fica muito mais grossa do que o normal, frequentemente amarelada ou marrom, e pode ter sulcos transversais. Ao crescer, pode se curvar para o lado ou para baixo sobre a ponta do dedo, às vezes como um chifre de carneiro.",
+        "why": "Geralmente resulta de pressão ou lesões repetidas na unha (sapatos apertados são uma causa comum nos pés), do envelhecimento ou da falta prolongada de corte das unhas. Também pode estar ligada à má circulação, diabetes, psoríase ou infecção por fungos. Ao contrário da maioria dos sinais que o NailIQ verifica, costuma ser um problema local da unha, e não um sinal de uma condição do corpo todo.",
+        "how": "Esta verificação vem apenas do modelo de IA: ele aprendeu como são as unhas espessadas e crescidas a partir de fotos clínicas rotuladas. Não há uma medição de cor separada, então, se o modelo não tiver confiança, dizemos que não conseguimos analisar em vez de adivinhar.",
+        "action": "Vale a pena mostrar uma unha grossa e crescida a um médico ou podólogo, principalmente se doer, for difícil de cortar ou se você tiver diabetes ou má circulação. Eles podem cortá-la com segurança e verificar o que há por baixo."
       }
     }
   }

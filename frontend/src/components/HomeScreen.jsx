@@ -153,6 +153,7 @@ const SCREEN_ROWS = [
   { key: 'muehrckes_lines', icon: 'clipboard' },
   { key: 'splinter_hemorrhages', icon: 'pulse' },
   { key: 'pitting', icon: 'search' },
+  { key: 'onychogryphosis', icon: 'finger' },
 ]
 
 const COLLAPSED_ROW_COUNT = 4

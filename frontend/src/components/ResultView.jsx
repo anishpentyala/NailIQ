@@ -70,8 +70,13 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
 
   const isMl = finding.track_used === 'ml'
   const isFused = finding.track_used === 'fused'
-  const isColor = finding.track_used === 'color'
-  const isColorFused = finding.track_used === 'color_fused'
+  // CNN-only conditions (e.g. onychogryphosis) travel on the color track but have no color check
+  const isAiOnly =
+    finding.evidence_type === 'appearance' ||
+    ['ml_only', 'ml_no_opinion'].includes(finding.agreement) ||
+    finding.failure_reason === 'requires_ai_model'
+  const isColor = finding.track_used === 'color' && !isAiOnly
+  const isColorFused = finding.track_used === 'color_fused' && !isAiOnly
   const matchLabel = isMl ? mlLabelText(t, finding.predicted_label) : null
 
   // only show the model's visual match if its prediction actually drove this card
@@ -86,7 +91,7 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   if (isFused && finding.agreement) {
     const key = `result.agreement.${finding.agreement}`
     agreementNote = t(key) !== key ? t(key) : null
-  } else if (isColorFused && finding.agreement) {
+  } else if ((isColorFused || isAiOnly) && finding.agreement) {
     const key = `result.colorAgreement.${finding.agreement}`
     agreementNote = t(key) !== key ? t(key) : null
   }
@@ -98,7 +103,7 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
 
   return (
     <div className="finding-card" style={{ '--finding-delay': `${index * 50}ms` }}>
-      {isMl && <span className="track-badge">{t('result.badgeMl')}</span>}
+      {(isMl || isAiOnly) && <span className="track-badge">{t(finding.evidence_type === 'appearance' ? 'crop.appearance' : 'result.badgeMl')}</span>}
       {isFused && <span className="track-badge">{t('result.badgeFused')}</span>}
       {isColor && <span className="track-badge">{t('result.badgeColor')}</span>}
       {isColorFused && <span className="track-badge">{t('result.badgeColorFused')}</span>}
@@ -123,6 +128,7 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
         <p className="result-match">{t('result.mlClosestMatch', { label: mlMatch })}</p>
       )}
       <p className="result-message">{message}</p>
+      {finding.track_used === 'appearance' && <p className="result-tone-caveat">{t('crop.appearanceNote')}</p>}
       {toneCaveat && finding.verdict !== 'inconclusive' && (
         <p className="result-tone-caveat">
           <Icon name="info" size={14} />

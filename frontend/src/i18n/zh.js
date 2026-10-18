@@ -1,5 +1,21 @@
 // Simplified Chinese translations. Keys mirror en.js; missing keys fall back to English.
 export default {
+  crop: {
+    clubbing: "指甲形状（杵状）",
+    koilonychia: "指甲形状（匙状）",
+    appearanceNote: "此结果描述俯视照片中的指甲外观。未测量侧面角度或深度。",
+  "title": "选择指甲",
+  "instructions": "移动并调整方框，使其框住一枚指甲，包括边缘和少量周围皮肤。",
+  "photo": "拍摄的指甲照片",
+  "move": "移动指甲框",
+  "nw": "调整左上角",
+  "ne": "调整右上角",
+  "sw": "调整左下角",
+  "se": "调整右下角",
+  "confirm": "使用此指甲",
+  "retake": "重新拍照",
+  "appearance": "照片外观"
+},
   langName: '中文（简体）',
 
   app: {
@@ -23,7 +39,7 @@ export default {
     heroAlt: '手机扫描指甲的插图',
     heroTitle: '发现值得就医查看的指甲变化',
     heroText:
-      '贫血以及心脏、肺部和肝脏疾病的一些征象会较早出现在指甲上，但变化太缓慢，靠自己很难察觉。拍两张照片即可检查其中十三种征象。',
+      '贫血以及心脏、肺部和肝脏疾病的一些征象会较早出现在指甲上，但变化太缓慢，靠自己很难察觉。拍两张照片即可检查其中十四种征象。',
     cta: '开始扫描',
     whyTitle: '为什么重要',
     whyRows: {
@@ -67,6 +83,10 @@ export default {
       muehrckes_lines: { name: '米尔克氏线', text: '横贯甲床的苍白条带。' },
       splinter_hemorrhages: { name: '裂片形出血', text: '甲下细小的深色条纹。' },
       pitting: { name: '甲凹点', text: '指甲表面的小凹坑或针刺样小点。' },
+      onychogryphosis: {
+        name: '钩甲',
+        text: '指甲增厚、过度生长并向下弯曲。',
+      },
     },
     showAll: '查看全部 {n} 项',
     showLess: '收起',
@@ -202,6 +222,7 @@ export default {
       agree: '颜色检查与 AI 模型在这一项上一致。',
       color_only: '基于颜色检查；AI 模型在此没有得出结论。',
       ml_primary: '此项主要基于 AI 模型。',
+      ml_only: '此项仅基于 AI 模型——该征象没有更简单的颜色检测。',
     },
     mlLabels: {
       clubbing: '杵状指样外观',
@@ -212,6 +233,7 @@ export default {
       beaus_lines: '博氏线样凹槽',
       muehrckes_lines: '米尔克氏线样条带',
       pitting: '凹点样表面',
+      onychogryphosis: '增厚、过度生长的（钩甲样）指甲',
       pallor: '苍白（贫血样）外观',
     },
   },
@@ -275,6 +297,8 @@ export default {
       '我们的两项检查在这一项上不一致，所以我们不作判断。请在良好光线下重拍两张照片；如有疑虑，可考虑请医生查看。',
     insufficient_data_for_confident_call:
       '我们目前没有足够经过验证的数据来对这一项做出有把握的判断，且我们的两项检查也不一致。请在良好光线下重拍照片；如有疑虑，可考虑请医生查看。',
+    requires_ai_model: '该征象只能由 AI 模型检测，而模型当前不可用，因此暂不给出结果。',
+    no_confident_ai_call: 'AI 模型对照片中的这一征象把握不足，无法给出判断。请在均匀光线下、让整片指甲入镜后重新拍摄俯视照片；如有担心，可考虑就医。',
     default: '照片中检测不到指甲。请尝试更纯色的背景、更好的光线，并让整根手指进入画面。',
   },
 
@@ -330,6 +354,7 @@ export default {
       muehrckes_lines: '白色条带',
       splinter_hemorrhages: '细小条纹',
       pitting: '小凹点',
+      onychogryphosis: '增厚、弯曲',
     },
   },
 
@@ -383,6 +408,7 @@ export default {
     muehrckes_lines: '指甲纹理（米尔克氏线）',
     splinter_hemorrhages: '指甲纹理（裂片形出血）',
     pitting: '指甲表面（凹点）',
+    onychogryphosis: '指甲增厚（钩甲）',
   },
 
   pointTitles: {
@@ -598,6 +624,17 @@ export default {
           '我们分析指甲表面，寻找小凹陷和凹点模式。这是基于表面纹理的视觉筛查检查，不过相机分辨率和光线会影响细小凹点的可见程度。',
         action:
           '如果发现多个指甲上有凹点，值得向医生提及，尤其是如果您还有皮肤斑块、瘙痒等皮肤症状或脱发。医生可以为您检查，并决定是否需要检测或进一步评估。',
+      },
+    },
+    onychogryphosis: {
+      name: '钩甲（甲弯曲症）',
+      summary: '指甲增厚、过度生长并向下弯曲。',
+      lead: '钩甲是指指甲变得非常厚、过度生长，并常常像兽角一样弯曲。最常见于大脚趾甲，但也可能出现在手指甲上。通常由长期受压、外伤或年龄增长引起，有时与血液循环不良有关。',
+      points: {
+        looks: '指甲明显比正常厚，常呈黄色或褐色，表面可能有横向嵴纹。随着生长，它可能向一侧或向下弯曲，覆盖在手指或脚趾末端，有时形似羊角。',
+        why: '最常见的原因是指甲反复受压或受伤（对脚趾甲来说，鞋子过紧是常见原因）、年龄增长，或长期未修剪指甲。也可能与血液循环不良、糖尿病、银屑病或真菌感染有关。与 NailIQ 检查的大多数征象不同，它通常是指甲的局部问题，而不是全身性疾病的信号。',
+        how: '这项检查完全来自 AI 模型：它从带标注的临床照片中学习了增厚、过度生长的指甲是什么样子。该项没有单独的颜色测量，因此如果模型把握不足，我们会说明无法分析，而不是猜测。',
+        action: '指甲增厚、过度生长时，值得请医生或足病医生看看，尤其是当它疼痛、难以修剪，或您患有糖尿病或血液循环不良时。他们可以安全地修剪，并检查指甲下方的情况。',
       },
     },
   },

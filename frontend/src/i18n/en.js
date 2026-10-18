@@ -1,6 +1,22 @@
 // English is the master dictionary: every UI string lives here (and is the
 // fallback when another locale is missing a key). Keep keys in sync with es.js.
 export default {
+  crop: {
+    clubbing: "Nail shape (clubbing)",
+    koilonychia: "Nail shape (spooning)",
+    appearanceNote: "This finding describes the nail’s appearance in the top photo. No side-profile angle or depth was measured.",
+  "title": "Select the nail",
+  "instructions": "Move and resize the box around one nail. Include its edges and a little surrounding skin.",
+  "photo": "Captured nail photo",
+  "move": "Move nail box",
+  "nw": "Resize top left",
+  "ne": "Resize top right",
+  "sw": "Resize bottom left",
+  "se": "Resize bottom right",
+  "confirm": "Use this nail",
+  "retake": "Retake photo",
+  "appearance": "Photo appearance"
+},
   langName: 'English',
 
   app: {
@@ -24,7 +40,7 @@ export default {
     heroAlt: 'Illustration of a phone scanning a fingernail',
     heroTitle: "Spot nail changes worth a doctor's look",
     heroText:
-      'Some nail signs of anemia, heart, lung, and liver conditions show up early - but develop too slowly to notice on your own. Two quick photos check for thirteen of them.',
+      'Some nail signs of anemia, heart, lung, and liver conditions show up early - but develop too slowly to notice on your own. Two quick photos check for fourteen of them.',
     cta: 'Start a scan',
     whyTitle: 'Why it matters',
     whyRows: {
@@ -69,6 +85,10 @@ export default {
       muehrckes_lines: { name: "Muehrcke's lines", text: 'Pale bands running across the nail bed.' },
       splinter_hemorrhages: { name: 'Splinter hemorrhages', text: 'Tiny dark streaks beneath the nail.' },
       pitting: { name: 'Pitting', text: 'Small dents or pinpricks in the nail surface.' },
+      onychogryphosis: {
+        name: 'Onychogryphosis',
+        text: 'A thickened, overgrown nail that curves over.',
+      },
     },
     showAll: 'Show all {n}',
     showLess: 'Show less',
@@ -209,6 +229,7 @@ export default {
       agree: 'The color check and the AI model agree on this.',
       color_only: "Based on the color check; the AI model wasn't conclusive here.",
       ml_primary: 'Based mainly on the AI model here.',
+      ml_only: 'Based on the AI model alone - there is no simpler color check for this sign.',
     },
     mlLabels: {
       clubbing: 'clubbing-type appearance',
@@ -219,6 +240,7 @@ export default {
       beaus_lines: "a Beau's-line-type groove",
       muehrckes_lines: "a Muehrcke's-line-type banding",
       pitting: 'a pitting-type surface',
+      onychogryphosis: 'a thickened, overgrown (onychogryphosis-type) nail',
       pallor: 'a pale (pallor-type) appearance',
     },
   },
@@ -299,6 +321,8 @@ export default {
       "Our two checks didn't agree on this one, so we're not calling it either way. Retake both photos in good lighting, and consider showing a doctor if you're concerned.",
     insufficient_data_for_confident_call:
       "We don't have enough validated data on this sign to call it confidently, and our two checks didn't agree. Retake in good lighting, and consider showing a doctor if you're concerned.",
+    requires_ai_model: 'This sign can only be checked by the AI model, which isn\'t available right now, so we\'re not giving a result for it.',
+    no_confident_ai_call: 'The AI model wasn\'t confident enough about this sign in your photo to call it either way. Retake the top-down photo in even light with the whole nail in view; consider showing a doctor if you\'re concerned.',
     default:
       "We couldn't detect a nail in that photo. Try a plainer background, better lighting, and your whole finger in frame.",
   },
@@ -363,6 +387,7 @@ export default {
       muehrckes_lines: 'white bands',
       splinter_hemorrhages: 'tiny streaks',
       pitting: 'small pits',
+      onychogryphosis: 'thick, curved',
     },
   },
 
@@ -418,6 +443,7 @@ export default {
     muehrckes_lines: "Nail markings (Muehrcke's lines)",
     splinter_hemorrhages: 'Nail markings (splinter hemorrhages)',
     pitting: 'Nail surface (pitting)',
+    onychogryphosis: 'Nail thickening (onychogryphosis)',
   },
 
   pointTitles: {
@@ -634,6 +660,17 @@ export default {
           'We analyze the nail surface for small indentations and pitting patterns. This is a visual screening check based on surface texture, though camera resolution and lighting can affect how visible fine pits are.',
         action:
           'If you notice pitting on multiple nails, it is worth mentioning to a doctor, especially if you also have skin symptoms like patches or itching, or hair loss. Your doctor can examine you and decide if testing or further evaluation is needed.',
+      },
+    },
+    onychogryphosis: {
+      name: 'Onychogryphosis (ram\'s horn nail)',
+      summary: 'A thickened, overgrown nail that curves over.',
+      lead: 'Onychogryphosis is a nail that has become very thick and overgrown, often curving over like a horn. It most often affects the big toenail, but it can show up on fingernails too. It is usually caused by long-term pressure, injury, or aging, and is sometimes linked to poor circulation.',
+      points: {
+        looks: 'The nail is much thicker than normal, often yellow or brown, and may have ridges across it. As it grows it can curve sideways or downward over the tip of the finger or toe, sometimes like a ram\'s horn.',
+        why: 'It most often comes from repeated pressure or injury to the nail (tight shoes are a common cause for toenails), getting older, or long-term lack of nail trimming. It can also be linked to poor circulation, diabetes, psoriasis, or fungal infection. Unlike most signs NailIQ checks, it is usually a local nail problem rather than a sign of a whole-body condition.',
+        how: 'This check comes from the AI model alone: it learned what thickened, overgrown nails look like from labeled clinical photos. There is no separate color measurement for it, so if the model isn\'t confident, we say we couldn\'t analyze it rather than guess.',
+        action: 'A thick, overgrown nail is worth showing to a doctor or podiatrist, especially if it hurts, is hard to trim, or you have diabetes or poor circulation. They can trim it safely and check for anything underneath it.',
       },
     },
   },

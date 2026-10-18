@@ -32,11 +32,14 @@ function changedLabels(scan, previousScan) {
 
 function FindingDetail({ finding }) {
   const { t } = useI18n()
-  const noteKey = TRACK_NOTE_KEY[finding.track_used]
+  // CNN-only conditions ride the color_fused track but weren't fused with any color check
+  const aiOnly = finding.evidence_type === 'appearance' || ['ml_only', 'ml_no_opinion'].includes(finding.agreement)
+  const noteKey = aiOnly ? null : TRACK_NOTE_KEY[finding.track_used]
   const isInconclusive = finding.verdict === 'inconclusive'
 
   return (
     <div className="history-finding-body">
+      {finding.track_used === 'appearance' && <p className="history-detail-message">{t('crop.appearanceNote')}</p>}
       {isInconclusive ? (
         <p className="history-detail-message">{failureReasonMessage(t, finding.failure_reason)}</p>
       ) : (

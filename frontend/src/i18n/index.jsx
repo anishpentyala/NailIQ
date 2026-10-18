@@ -133,6 +133,7 @@ export function useI18n() {
 
 // use the localized name if we have one, otherwise fall back to what the backend sent
 export function findingName(t, finding) {
+  if (finding.track_used === 'appearance') return t(`crop.${finding.label}`)
   const localized = t(`findingNames.${finding.label}`)
   return localized === `findingNames.${finding.label}` ? finding.display_name : localized
 }

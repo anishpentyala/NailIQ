@@ -90,6 +90,15 @@ function plateOverlay(pattern) {
           <circle className="mark-pit" cx="216" cy="118" r="3" />
         </>
       )
+    case 'onychogryphosis':
+      return (
+        <>
+          <rect className="mark-brown" x="188" y="96" width="64" height="36" />
+          <rect className="mark-shadow" x="188" y="104" width="64" height="3" />
+          <rect className="mark-shadow" x="188" y="114" width="64" height="3" />
+          <rect className="mark-shadow" x="188" y="124" width="64" height="3" />
+        </>
+      )
     default:
       return null
   }
@@ -163,6 +172,7 @@ const SWATCH_COLOR = {
   muehrckes_lines: '#fbf7f3',
   splinter_hemorrhages: '#7d2b2b',
   pitting: '#caa893',
+  onychogryphosis: '#b67d5f',
 }
 
 const PLATE_WITH_PROFILE_TRANSFORM = 'translate(-74.4,-22) scale(1.3)'

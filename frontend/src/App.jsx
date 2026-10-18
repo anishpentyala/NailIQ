@@ -21,12 +21,12 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const scrollRef = useRef(null)
 
-  const handleCapture = useCallback(async ({ sideImage, topImage }) => {
+  const handleCapture = useCallback(async ({ sideImage, topImage, topNailBbox }) => {
     setLoading(true)
     setError(null)
     setTopImage(topImage)
     try {
-      const data = await analyzeImages({ sideImage, topImage })
+      const data = await analyzeImages({ sideImage, topImage, topNailBbox })
       setResult(data)
     } catch {
       setError(t('app.serverError'))

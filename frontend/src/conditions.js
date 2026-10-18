@@ -13,6 +13,7 @@ export const CONDITION_KEYS = [
   'muehrckes_lines',
   'splinter_hemorrhages',
   'pitting',
+  'onychogryphosis',
 ]
 
 const CONDITION_ICONS = {
@@ -29,6 +30,7 @@ const CONDITION_ICONS = {
   muehrckes_lines: 'clipboard',
   splinter_hemorrhages: 'search',
   pitting: 'eye',
+  onychogryphosis: 'finger',
 }
 
 const POINT_ORDER = [

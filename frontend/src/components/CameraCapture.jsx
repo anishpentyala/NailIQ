@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react'
 import Webcam from 'react-webcam'
+import NailBoxSelector from './NailBoxSelector'
 import { validatePhoto } from '../api'
 import { failureReasonMessage } from '../failureReasons'
 import { useI18n } from '../i18n'
@@ -32,6 +33,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
   const [torchSupported, setTorchSupported] = useState(false)
   const [facingMode, setFacingMode] = useState('environment')
   const [shutterFlash, setShutterFlash] = useState(false)
+  const [topReview, setTopReview] = useState(null)
   const streamRef = useRef(null)
 
   const processImage = useCallback(async (base64) => {
@@ -47,6 +49,11 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
     }
     setValidating(false)
 
+    if (step === 'top' && validation.roi_review_available && !['invalid_image', 'camera_feed_blank', 'too_blurry'].includes(validation.failure_reason)) {
+      setTopReview({ image: base64, box: validation.top_nail_bbox ?? null })
+      return
+    }
+
     if (!validation.ok) {
       setRetakeError(failureReasonMessage(t, validation.failure_reason))
       return
@@ -59,6 +66,20 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       onCapture({ sideImage, topImage: base64 })
     }
   }, [step, sideImage, onCapture, t])
+
+  const confirmTop = async (topNailBbox) => {
+    setValidating(true)
+    setRetakeError(null)
+    try {
+      const validation = await validatePhoto(topReview.image, 'top', topNailBbox)
+      if (validation.ok) onCapture({ sideImage, topImage: topReview.image, topNailBbox })
+      else setRetakeError(failureReasonMessage(t, validation.failure_reason))
+    } catch {
+      setRetakeError(t('camera.checkFailed'))
+    } finally {
+      setValidating(false)
+    }
+  }
 
   const handleCapture = useCallback(async () => {
     const video = webcamRef.current?.video
@@ -147,6 +168,12 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
     setTorchSupported(false)
     setFacingMode((mode) => (mode === 'environment' ? 'user' : 'environment'))
   }, [])
+
+  if (topReview) {
+    return <NailBoxSelector image={topReview.image} initialBox={topReview.box}
+      busy={loading || validating} error={retakeError} onConfirm={confirmTop}
+      onRetake={() => { setTopReview(null); setRetakeError(null) }} />
+  }
 
   const isSide = step === 'side'
   const isBusy = loading || validating
