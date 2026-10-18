@@ -138,3 +138,106 @@ unchanged, now with a third confirming pass**: no usable darker-skin data exists
 ~10 non-pallor color conditions, and no real phone-photo nail dataset (labeled, any skin
 tone) was found anywhere. Closing this gap requires generating original photos (a
 camera + volunteers across skin tones), not a fourth search.
+
+**Fourth search pass (2026-09-17), also checking a second research AI's leads for accuracy
+first:** the same research-AI-provided leads that led us to `nihati`/`anemia` this session
+also resurfaced several dead ends without flagging them: "nailsDt1" (confirmed the same
+corpus as the removed `nail-disease`), the Nikhil Gaurav/Gurav Kaggle set (license
+misreported as CC BY 4.0 - real license is CC BY-NC-SA 4.0, AND its ~3,835-image count
+matches the already-confirmed-contaminated corpus above), and Yakimov again (license
+misreported as CC0 - we'd already confirmed CC BY-NC-ND 4.0 directly from the host). All
+three rejected again on sight, consistent with the pattern above - **do not trust a second
+AI's license claim any more than the first; always verify against this file's existing
+resolutions before re-evaluating a lead.**
+
+A dedicated follow-up search then targeted six specific new leads:
+- **Derm1M** (ICCV 2025) - confirmed real, on HuggingFace (`redlessone/Derm1M`,
+  1,029,761 pairs), but CC BY-NC-4.0 (explicitly requires separate permission for
+  commercial use) and its full 390-condition list (needed to confirm nail coverage)
+  is in supplementary material too large to fetch in this pass. **Not usable without
+  a license negotiation, and nail coverage itself is still unconfirmed** - don't treat
+  this as a live option without both resolved.
+- **PASSION** (MICCAI 2024) - confirmed **no nail/finger imagery at all**: it's
+  paediatric eczema/fungal/scabies/impetigo body-lesion photos only. Ruled out
+  definitively, not just "unmined."
+- **Springer 17-class DenseNet169 paper** - the paper itself (Discover Computing,
+  Nov 2025) is real and describes exactly the classes we need, but has no data
+  availability statement, GitHub repo, or companion dataset anywhere found - it cites
+  *existing* Kaggle sets (likely the same contaminated ones above) rather than
+  releasing new data. Would require directly emailing the authors; not a download.
+- **Melanonychia, fresh targeted search** - the only paper found using melanonychia
+  images (Tan et al., PeerJ 2024) cites arthitaya's Kaggle set (723 images, 245
+  melanonychia) - the exact dataset already rejected here for an unresolved "Unknown"
+  license. No independent melanonychia source exists anywhere searched (Zenodo,
+  Figshare, Mendeley, OSF, GitHub). **This remains a hard zero, not a research gap.**
+- **Real phone-camera photos, fresh search** - found two NEW leads, both closed for
+  now but worth a future outreach attempt (see Next Actions): a Frontiers 2025 paper
+  (909 real smartphone anemia photos, Samsung Galaxy A73, Peru) that states "raw data
+  available by request" - not publicly hosted, but a named corresponding author exists
+  to ask; and Galmés et al. (2022, Multimedia Tools & Applications) - 348 smartphone
+  clinical images for nail-angle/segmentation work, no public release found, same
+  request-the-author situation.
+- **Lateral/side-profile clubbing photos** - still nothing publicly released anywhere;
+  the same Galmés et al. paper above is the closest lead (a 348-image smartphone
+  clinical set) but access is unconfirmed and unrequested so far.
+
+**Conclusion, fourth pass:** no new dataset became usable. The gap for melanonychia,
+real phone photos, and lateral clubbing photos is confirmed real and not closeable by
+searching harder a fifth time. The only two live paths that changed this pass: (a) two
+named authors (Frontiers 2025, Galmés et al.) who could plausibly be emailed for direct
+data-sharing access - a real, if slow, outreach option, not a dead end like the rest;
+(b) accepting these three gaps stay unvalidated on phone photos until original data
+collection happens. (Galmés et al. was later ruled out entirely - see below - once their
+paper's own text was checked directly.)
+
+**Fifth and sixth passes (2026-09-18/19), institutional/clinical archives instead of
+open-data platforms:** two independent research efforts (one agent-run, one a second AI
+given the same brief) targeted university/hospital dermatology teaching archives,
+national dermatology societies, PubMed Central embedded/supplementary images, NIH's
+Open-i biomedical image search, physiotherapy/pulmonology lateral-clubbing education
+resources, and LMIC teledermatology programs. **Both produced at least one confident but
+false specific claim**, each caught only by direct verification: one pass claimed two PMC
+articles were "CC BY licensed, ready to implement" when direct fetch showed one was plain
+copyright (no open license) and the other CC BY-NC (not CC BY) with a single patient's
+photos; the other pass claimed NIH Open-i had "1 usable CC-BY clubbing photo," which did
+not reproduce when the exact search was run through Open-i's actual UI (zero results for
+clubbing, melanonychia, leukonychia, onycholysis). Confirmed accurate on independent check:
+DermNet NZ's watermarked images are CC BY-NC-ND (NonCommercial + NoDerivatives, the same
+license combination that already ruled out Yakimov) - a real, verified dealbreaker, not a
+hedge. Also independently confirmed: Galmés et al. (2022) explicitly states in its own
+text that its 348-image dataset "belong[s] to the company that conducted the clinical
+study" and is not shareable by the authors at all - ruled out as an outreach target,
+unlike the still-open Frontiers 2025 lead.
+
+**Conclusion, fifth/sixth passes:** every institutional/clinical archive route is now
+confirmed blocked or empty (verified firsthand, not taken on report). This is the sixth
+independent search effort overall (four general-platform passes plus these two) to reach
+the same result for melanonychia, the tiny-n NIHATI conditions, and real phone/lateral
+photos. Stop re-searching this specific question; it is a genuine, thoroughly-confirmed
+scarcity. The two live paths remain: author outreach (one sent, to Frontiers 2025,
+awaiting reply) and original data collection.
+
+## 2026-10-01 permission and candidate update
+
+The user explicitly authorized KNM despite watermarks and separately confirmed
+permission for Arthitaya. This supersedes the earlier permission blocker for
+local candidate training. It does not establish public CC licensing, clinical
+label correctness or independent patients; permission documents were not inspected.
+The record is `data/source_authorizations.json` and attribution is in `ATTRIBUTION.md`.
+
+The isolated `data/raw/goal60_authorized_cls` retains original split membership,
+adds 480 supported Arthitaya images, and includes 17 training classes. Mees' lines
+and melanoma remain discriminators, not new app findings. Melanonychia has only
+3 VALID and 6 TEST images before further adjudication; Lindsay's nails has 6 and
+5. These denominators cannot support a robust 60% accuracy claim.
+
+The expanded similarity audit found 84 cross-split candidates involving Arthitaya.
+Pixel comparison and visual review confirmed three duplicate pairs, including a
+conflicting pallor/melanonychia label. Both sides were quarantined; v3 now excludes
+73 crops across the original and expanded pools (TRAIN32, VALID30, TEST11).
+Candidate training restarted with that quarantine. Runtime TRAIN crops were copied
+and their source rows rechecked against v3; they add no independent patients.
+
+Automated localization and optional user-adjusted nail boxes are being evaluated
+separately. Annotation boxes are upper-bound diagnostics, not measured user-crop
+accuracy. No new labeled phone cohort or paired geometry benchmark was created.

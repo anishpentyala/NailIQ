@@ -1,0 +1,9 @@
+{
+  "recorded_on": "2026-10-01",
+  "basis": "Explicit user statements in this session; permission documents were not independently inspected",
+  "sources": {
+    "knm/nail-disease-detection-mxoqy": "User confirmed explicit permission and requested inclusion despite watermarks",
+    "arthitaya/nail-dataset": "User separately confirmed the permission also covers Arthitaya"
+  },
+  "does_not_establish": ["Public license replacement", "Clinical correctness of labels", "Independent patients or leakage-free splits"]
+}

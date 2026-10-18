@@ -5,15 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 NailIQ: a precautionary screener for nail-based signs of systemic disease. It
-covers thirteen conditions across four tracks: digital clubbing and koilonychia/spoon
-nails (side-profile geometry, fused with a top-down CNN), and eleven top-down
+covers fourteen conditions across four tracks: digital clubbing and koilonychia/spoon
+nails (side-profile geometry, fused with a top-down CNN), eleven top-down
 color/texture signs - leukonychia, melanonychia, pallor, cyanosis, Terry's nails,
 Lindsay's nails, onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages,
 and pitting - ten of which (all but melanonychia) are further fused with a second
-color-condition CNN ensemble, though three of those ten (leukonychia, Lindsay's
-nails, onycholysis) currently have too little held-out evidence to clear the
-validation bar and so still show "couldn't analyze this photo" - see
-`ml/infer/validation_policy.py`.
+color-condition CNN ensemble, plus onychogryphosis (thickened/overgrown nail), which
+is **CNN-only** (no classical measurement exists for it; see "CNN-only conditions"
+below). Pallor and Lindsay's nails (of the fused ten)
+fail the validation bar and so still show "couldn't analyze this photo" -
+see `ml/infer/validation_policy.py`.
 A user photographs
 their finger and gets a finding per condition, each one only ever "within typical range,"
 "outside typical range," or "couldn't analyze this photo" - **never** a named
@@ -49,6 +50,7 @@ backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone mobilene
 backend/venv/Scripts/python.exe ml/train/train_classifier.py --backbone efficientnet_b0  # adds to ensemble
 backend/venv/Scripts/python.exe ml/eval/eval_ensemble.py      # ensemble accuracy (what ships)
 backend/venv/Scripts/python.exe scripts/build_color_classification_dataset.py  # KNM box crops -> color CNN dataset
+backend/venv/Scripts/python.exe scripts/build_provenance_manifest.py  # per-image source/license/label CSV (run after the above)
 backend/venv/Scripts/python.exe ml/train/train_color_classifier.py --backbone mobilenet_v3_large  # color-condition CNN
 backend/venv/Scripts/python.exe ml/train/train_color_classifier.py --backbone efficientnet_b0     # adds to color ensemble
 backend/venv/Scripts/python.exe ml/eval/eval_color_ensemble.py  # color ensemble accuracy (what ships)
@@ -647,6 +649,30 @@ bar. Full numbers: `ml/infer/color_fusion.py`'s and `ml/infer/validation_policy.
 table/docstring comments; audit methodology and before/after in the Obsidian vault's
 `Change Log.md`/`Decision Log.md`, dated 2026-09-16.
 
+**CNN-only conditions: onychogryphosis added as a 14th condition (2026-09-23).** The color
+CNN already trained on KNM's `onychogryphosis` class (purely as a discriminator), so it
+was promoted to a reported condition with no retrain: appended to the manifest's
+`app_conditions` and to `train_color_classifier.APP_CONDITIONS`, and added to
+`eval_color_sensitivity.KNM_SLUGS` so the end-to-end eval has positives. Thickening and
+curvature aren't a color/texture pattern, so there is no classical heuristic:
+`ml/infer/onychogryphosis.py` only supplies the finding shape, and its `build_finding`
+returns `inconclusive` (`requires_ai_model`), **never** a default `within`, so a torch-free
+install says "couldn't analyze" instead of pretending to rule it out.
+`color_fusion.CNN_ONLY_CONDITIONS` short-circuits `_fuse_one` before the heuristic path:
+a confident CNN call sets the verdict (`agreement: "ml_only"`), otherwise it is
+`inconclusive` (`no_confident_ai_call`). Tuned `OVR_THRESHOLD["onychogryphosis"] = 0.15`
+on VALID: strict valid 72.3% recall / 0.0% FP -> test 67.6% / 0.0% FP (n_pos 65/34), so it
+is validated. Its real cost is abstention: roughly a third of healthy nails get
+`no_confident_ai_call` for it, because the CNN is often confidently calling a
+*different* class (for example Ghana healthy->pallor), which is "no opinion" for this one.
+Every other condition's numbers were unchanged by the addition. Unlike the other signs,
+it's usually a local nail problem (pressure, injury, aging, fungal infection, poor
+circulation), not a systemic one, and the UI copy says so. Adding another CNN-only
+condition: same four steps (module, `_COLOR_CONDITIONS`, `app_conditions`,
+`CNN_ONLY_CONDITIONS`), plus i18n in all six locales.
+
+**Per-sign specialists (2026-10-17): onycholysis and leukonychia.** Their heuristics are near-chance and the shared color CNN stays under the low-sample guard, so each has a dedicated EfficientNet-B0 (2 seeds, 8-way TTA) served by `ml/infer/specialists.py` (`ENABLED` allowlist; weights + cutoff in `ml/models/<sign>_specialist.{pt,json}`, gitignored). Regenerate: `scripts/build_onycholysis_app_crops.py` (caches the production front end's crops of every source photo into `data/raw/onych_app_crops`), then `scripts/train_onycholysis_specialist.py --target <sign> --ind-root data/raw/onych_app_crops [--tag app_ | --final]` (`--tag app_` = leave-one-source-out folds, `--final` = ship model). Trained on the app's OWN crops (nail_locator + `compute_nail_region`) plus the Han clinical set (`data/raw/han_canon`, tip-down). `pipeline.analyze_top_color` calls `specialists.apply`, which swaps a specialist's call in for that sign's finding (`track_used: "color_fused"`, `agreement: "ml_only"`) and passes through when torch/weights are absent. **Lesson:** an onycholysis model trained and scored on clean pre-cropped nails (92.9% recall / 5.4% FP) fell to 81.0% / 15.7% through the real front end; training on app-style crops fixed it. Cutoffs were picked after seeing score curves (mildly optimistic): onycholysis 0.3 - final model 96% recall / 1.3% FP (n=25 / 237), leave-one-source-out pooled 78.9% recall (n=95) / 4.2% FP (n=551), thin margin; leukonychia 0.2 - final valid+test 90.5% / 0.8% (n=21 / 237), pooled LOSO 86.3% (n=102) / 3.6% (n=551), NIHATI held out alone 69.0% / 3.6%. Both left `UNVALIDATED_CONDITIONS`. Arthitaya's own healthy photos fire 12-43% at low cutoffs when it is held out. Tight source photos, never phone photos; Han has not had the watermark audit. **melanonychia (enabled later the same day, cutoff 0.005):** trained on Han positives only (Arthitaya is eval-only, never trained on) with Ghana darker-skin healthy patches + KNM/chaa/NIHATI healthy as negatives (`--extra-real ghana`, 4 seeds). The first no-Ghana version was withheld (5.3% FP on Ghana healthy). Final: Arthitaya positives n=58 vs 593 healthy: recall 69.0% / FP 0.7% at the cutoff (81.0% / 2.5% at 0.002); through the real `/analyze` on all 60 Arthitaya positives: 66.7% strict recall (40/60, 2 abstained), 1/40 healthy false alarm. Caveats: one positive source, recall on darker-skin melanonychia unmeasured, Ghana healthy are small masked patches, cutoff picked post-hoc, scores are tiny so the cutoff is on a very low scale (rank-order, not a probability). **Terry's specialist was tried and rejected** (leave-one-source-out pooled recall at 5% FP about 51%).
+
 ### Eval / diagnostics (`ml/eval/`)
 
 - `grad_cam.py` - Grad-CAM overlays (last conv block) on test images, written to
@@ -827,6 +853,16 @@ env var isn't set) - the same file `DEEPL_API_KEY` already lives in.
 for confirmed watermark contamination - see "Dataset contamination found and fixed" under
 the color-condition CNN track above. It is deliberately absent from `download_data.py`'s
 `DATASETS` list; don't re-add it without re-running that audit.
+
+`scripts/build_provenance_manifest.py` generates `data/raw/color_cls_provenance.csv`
+(gitignored, one row per training image: path, split, class label, source dataset,
+license, and what's actually known about how that source established its label) - run
+it after `build_color_classification_dataset.py`. `ATTRIBUTION.md`/`data/raw/LICENSES.md`
+record provenance per DATASET; this is the per-IMAGE counterpart, added 2026-09-18 because
+tracking provenance only at the dataset level was exactly what let `data/raw/nail-disease`'s
+contamination go unnoticed for months - a per-image record makes "which images came from
+which source" a lookup, not a re-investigation, the next time a source's trustworthiness is
+questioned.
 
 `data/raw/nail-disease-classification-nihati` and `data/raw/anemia-nails-detection` were
 added 2026-09-16 as vetted replacements/backfill - see "Two more datasets vetted and
