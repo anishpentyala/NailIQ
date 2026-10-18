@@ -32,7 +32,11 @@ GLARE_V = 0.97
 GLARE_FRAC_MAX = 0.25
 # Natural nail/skin saturation is low; a plate this saturated over much of its area
 # is almost certainly nail polish, which hides every color/texture sign.
-POLISH_S = 0.45
+# 0.45 -> 0.6 (2026-10-18): real phone photos of an unpolished darker-skin nail measured median S 0.42-0.44
+# and 37-42% of samples above 0.45 (dataset healthy nails: median 0, none above the limit), and a looser
+# crop of one pushed it over, refusing a plain nail as `nail_polish_detected`. Polish proper is far more
+# saturated. Trade-off: a pale/pink polish is no longer caught; no labelled polish photos exist to tune on.
+POLISH_S = 0.6
 POLISH_FRAC_MAX = 0.5
 
 
