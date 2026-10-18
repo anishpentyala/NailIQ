@@ -50,15 +50,18 @@ REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "backend"))
 
-_scratch_db = Path(tempfile.gettempdir()) / "nailiq_eval_color_sensitivity.db"
-# must be set before importing app (Flask-SQLAlchemy builds the engine at import)
-os.environ["NAILIQ_DATABASE_URI"] = "sqlite:///" + str(_scratch_db).replace("\\", "/")
-import app as app_module  # noqa: E402
-
-app_module._rate_limited = lambda ip: False  # test client shares one IP; not a real client
-with app_module.app.app_context():
-    app_module.db.create_all()
-client = app_module.app.test_client()
+def create_eval_client():
+    """Initialize Flask only for a run, never when importing dataset/metric helpers."""
+    scratch = Path(tempfile.mkdtemp(prefix="nailiq_eval_")) / "eval.db"
+    os.environ["NAILIQ_DATABASE_URI"] = "sqlite:///" + scratch.as_posix()
+    import app as app_module
+    with app_module.app.app_context():
+        actual = Path(app_module.db.engine.url.database).resolve()
+        if actual != scratch.resolve():
+            raise RuntimeError("Flask was already initialized with a different database; run eval in a fresh process")
+        app_module.db.create_all()
+    app_module._rate_limited = lambda ip: False
+    return app_module, app_module.app.test_client()
 
 SPLITS = ("train", "valid", "test")
 
@@ -79,6 +82,7 @@ KNM_SLUGS = {
     "Muehrckes Lines": "muehrckes_lines",
     "Pitting": "pitting",
     "Terry-s Nail": "terrys_nails",
+    "Onychogryphosis": "onychogryphosis",
 }
 CHAA_SLUGS = {
     "Splinter Hemorrhage": "splinter_hemorrhages",
@@ -253,6 +257,7 @@ def b64(path):
 
 
 def main():
+    _, client = create_eval_client()
     positives = gather_positives()
     healthy_dir = REPO / "data" / "raw" / "merged" / "test" / "healthy"
     side = b64(sorted(healthy_dir.glob("*.jpg"))[0])

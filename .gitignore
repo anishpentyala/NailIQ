@@ -41,6 +41,9 @@ ml/eval/gradcam_out/
 # regenerable per-image caches from eval_end_to_end.py / tune_color_decision.py
 ml/eval/e2e_*.json
 ml/eval/color_decision_*.json
+ml/eval/goal60_*.json
+ml/eval/goal60_*.log
+ml/eval/color_split_leakage_*.json
 data/real_eval/
 data/real_eval_color/
 
@@ -61,3 +64,6 @@ phone-preview*.log
 backend/nailiq.db
 .pytest_cache/
 backend/tests/__pycache__/
+
+# stray stderr logs from background jobs
+*.err

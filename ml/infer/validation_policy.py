@@ -53,6 +53,38 @@ splinter_hemorrhages (71.4%/3.0% -> test 73.6%/2.1%, holds up on both splits). T
 numbers confirm none of these should flip to unvalidated over this alone -- see
 ml/infer/color_fusion.py's table comments for the exact chosen values.
 
+Added 2026-09-23: onychogryphosis, a 14th condition that is CNN-only (no classical
+measurement; color_fusion.CNN_ONLY_CONDITIONS). KNM-sourced eval positives. Strict, with
+OVR 0.15: valid 72.3% recall / 0.0% FP (n_pos=65, n_healthy=305) -> test 67.6% / 0.0%
+(n_pos=34, n_healthy=237). Passes, so it is NOT in UNVALIDATED_CONDITIONS. Caveat: it
+abstains (no_confident_ai_call) on ~34-39% of healthy nails and ~26-32% of positives --
+the CNN has no confident call there, and with no heuristic to fall back on the honest
+answer is "couldn't analyze". Every other condition's numbers were unchanged by this.
+
+Added 2026-10-17 (latest): melanonychia moved OUT via a specialist trained on Han positives only
+(Arthitaya never trained on) plus Ghana darker-skin healthy patches as negatives (ml/infer/specialists.py,
+cutoff 0.005): Arthitaya positives n=58 vs 593 healthy (Arthitaya, KNM, chaa, NIHATI, Ghana): recall 69.0% /
+healthy FP 0.7% (81.0% / 2.5% at 0.002). Cutoff chosen after seeing the curve; one positive source;
+recall on darker-skin melanonychia is unmeasured; Ghana healthy are small masked patches. The earlier
+Han-only/no-Ghana version had 5.3% FP on Ghana healthy and stayed withheld.
+
+Added 2026-10-17 (later): leukonychia moved OUT too, via the same specialist recipe
+(ml/infer/specialists.py, cutoff 0.2): pooled leave-one-source-out 86.3% recall (n=102) / 3.6% healthy FP
+(n=551); final model valid+test 90.5% / 0.8% (n=21 / 237). NIHATI held out alone: 69.0% / 3.6%.
+Cutoff chosen after seeing the curves, so mildly optimistic. melanonychia has trained weights but
+stays here: one positive source (Arthitaya), no darker-skin healthy nails in its evaluation.
+
+Added 2026-10-17: onycholysis moved OUT of UNVALIDATED_CONDITIONS. It is now decided by a
+dedicated fine-tuned EfficientNet-B0 (ml/infer/specialists.py, trained by
+scripts/train_onycholysis_specialist.py on the app's own locator crops + the Han clinical
+set), not the color CNN/heuristic. Final model, cutoff 0.3: valid 11/11 positives, 126 healthy;
+test 13/13 positives, 106 healthy (cutoff chosen after seeing valid+test curves, so these are
+mildly optimistic: 96% recall / 1.3% FP over 25 positives / 237 healthy). The independent evidence is
+leave-one-source-out through the same front end: pooled 78.9% recall (n=95) / 4.2% healthy FP
+(n=551) at the same cutoff; the margin under 5% is thin (Arthitaya's own healthy photos
+fire 12-43% when that source is held out, other sources 1-4%). Tight-crop/source-photo
+numbers, never measured on phone photos. See Change Log.md 2026-10-17.
+
 The underlying verdict is kept as `unvalidated_verdict` so /feedback responses can still
 be collected against it -- that is how these conditions can earn their way back in.
 Re-run the tuner after any retrain or data change and update UNVALIDATED_CONDITIONS.
@@ -60,17 +92,18 @@ Re-run the tuner after any retrain or data change and update UNVALIDATED_CONDITI
 
 UNVALIDATED_CONDITIONS = {
     "pallor",
-    "leukonychia",
-    "onycholysis",
     "lindsays_nails",
-    "melanonychia",
 }
 
 
-def apply(findings):
+def apply(findings, roi_mode='legacy', metadata=None, approved=False):
+    from . import color_classifier
+    metadata = color_classifier.model_metadata() if metadata is None else metadata
+    blocked_mode = roi_mode != 'legacy' and roi_mode not in metadata.get('validated_roi_modes', [])
+    blocked_conditions = UNVALIDATED_CONDITIONS | set(metadata.get('unvalidated_conditions', []))
     out = []
     for f in findings:
-        if f["label"] in UNVALIDATED_CONDITIONS and f["verdict"] != "inconclusive":
+        if not approved and (blocked_mode or f["label"] in blocked_conditions) and f["verdict"] != "inconclusive":
             f = {**f, "unvalidated_verdict": f["verdict"], "verdict": "inconclusive",
                  "confidence": 0.0, "failure_reason": "not_validated"}
         out.append(f)

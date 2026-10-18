@@ -36,7 +36,7 @@ import cv2
 _MODELS = Path(__file__).resolve().parent.parent / "models"
 _LABELS_PATH = _MODELS / "nail_color_classifier_labels.json"
 
-# 11-class model -> chance is ~0.09; this is a deliberately cautious, calibrated floor.
+# This default floor is independently overridden by frozen candidate decision rules.
 # Below it we treat the CNN as having no opinion (color_fusion falls back to classical).
 CONFIDENCE_THRESHOLD = 0.45
 
@@ -74,13 +74,9 @@ CLASS_CONFIDENCE_THRESHOLD = {
     # NIHATI/anemia retrain -- lowering the top-class floor from the 0.45 default to
     # 0.25 raised end-to-end valid recall 44.1%->50.0% at FP 1.7%->2.6%.
     "terrys_nails": 0.25,
-    # melanonychia has NO entry: its only ever training source
-    # (data/raw/nail-dataset-arthitaya) was dropped from
-    # scripts/build_color_classification_dataset.py because its Kaggle license is
-    # "Unknown" (data/raw/LICENSES.md) -- an unresolved legal blocker for weights that
-    # might be shared. The class no longer exists in the manifest, so
-    # predict_from_region never returns it and color_fusion.py never fuses it;
-    # melanonychia stays on the classical heuristic alone (ml/infer/melanonychia.py).
+    # Melanonychia remains absent from the production manifest. User-authorized
+    # Arthitaya candidates can cover it; their tiny validation pool does not by
+    # itself justify changing the production evidence gate.
     #
     # leukonychia/onycholysis/lindsays_nails lost their CNN class entirely in 2026-09
     # when nail-disease (their only training source) was removed for watermark
@@ -97,6 +93,7 @@ CLASS_CONFIDENCE_THRESHOLD = {
 # Must match scripts/build_color_classification_dataset.py's BOX_PAD_FRAC so the
 # inference crop matches the training crop framing.
 BOX_PAD_FRAC = 0.15
+_DEFAULT_CLASS_THRESHOLDS = dict(CLASS_CONFIDENCE_THRESHOLD)
 
 _state = {"loaded": False}
 
@@ -133,6 +130,31 @@ def app_conditions():
     return list(meta.get("app_conditions", []))
 
 
+def model_metadata():
+    if not _LABELS_PATH.is_file():
+        return {}
+    try:
+        metadata = json.loads(_LABELS_PATH.read_text())
+        return metadata if isinstance(metadata, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def configure_manifest_rules():
+    from . import color_fusion
+    for condition, rule in model_metadata().get('decision_rules', {}).items():
+        floor, ovr, support = rule
+        for table, value in ((CLASS_CONFIDENCE_THRESHOLD, floor),
+                             (color_fusion.OVR_THRESHOLD, ovr),
+                             (color_fusion.HEURISTIC_MIN_CNN_SUPPORT, support)):
+            if value is None:
+                table.pop(condition, None)
+            else:
+                table[condition] = value
+    for condition, rule in model_metadata().get('appearance_rules', {}).items():
+        CLASS_CONFIDENCE_THRESHOLD[condition] = rule.get('floor', 0.5)
+
+
 def _build_backbone(name, num_classes):
     from torch import nn
     from torchvision import models
@@ -153,6 +175,8 @@ def _load():
         return _state
     import torch
     from torchvision import transforms
+
+    configure_manifest_rules()
 
     meta = json.loads(_LABELS_PATH.read_text())
     members = []
@@ -225,15 +249,21 @@ def predict_from_region(image_bgr, region):
     nail = _crop_to_bbox(image_bgr, bbox) if bbox is not None else image_bgr
     if nail is None or nail.size == 0:
         return None
+    # Only models trained on tip-down crops (manifest flag) get rotated input.
+    if region.get("tip_vec") is not None and model_metadata().get("canonical_orientation"):
+        from . import orientation
+        nail = orientation.rotate_tip_down(nail, orientation.direction_from_vector(*region["tip_vec"]))
     _, _, all_probs = classify_nail_bgr(nail)
     return opinion_from_probs(all_probs)
 
 
-def opinion_from_probs(all_probs):
+def opinion_from_probs(all_probs, thresholds=None):
     """Top class if it clears its confidence floor, else no opinion. Split out so
     ml/eval/tune_color_decision.py replays exactly this rule from cached probs."""
+    if not all_probs:
+        return None
     label = max(all_probs, key=all_probs.get)
     prob = all_probs[label]
-    threshold = CLASS_CONFIDENCE_THRESHOLD.get(label, CONFIDENCE_THRESHOLD)
+    threshold = (CLASS_CONFIDENCE_THRESHOLD if thresholds is None else thresholds).get(label, CONFIDENCE_THRESHOLD)
     return {"predicted_label": label if prob >= threshold else None,
             "confidence": round(prob, 3), "probs": all_probs}

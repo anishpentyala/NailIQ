@@ -56,7 +56,7 @@ def heuristic_confidence(value, threshold):
     return round(min(0.65, 0.4 + abs(value - threshold)), 2)
 
 
-def compute_nail_region(image_bgr, contour):
+def compute_nail_region(image_bgr, contour, nail_bbox=None):
     """Return (region, reason). region is None and reason set when the nail region
     can't be estimated reliably or the photo is unfit for color analysis
     (nail polish / heavy glare).
@@ -117,8 +117,20 @@ def compute_nail_region(image_bgr, contour):
     nail_along = (along > (1.0 - NAIL_LENGTH_FRAC)) if nail_at_hi else (along < NAIL_LENGTH_FRAC)
 
     region = nail_along & (np.abs(across) < NAIL_WIDTH_FRAC)
+    if nail_bbox is not None:
+        from .nail_locator import pixel_box, valid_bbox
+        if not valid_bbox(nail_bbox):
+            return None, 'invalid_nail_bbox'
+        x0, y0, x1, y1 = pixel_box(image_bgr, nail_bbox)
+        region = (xs >= x0) & (xs < x1) & (ys >= y0) & (ys < y1)
+        # A selected distal nail is oriented relative to the visible finger.
+        # Tight clinical crops retain the existing saturation-based estimate.
+        if region.any():
+            relative_position = float(np.median(along[region]) - np.median(along))
+            if abs(relative_position) > 0.05:
+                nail_at_hi = relative_position > 0
     region_px = int(region.sum())
-    if region_px < MIN_REGION_PX or region_px < MIN_REGION_FRAC * finger_px:
+    if region_px < MIN_REGION_PX or (nail_bbox is None and region_px < MIN_REGION_FRAC * finger_px):
         return None, "nail_region_unclear"
 
     Hr, Sr, Vr = H[region], S[region], V[region]
@@ -140,6 +152,11 @@ def compute_nail_region(image_bgr, contour):
     skin_lab_b = float(np.median(ba[skin])) if has_skin else None
 
     ar, cr = along[region], across[region]
+    if nail_bbox is not None:
+        width = cr.max() - cr.min()
+        if width < 1e-6:
+            return None, 'nail_region_unclear'
+        cr = (cr - cr.min()) / width * (2 * NAIL_WIDTH_FRAC) - NAIL_WIDTH_FRAC
     grid_v, grid_s = _rectify(ar, cr, Vr, Sr, nail_at_hi)
 
     nx, ny = xs[region], ys[region]
@@ -163,8 +180,10 @@ def compute_nail_region(image_bgr, contour):
         "glare_frac": image_quality.glare_fraction(Vr),
         "region_px": region_px,
         "finger_px": finger_px,
+        "tip_vec": tuple(float(v) for v in (major if nail_at_hi else -major)),
         "bbox": (x0, y0, x1, y1),
         "bbox_norm": (x0 / w_img, y0 / h_img, x1 / w_img, y1 / h_img),
+        'region_source': 'selected_bbox' if nail_bbox is not None else 'finger_estimate',
     }, None
 
 

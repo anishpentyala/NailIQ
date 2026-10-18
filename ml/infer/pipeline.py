@@ -1,5 +1,6 @@
 from . import (
     beaus_lines,
+    appearance,
     classifier,
     clubbing,
     color_classifier,
@@ -15,10 +16,13 @@ from . import (
     melanonychia,
     muehrckes_lines,
     nail_region,
+    nail_locator,
+    onychogryphosis,
     onycholysis,
     pallor,
     pitting,
     skin_tone,
+    specialists,
     splinter_hemorrhages,
     terrys_nails,
     validation_policy,
@@ -46,6 +50,7 @@ _COLOR_CONDITIONS = (
     muehrckes_lines,
     splinter_hemorrhages,
     pitting,
+    onychogryphosis,
 )
 
 
@@ -107,10 +112,42 @@ def _extract(image_b64, require_keypoints=True):
     return contour, keypoints, None
 
 
-def validate_photo(image_b64, require_keypoints=True):
+def validate_photo(image_b64, require_keypoints=True, top_nail_bbox=None):
     """Quick check used right after capture, before the full /analyze round trip."""
+    if not require_keypoints and top_nail_bbox is not None:
+        image = decode_base64_image(image_b64)
+        if image is None:
+            return False, 'invalid_image'
+        if is_flat_frame(image):
+            return False, 'camera_feed_blank'
+        if focus_score(image) < BLUR_THRESHOLD:
+            return False, 'too_blurry'
+        reason = nail_locator.roi_quality(image, top_nail_bbox)
+        return reason is None, reason
     _, _, failure_reason = _extract(image_b64, require_keypoints=require_keypoints)
+    if (require_keypoints and failure_reason
+            and color_classifier.model_metadata().get('validated_appearance_conditions')):
+        # A readable finger can advance to top-photo appearance screening. It does
+        # not make the failed side measurement valid.
+        _, _, contour_failure = _extract(image_b64, require_keypoints=False)
+        if contour_failure is None:
+            return True, None
     return failure_reason is None, failure_reason
+
+
+def propose_nail_bbox(image_b64):
+    image = decode_base64_image(image_b64)
+    if image is None or is_flat_frame(image) or focus_score(image) < BLUR_THRESHOLD:
+        return None
+    proposals = nail_locator.detect(image)
+    if proposals:
+        return proposals[0]['bbox']
+    contour, validation = extract_best_contour(image)
+    if validation['is_valid']:
+        region, reason = nail_region.compute_nail_region(image, contour)
+        if not reason:
+            return list(region['bbox_norm'])
+    return None
 
 
 def analyze_side_profile(side_image_b64):
@@ -155,7 +192,7 @@ def _photo_quality(image):
     return image_quality.photo_quality(focus_score(image))
 
 
-def analyze_top_color(top_image_b64):
+def analyze_top_color(top_image_b64, top_nail_bbox=None):
     """Color/texture findings (see _COLOR_CONDITIONS) from the top-down photo.
 
     Returns (findings, overlay, quality). overlay is {"top_bbox_norm":
@@ -170,6 +207,13 @@ def analyze_top_color(top_image_b64):
     failure the color findings come back inconclusive with the same reason rather
     than measuring color on a region that wasn't reliably located.
     """
+    from . import routing
+    try:
+        runtime = routing.configured_runtime()
+    except (OSError, ValueError, TypeError, KeyError):
+        return _color_inconclusive('routing_configuration_invalid'), {'top_bbox_norm': None, 'skin_ita': None}, _photo_quality(None)
+    if runtime is not None:
+        return runtime.top(top_image_b64, top_nail_bbox)
     no_overlay = {"top_bbox_norm": None, "skin_ita": None}
     image = decode_base64_image(top_image_b64)
     if image is None:
@@ -179,28 +223,53 @@ def analyze_top_color(top_image_b64):
         return _color_inconclusive("camera_feed_blank"), no_overlay, quality
     if focus_score(image) < BLUR_THRESHOLD:
         return _color_inconclusive("too_blurry"), no_overlay, quality
+    bbox = top_nail_bbox
+    roi_mode = 'assisted' if bbox is not None else 'legacy'
+    if bbox is None:
+        proposals = nail_locator.detect(image)
+        if proposals:
+            bbox, roi_mode = proposals[0]['bbox'], 'detector'
+    if bbox is not None:
+        reason = nail_locator.roi_quality(image, bbox)
+        if reason:
+            return _color_inconclusive(reason), no_overlay, quality
     contour, validation = extract_best_contour(image)
-    if not validation["is_valid"]:
-        return _color_inconclusive(validation["reason"]), no_overlay, quality
-    region, reason = nail_region.compute_nail_region(image, contour)
-    if reason:
+    region, reason = ((nail_region.compute_nail_region(image, contour, nail_bbox=bbox) if bbox is not None
+                       else nail_region.compute_nail_region(image, contour)) if validation['is_valid']
+                      else (None, validation['reason']))
+    if reason and bbox is None:
         return _color_inconclusive(reason), no_overlay, quality
+    if region is None:
+        findings = _color_inconclusive(reason)
+        region = {'bbox_norm': bbox, 'skin_ita': None}
+    else:
+        quality = image_quality.photo_quality(
+            focus_score(image), image_quality.glare_fraction(region['V']),
+            image_quality.polish_fraction(region['S']))
+        findings = [c.build_finding(region) for c in _COLOR_CONDITIONS]
+    cnn_region = {**region, 'bbox_norm': bbox} if bbox is not None else region
     # Region located: refine quality with glare/polish measured on the actual nail plate.
-    quality = image_quality.photo_quality(
-        focus_score(image),
-        image_quality.glare_fraction(region["V"]),
-        image_quality.polish_fraction(region["S"]),
-    )
-    findings = [c.build_finding(region) for c in _COLOR_CONDITIONS]
+    pred = None
 
     # Optional trained-CNN second opinion: where it has a confident call on one of its
     # covered conditions it leads, else the classical heuristic stands (see color_fusion).
     # Gated by is_available() and wrapped so the CNN can never break the classical track.
     if color_classifier.is_available():
         try:
-            pred = color_classifier.predict_from_region(image, region)
-            findings = color_fusion.fuse(findings, pred, color_classifier.app_conditions())
+            pred = color_classifier.predict_from_region(image, cnn_region)
+            if 'V' in region:
+                findings = color_fusion.fuse(findings, pred, color_classifier.app_conditions())
+            else:
+                findings = color_fusion.fuse_roi(findings, pred, color_classifier.app_conditions())
         except Exception:  # noqa: BLE001 -- ML must never break the color response
+            pass
+
+    # Signs with a dedicated fine-tuned specialist (specialists.ENABLED: the heuristics are
+    # near-chance on them); same never-break-the-response contract as the CNN above.
+    if cnn_region.get('bbox_norm') is not None:
+        try:
+            findings = specialists.apply(findings, image, cnn_region['bbox_norm'])
+        except Exception:  # noqa: BLE001
             pass
 
     # Honest skin-tone gating: the color findings are largely unvalidated on darker
@@ -208,17 +277,19 @@ def analyze_top_color(top_image_b64):
     # when this scan's skin tone is under-represented in our data.
     findings = skin_tone.apply_coverage(findings, region["skin_ita"])
     # Conditions that failed the end-to-end evidence bar don't get to assert a verdict.
-    findings = validation_policy.apply(findings)
+    findings = validation_policy.apply(findings, roi_mode)
 
     overlay = {
-        "top_bbox_norm": list(region["bbox_norm"]),
+        "top_bbox_norm": list(cnn_region["bbox_norm"]),
+        'roi_mode': roi_mode,
+        '_prediction': pred,
         "skin_ita": region["skin_ita"],
         "skin_tone": skin_tone.skin_tone_summary(region["skin_ita"]),
     }
     return findings, overlay, quality
 
 
-def analyze(side_image_b64, top_image_b64):
+def analyze(side_image_b64, top_image_b64, top_nail_bbox=None):
     """Full response: geometry (side photo) fused with the trained-CNN track, plus
     the color/texture track on the top-down photo.
 
@@ -234,17 +305,25 @@ def analyze(side_image_b64, top_image_b64):
     -- the app still works, with full color findings, in a torch-free environment.
     """
     geometry = analyze_side_profile(side_image_b64)["findings"]
-    color, overlay, top_quality = analyze_top_color(top_image_b64)
+    color, overlay, top_quality = analyze_top_color(top_image_b64, top_nail_bbox)
+    prediction = overlay.pop('_prediction', None)
     side_quality = _photo_quality(decode_base64_image(side_image_b64))
     image_quality_resp = {"side": side_quality, "top": top_quality}
 
-    if not classifier.is_available():
-        return {"findings": geometry + color, "overlay": overlay, "image_quality": image_quality_resp}
-
-    ml_top = _ml_finding(top_image_b64, "top")
-    overlay["gradcam"] = _gradcam_b64(top_image_b64)
+    if classifier.is_available():
+        ml_top = (_ml_finding(top_image_b64, 'top')
+                  if any(f['verdict'] != 'inconclusive' for f in geometry) else None)
+        geometry = fusion.fuse(geometry, ml_top)
+        overlay['gradcam'] = _gradcam_b64(top_image_b64) if ml_top is not None else None
+    routed_shapes = overlay.pop('_routed_shapes', None)
+    if routed_shapes is not None:
+        from .routing import merge_shape
+        overlay['geometry_evidence'] = {finding['label']: finding for finding in geometry}
+        geometry = [merge_shape(finding, routed_shapes[finding['label']]) for finding in geometry]
+    else:
+        geometry = appearance.fallback(geometry, prediction, overlay.get('roi_mode', 'legacy'))
     return {
-        "findings": fusion.fuse(geometry, ml_top) + color,
+        "findings": geometry + color,
         "overlay": overlay,
         "image_quality": image_quality_resp,
     }

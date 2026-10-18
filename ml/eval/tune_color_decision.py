@@ -37,6 +37,7 @@ the TEST columns (never used for selection) are the honest numbers.
         --valid ml/eval/e2e_valid_baseline.json --test ml/eval/e2e_test_baseline.json
 """
 import argparse
+import hashlib
 import itertools
 import json
 import sys
@@ -46,7 +47,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
 
-from ml.infer import color_classifier, color_fusion  # noqa: E402
+from ml.infer import appearance, color_classifier, color_fusion  # noqa: E402
 
 MAX_FP_RATE = 0.03
 ABSTAIN_SLACK = 0.02
@@ -55,6 +56,9 @@ MAX_POLICY_FP = 0.05
 FLOORS = [None] + [round(0.25 + 0.05 * i, 2) for i in range(14)]  # None = shipped value
 OVRS = [None, 0.15, 0.2, 0.25, 0.3, 0.4]
 SUPPORTS = [None, 0.02, 0.05, 0.1, 0.2]
+_RUN_COVERAGE = None
+_RUN_APPEARANCE_RULES = {}
+_RUN_SHAPE_ELIGIBLE = False
 
 
 @contextmanager
@@ -75,18 +79,30 @@ def patched(condition, floor, ovr, support):
 
 
 def replay(r, c):
-    f = r["findings"][c]
-    if c not in color_classifier.app_conditions() or not r["probs"]:
+    f = r['findings'].get(c)
+    covered = _RUN_COVERAGE if _RUN_COVERAGE is not None else color_classifier.app_conditions()
+    if c in appearance.SHAPES and c in covered and r.get('probs'):
+        eligible = r.get('appearance_eligible', {}).get(c, _RUN_SHAPE_ELIGIBLE)
+        if eligible or (f and f.get('evidence_type') == 'appearance'):
+            return appearance.signal(c, r['probs'], _RUN_APPEARANCE_RULES.get(c))[0]
+    if f is None:
+        return 'inconclusive'
+    if c not in covered or not r["probs"]:
         return f["verdict"]
+    if c in appearance.SHAPES:
+        return appearance.signal(c, r['probs'], _RUN_APPEARANCE_RULES.get(c))[0]
     failure = f["failure_reason"] if f["heuristic"] == "inconclusive" else None
     heur = {"label": c, "display_name": "", "value": None, "unit": None,
             "verdict": f["heuristic"], "confidence": 0.5, "failure_reason": failure}
-    return color_fusion._fuse_one(heur, color_classifier.opinion_from_probs(r["probs"]))["verdict"]
+    prediction = color_classifier.opinion_from_probs(r['probs'])
+    if f.get('roi_only'):
+        return color_fusion.fuse_roi([heur], prediction, covered)[0]['verdict']
+    return color_fusion._fuse_one(heur, prediction)['verdict']
 
 
 def strict(records, c):
-    pos = [replay(r, c) for r in records if c in r["labels"] and c in r["findings"]]
-    hea = [replay(r, c) for r in records if r["labels"] == ["healthy"] and c in r["findings"]]
+    pos = [replay(r, c) for r in records if c in r['labels']]
+    hea = [replay(r, c) for r in records if r['labels'] == ['healthy']]
     frac = lambda v, k: v.count(k) / len(v) if v else None  # noqa: E731
     return {"recall": frac(pos, "outside"), "fp": frac(hea, "outside"),
             "abstain_pos": frac(pos, "inconclusive"), "abstain_healthy": frac(hea, "inconclusive"),
@@ -119,7 +135,9 @@ def tune_condition(valid, c):
         # (no-op) config so the caller's fails-validation-policy check still applies.
         return (None, None, None), base
     cands = []
-    for floor, ovr, support in itertools.product(FLOORS, OVRS, SUPPORTS):
+    grid = (itertools.product([None] + [round(0.1 + 0.05 * i, 2) for i in range(18)], [None], [None])
+            if c in appearance.SHAPES else itertools.product(FLOORS, OVRS, SUPPORTS))
+    for floor, ovr, support in grid:
         with patched(c, floor, ovr, support):
             m = strict(valid, c)
         if m["recall"] is None or m["fp"] is None:
@@ -145,25 +163,59 @@ def pct(x):
 
 
 def main():
+    global _RUN_COVERAGE, _RUN_APPEARANCE_RULES, _RUN_SHAPE_ELIGIBLE, MAX_FP_RATE
     ap = argparse.ArgumentParser()
     ap.add_argument("--valid", type=Path, required=True)
     ap.add_argument("--test", type=Path)
     ap.add_argument("--out", type=Path, help="write chosen tables as JSON")
+    ap.add_argument("--model-dir", type=Path, help="Candidate manifest; never changes shipped models")
+    ap.add_argument("--exclusions", type=Path)
+    ap.add_argument("--min-recall", type=float, default=MIN_RECALL)
+    ap.add_argument('--max-fp', type=float, default=MAX_POLICY_FP)
     args = ap.parse_args()
+    if not 0 <= args.min_recall <= 1:
+        ap.error("--min-recall must be between 0 and 1")
+    if not 0 <= args.max_fp <= MAX_POLICY_FP:
+        ap.error('--max-fp must be between 0 and 0.05')
+    MAX_FP_RATE = args.max_fp
+    if args.model_dir:
+        color_classifier._MODELS = args.model_dir.resolve()
+        color_classifier._LABELS_PATH = color_classifier._MODELS / "nail_color_classifier_labels.json"
+        if not color_classifier._LABELS_PATH.is_file():
+            ap.error("Candidate manifest is missing")
     valid = json.loads(args.valid.read_text())
+    cache_meta_path = args.valid.with_suffix('.meta.json')
+    cache_meta = json.loads(cache_meta_path.read_text()) if cache_meta_path.is_file() else {}
+    _RUN_SHAPE_ELIGIBLE = (cache_meta.get('include_shapes') is True
+                           and 'side geometry excluded' in cache_meta.get('scope', ''))
     test = json.loads(args.test.read_text()) if args.test else None
+    # Freeze coverage for this immutable candidate run instead of rereading the
+    # manifest millions of times inside the threshold search.
+    color_classifier.configure_manifest_rules()
+    metadata = color_classifier.model_metadata()
+    _RUN_APPEARANCE_RULES = metadata.get('appearance_rules', {})
+    _RUN_COVERAGE = frozenset(color_classifier.app_conditions() + metadata.get('appearance_conditions', []))
+    if args.exclusions:
+        from scripts.prepare_color_exclusions import excludes_source
+        exclusions = json.loads(args.exclusions.read_text())
+        valid = [r for r in valid if not excludes_source(REPO / r["path"], exclusions)]
+        if test is not None:
+            test = [r for r in test if not excludes_source(REPO / r["path"], exclusions)]
 
     bad, rounding = parity(valid)
     print(f"parity: {len(bad)} mismatches, {rounding} at-cutoff rounding cases" + (f" e.g. {bad[:3]}" if bad else ""))
     if bad:
         raise SystemExit("simulation does not match the pipeline -- fix before tuning")
 
-    chosen, unvalidated = {}, []
+    chosen, effective, unvalidated = {}, {}, []
     print(f"\n{'condition':21s} {'(floor, ovr, support)':>22s} | split  recall  FP   abstain(pos/healthy) | shipped recall  FP   abstain")
-    for c in color_classifier.app_conditions():
+    for c in sorted(_RUN_COVERAGE):
         cfg, vm = tune_condition(valid, c)
         chosen[c] = cfg
-        if vm["recall"] is None or vm["recall"] < MIN_RECALL or vm["fp"] > MAX_POLICY_FP:
+        with patched(c, *cfg):
+            effective[c] = [color_classifier.CLASS_CONFIDENCE_THRESHOLD.get(c, 0.5 if c in appearance.SHAPES else color_classifier.CONFIDENCE_THRESHOLD),
+                            color_fusion.OVR_THRESHOLD.get(c), color_fusion.HEURISTIC_MIN_CNN_SUPPORT.get(c)]
+        if vm["recall"] is None or vm["recall"] < args.min_recall or vm["fp"] is None or vm["fp"] > MAX_POLICY_FP:
             unvalidated.append(c)
         for name, recs in (("valid", valid), ("test", test)):
             if recs is None:
@@ -176,9 +228,14 @@ def main():
                   f"      {pct(b['recall'])} {pct(b['fp'])} {pct(b['abstain_pos'])}/{pct(b['abstain_healthy'])}"
                   f"  (n_pos={t['n_pos']}, n_healthy={t['n_healthy']})")
     if args.out:
-        args.out.write_text(json.dumps({"rules": chosen, "unvalidated": unvalidated}, indent=1))
+        args.out.write_text(json.dumps({"rules": effective, 'search_configs': chosen, "unvalidated": unvalidated,
+                                      "min_recall": args.min_recall,
+                                      'max_fp': MAX_FP_RATE,
+                                      'valid_cache_sha256': hashlib.sha256(args.valid.read_bytes()).hexdigest(),
+                                      'candidate_manifest_sha256': hashlib.sha256(color_classifier._LABELS_PATH.read_bytes()).hexdigest(),
+                                      "scope": "VALID-selected rules; production validation gates remain unchanged"}, indent=1))
     print("\nchosen (floor, ovr, support):", json.dumps(chosen))
-    print(f"fails validation policy on VALID (recall < {MIN_RECALL:.0%} or FP > {MAX_POLICY_FP:.0%}):", unvalidated)
+    print(f"fails requested policy on VALID (recall < {args.min_recall:.0%} or FP > {MAX_POLICY_FP:.0%}):", unvalidated)
 
 
 if __name__ == "__main__":

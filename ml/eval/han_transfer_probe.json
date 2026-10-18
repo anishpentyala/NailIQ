@@ -1,0 +1,81 @@
+{
+  "melanonychia": {
+    "train_pos": 239,
+    "train_healthy": 2543,
+    "threshold": 0.18,
+    "han_oof_auc": 0.998,
+    "han_test": {
+      "pos": 259,
+      "recall": 0.985,
+      "healthy_fp": 0.033
+    },
+    "independent": {
+      "pos": 60,
+      "pos_by_source": {
+        "arthitaya": 60
+      },
+      "recall": 0.717,
+      "recall_by_source": {
+        "arthitaya": 0.717
+      },
+      "real_healthy_n": 1626,
+      "real_healthy_fp": 0.312,
+      "ghana_healthy_fp": 1.0,
+      "auc_vs_real_healthy": 0.805
+    }
+  },
+  "onycholysis": {
+    "train_pos": 606,
+    "train_healthy": 2543,
+    "threshold": 0.528,
+    "han_oof_auc": 0.993,
+    "han_test": {
+      "pos": 151,
+      "recall": 0.914,
+      "healthy_fp": 0.036
+    },
+    "independent": {
+      "pos": 100,
+      "pos_by_source": {
+        "arthitaya": 60,
+        "nihati": 40
+      },
+      "recall": 0.76,
+      "recall_by_source": {
+        "arthitaya": 0.933,
+        "nihati": 0.5
+      },
+      "real_healthy_n": 1626,
+      "real_healthy_fp": 0.118,
+      "ghana_healthy_fp": 0.078,
+      "auc_vs_real_healthy": 0.905
+    }
+  },
+  "leukonychia": {
+    "train_pos": 79,
+    "train_healthy": 2543,
+    "threshold": 0.388,
+    "han_oof_auc": 0.964,
+    "han_test": {
+      "pos": 7,
+      "recall": 0.571,
+      "healthy_fp": 0.031
+    },
+    "independent": {
+      "pos": 109,
+      "pos_by_source": {
+        "arthitaya": 60,
+        "nihati": 49
+      },
+      "recall": 0.367,
+      "recall_by_source": {
+        "arthitaya": 0.4,
+        "nihati": 0.327
+      },
+      "real_healthy_n": 1626,
+      "real_healthy_fp": 0.068,
+      "ghana_healthy_fp": 0.0,
+      "auc_vs_real_healthy": 0.8
+    }
+  }
+}

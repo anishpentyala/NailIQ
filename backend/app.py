@@ -11,7 +11,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ml.infer.pipeline import analyze as run_analysis, validate_photo  # noqa: E402
+from ml.infer.pipeline import analyze as run_analysis, validate_photo, propose_nail_bbox  # noqa: E402
+from ml.infer.nail_locator import valid_bbox  # noqa: E402
+from ml.infer.color_classifier import model_metadata  # noqa: E402
 from models import Feedback, ScanRecord, db  # noqa: E402
 
 app = Flask(__name__)
@@ -83,7 +85,11 @@ def analyze():
     if not _valid_b64_image(data["side_image"]) or not _valid_b64_image(data["top_image"]):
         return jsonify({"error": "'side_image' and 'top_image' must be valid base64 image strings"}), 400
 
-    result = run_analysis(data["side_image"], data["top_image"])
+    box = data.get('top_nail_bbox')
+    if 'top_nail_bbox' in data and not valid_bbox(box):
+        return jsonify({'error': 'top_nail_bbox must be [x0,y0,x1,y1] within 0..1'}), 400
+    result = (run_analysis(data['side_image'], data['top_image'], top_nail_bbox=box)
+              if box is not None else run_analysis(data['side_image'], data['top_image']))
 
     try:
         record = ScanRecord(findings_json=json.dumps(result["findings"]))
@@ -158,8 +164,13 @@ def validate_photo_route():
 
     # side photo needs full keypoint detection, top photo just needs a finger in frame
     require_keypoints = data["view"] == "side"
-    ok, failure_reason = validate_photo(data["image"], require_keypoints=require_keypoints)
-    return jsonify({"ok": ok, "failure_reason": failure_reason})
+    box = data.get('top_nail_bbox')
+    if 'top_nail_bbox' in data and (require_keypoints or not valid_bbox(box)):
+        return jsonify({'error': 'top_nail_bbox requires top view and valid normalized coordinates'}), 400
+    ok, failure_reason = validate_photo(data['image'], require_keypoints=require_keypoints, top_nail_bbox=box)
+    proposal = box if box is not None else (propose_nail_bbox(data['image']) if not require_keypoints else None)
+    return jsonify({'ok': ok, 'failure_reason': failure_reason, 'top_nail_bbox': proposal,
+                    'roi_review_available': 'assisted' in model_metadata().get('validated_roi_modes', [])})
 
 
 if __name__ == "__main__":

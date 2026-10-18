@@ -1,6 +1,6 @@
 """Tuned color decision rules (color_fusion OVR / heuristic-support tables) and the
 validation policy. Synthetic dicts only."""
-from ml.infer import color_classifier, color_fusion, validation_policy
+from ml.infer import color_classifier, color_fusion, onychogryphosis, validation_policy
 
 
 def _heur(label, verdict):
@@ -64,3 +64,25 @@ def test_policy_withholds_unvalidated_verdicts_but_keeps_them_for_feedback():
     assert out[0]["unvalidated_verdict"] == "outside"
     assert out[1]["verdict"] == "outside"
     assert "unvalidated_verdict" not in out[2]
+
+
+def _placeholder():
+    return onychogryphosis.build_finding(region=None)
+
+
+def test_cnn_only_condition_follows_confident_cnn_call():
+    out = color_fusion._fuse_one(_placeholder(), _opinion(onychogryphosis=0.9, healthy=0.1))
+    assert out["verdict"] == "outside" and out["agreement"] == "ml_only"
+    out = color_fusion._fuse_one(_placeholder(), _opinion(healthy=0.9))
+    assert out["verdict"] == "within"
+
+
+def test_cnn_only_condition_is_inconclusive_without_a_confident_call():
+    out = color_fusion._fuse_one(_placeholder(), _opinion(healthy=0.3, pitting=0.25, pallor=0.2))
+    assert out["verdict"] == "inconclusive" and out["failure_reason"] == "no_confident_ai_call"
+    out = color_fusion._fuse_one(_placeholder(), None)
+    assert out["verdict"] == "inconclusive"
+
+
+def test_cnn_only_placeholder_never_claims_within_on_its_own():
+    assert _placeholder()["verdict"] == "inconclusive"

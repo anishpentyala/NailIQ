@@ -64,6 +64,7 @@ Usage (from repo root):
 """
 
 import hashlib
+import argparse
 import re
 import shutil
 from pathlib import Path
@@ -111,6 +112,13 @@ NIHATI = REPO / "data" / "raw" / "nail-disease-classification-nihati"
 # Only its `anemic_nail` class is used -- see the module docstring for why the
 # other classes/images are excluded.
 ANEMIA = REPO / "data" / "raw" / "anemia-nails-detection"
+ARTHITAYA = REPO / 'data/raw/nail-dataset-arthitaya/Nail'
+ARTHITAYA_SLUGS = {
+    'black line': 'melanonychia', 'white spot': 'leukonychia',
+    'onycholysis': 'onycholysis', 'beau_s line': 'beaus_lines',
+    'terry_s nail': 'terrys_nails', 'clubbing': 'clubbing',
+    'normal': 'healthy', 'mees_ line': 'mees_lines',
+}
 
 SPLITS = ["train", "valid", "test"]
 BOX_PAD_FRAC = 0.15        # pad each side of the box; a little nail-fold context helps
@@ -146,13 +154,10 @@ CHAA_SLUGS = {
     "Terry-s nail": "terrys_nails",
 }
 
-# A fourth source, data/raw/nail-dataset-arthitaya (Kaggle, the only dataset found
-# anywhere with melanonychia labels), was tried and DROPPED: its Kaggle license is
-# "Unknown" (data/raw/LICENSES.md), an unresolved legal blocker for a model whose
-# weights might ever be shared or shipped. Rather than train on unlicensed data and
-# caveat it in a comment, melanonychia is CNN-uncovered -- it stays on the classical
-# heuristic alone (ml/infer/melanonychia.py). Re-add only once a permissively-licensed
-# melanonychia source turns up.
+# Arthitaya was previously excluded because its public license is Unknown.
+# Explicit user-reported permission now authorizes isolated candidate use via
+# --include-authorized (data/source_authorizations.json). This does not change its
+# public license or establish clinical labels. Production coverage is manifest-led.
 
 
 def load_names(root):
@@ -385,12 +390,37 @@ def add_anemia(totals):
     print(f"  anemia: +{added}")
 
 
+def arthitaya_samples(split=None):
+    for folder, label in ARTHITAYA_SLUGS.items():
+        for path in sorted((ARTHITAYA / folder).glob('*')):
+            if path.suffix.lower() not in {'.jpg', '.jpeg', '.png'}:
+                continue
+            key = f'{folder}-{path.stem}'
+            assigned = bucket_split(key)
+            if split is None or assigned == split:
+                yield path, label, key, assigned
+
+
+def add_arthitaya(totals):
+    for path, label, group, split in arthitaya_samples():
+        target = OUT / split / label
+        target.mkdir(parents=True, exist_ok=True)
+        name = re.sub(r'[^A-Za-z0-9]+', '_', group)
+        shutil.copy2(path, target / ('arthitaya__' + name + path.suffix.lower()))
+        totals[split] = totals.get(split, 0) + 1
+
+
 def main():
+    global OUT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out', type=Path, default=OUT)
+    parser.add_argument('--include-authorized', action='store_true', help='Include user-authorized Arthitaya data')
+    args = parser.parse_args()
+    OUT = args.out.resolve()
     if not KNM.exists():
         raise SystemExit(f"KNM dataset not found at {KNM} -- run scripts/download_data.py first.")
-    if OUT.exists():
-        print(f"Removing existing {OUT}")
-        shutil.rmtree(OUT)
+    if OUT.exists() and any(OUT.iterdir()):
+        raise SystemExit('Choose an empty --out directory; existing datasets are preserved')
 
     totals = {}
     print("Ingesting KNM box crops (keep source split)...")
@@ -403,15 +433,8 @@ def main():
     add_nihati(totals)
     print("Adding anemia anemic_nail crops (pallor)...")
     add_anemia(totals)
-    # arthitaya (data/raw/nail-dataset-arthitaya) was DROPPED as a training source: its
-    # Kaggle license is "Unknown" (see data/raw/LICENSES.md), an unresolved legal blocker
-    # for any model whose weights might be shared or shipped. Rather than keep training on
-    # unlicensed data while a caveat comment sits nearby, add_arthitaya() is no longer
-    # called -- melanonychia drops back to CNN-uncovered / heuristic-only
-    # (ml/infer/melanonychia.py), which is the same honest fallback this dataset's own
-    # code comment described before it was ever integrated ("melanonychia stays
-    # heuristic-only, no data anywhere else"). Re-enable only once the license is
-    # confirmed permissive, or a differently-licensed melanonychia source is found.
+    if args.include_authorized:
+        add_arthitaya(totals)
 
     print("=" * 60)
     print(f"Done. Color-condition crops written to {OUT}")

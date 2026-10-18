@@ -1,0 +1,42 @@
+{
+  "arthitaya": {
+    "threshold": 0.053,
+    "n_pos": 60,
+    "n_healthy": 164,
+    "recall": 0.983,
+    "healthy_fp": 0.091,
+    "auc": 0.997,
+    "oracle_recall_at_5pct_fp": 0.983,
+    "ghana_fp": NaN,
+    "cal_fp_check": 0.035,
+    "healthy_by_source_fp": {
+      "nihati": 0.0,
+      "chaa": 0.098,
+      "arthitaya": 0.15,
+      "knm": 0.038
+    }
+  },
+  "nihati": {
+    "threshold": 0.03,
+    "n_pos": 38,
+    "n_healthy": 379,
+    "recall": 0.868,
+    "healthy_fp": 0.15,
+    "auc": 0.919,
+    "oracle_recall_at_5pct_fp": 0.737,
+    "ghana_fp": NaN,
+    "cal_fp_check": 0.039,
+    "healthy_by_source_fp": {
+      "nihati": 0.171,
+      "chaa": 0.078,
+      "arthitaya": 0.333,
+      "knm": 0.038
+    }
+  },
+  "pooled": {
+    "n_pos": 98,
+    "recall": 0.939,
+    "n_healthy": 543,
+    "healthy_fp": 0.133
+  }
+}

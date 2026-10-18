@@ -34,6 +34,7 @@ def _make_tiny_jpeg():
 def client():
     """Fixture: Flask test client with a fresh temporary database."""
     app_module.app.config['TESTING'] = True
+    app_module._rate_hits.clear()
     with app_module.app.app_context():
         assert app_module.db.engine.url.database == _TEST_DB  # never the real DB
         app_module.db.drop_all()
@@ -111,6 +112,23 @@ class TestAnalyzeEndpoint:
 
 class TestValidatePhotoEndpoint:
     """Tests for POST /validate_photo."""
+
+    @pytest.mark.parametrize('box', [None, [0.2, 0.2, 0.1, 0.9], [0, 0, 2, 1], [False, 0, 1, 1]])
+    def test_invalid_nail_box_rejected_by_both_endpoints(self, client, box):
+        image = _make_tiny_jpeg()
+        assert client.post('/validate_photo', json={'image': image, 'view': 'top', 'top_nail_bbox': box}).status_code == 400
+        assert client.post('/analyze', json={'side_image': image, 'top_image': image, 'top_nail_bbox': box}).status_code == 400
+
+    def test_box_coordinates_forwarded_without_recropping_image(self, client, monkeypatch):
+        image = _make_tiny_jpeg()
+        box = [0.1, 0.2, 0.7, 0.9]
+        received = {}
+        def analyze(side, top, top_nail_bbox=None):
+            received.update(side=side, top=top, box=top_nail_bbox)
+            return {'findings': []}
+        monkeypatch.setattr(app_module, 'run_analysis', analyze)
+        assert client.post('/analyze', json={'side_image': image, 'top_image': image, 'top_nail_bbox': box}).status_code == 200
+        assert received == {'side': image, 'top': image, 'box': box}
 
     def test_validate_photo_top_view_valid(self, client):
         """Valid image + view='top' returns 200 with ok and failure_reason keys."""

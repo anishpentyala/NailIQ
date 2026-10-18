@@ -63,6 +63,11 @@ their verdicts at all).
 
 LOW_SAMPLE_CONDITIONS = {"onycholysis", "leukonychia", "lindsays_nails"}
 
+# Conditions with no classical measurement at all (see ml/infer/onychogryphosis.py):
+# the CNN's confident call is the whole verdict, and with no confident call the answer
+# is inconclusive rather than the placeholder heuristic's.
+CNN_ONLY_CONDITIONS = {"onychogryphosis"}
+
 # The two tables below are chosen by ml/eval/tune_color_decision.py on the VALID split
 # of the end-to-end /analyze eval (ml/eval/eval_end_to_end.py) and scored once on TEST;
 # re-run it after any retrain. An absent condition keeps the original behaviour.
@@ -78,6 +83,8 @@ OVR_THRESHOLD = {
     "pitting": 0.15,
     "splinter_hemorrhages": 0.3,  # NEW 2026-09-16 retrain
     "lindsays_nails": 0.15,       # NEW 2026-09-16 retrain -- class restored via NIHATI
+    # 2026-09-23, CNN-only: strict valid 53.8% -> 72.3% (FP 0.0%), test 50.0% -> 67.6% (FP 0.0%)
+    "onychogryphosis": 0.15,
 }
 
 # HEURISTIC_MIN_CNN_SUPPORT: a heuristic-only "outside" on C (CNN has no opinion on C)
@@ -126,11 +133,15 @@ HEURISTIC_MIN_CNN_SUPPORT = {
 # docstring for why that gap matters.
 
 
-def _cnn_signal_for(condition, pred):
+_DEFAULT_OVR = dict(OVR_THRESHOLD)
+_DEFAULT_SUPPORT = dict(HEURISTIC_MIN_CNN_SUPPORT)
+
+
+def _cnn_signal_for(condition, pred, rules=None):
     """Map a CNN prediction onto one condition's within/outside axis (or no opinion)."""
     if pred is None:
         return None, None
-    ovr = OVR_THRESHOLD.get(condition)
+    ovr = (OVR_THRESHOLD if rules is None else rules['ovr']).get(condition)
     p_condition = (pred.get("probs") or {}).get(condition, 0.0)
     if ovr is not None and p_condition >= ovr:
         return "outside", p_condition
@@ -148,7 +159,7 @@ def _boost(heur_conf, cnn_conf):
     return min(0.97, round((heur_conf + cnn_conf) / 2 + 0.15, 2))
 
 
-def _fuse_one(heur, pred):
+def _fuse_one(heur, pred, rules=None):
     """heur: a classical colour finding for a CNN-covered condition. pred: CNN dict."""
     base = {
         "label": heur["label"],
@@ -164,16 +175,24 @@ def _fuse_one(heur, pred):
         },
     }
 
+    if heur["label"] in CNN_ONLY_CONDITIONS:
+        cnn_verdict, cnn_conf = _cnn_signal_for(heur["label"], pred, rules)
+        if cnn_verdict is None:
+            return {**base, "verdict": "inconclusive", "confidence": 0.0,
+                    "agreement": "ml_no_opinion", "failure_reason": "no_confident_ai_call"}
+        return {**base, "verdict": cnn_verdict, "confidence": cnn_conf,
+                "agreement": "ml_only", "failure_reason": None}
+
     # If the region couldn't be measured, the heuristic is already inconclusive and the
     # CNN saw the same unlocatable region -- stay inconclusive.
     if heur["verdict"] == "inconclusive":
         return {**base, "verdict": "inconclusive", "confidence": 0.0,
                 "agreement": "region_unavailable", "failure_reason": heur["failure_reason"]}
 
-    cnn_verdict, cnn_conf = _cnn_signal_for(heur["label"], pred)
+    cnn_verdict, cnn_conf = _cnn_signal_for(heur["label"], pred, rules)
 
     if cnn_verdict is None:  # CNN has no confident opinion on this condition
-        support = HEURISTIC_MIN_CNN_SUPPORT.get(heur["label"])
+        support = (HEURISTIC_MIN_CNN_SUPPORT if rules is None else rules['support']).get(heur["label"])
         probs = (pred or {}).get("probs")
         if heur["verdict"] == "outside" and support is not None and probs \
                 and probs.get(heur["label"], 0.0) < support:
@@ -208,4 +227,35 @@ def fuse(color_findings, pred, covered_conditions):
     out = []
     for heur in color_findings:
         out.append(_fuse_one(heur, pred) if heur["label"] in covered else heur)
+    return out
+
+
+def fuse_roi(findings, pred, covered_conditions, rules=None):
+    """A located nail can support AI without a silhouette-based measurement.
+
+    Low-sample disagreement/measurement safeguards still apply. No measurement
+    is invented from the bounding rectangle.
+    """
+    covered = set(covered_conditions)
+    out = []
+    for finding in findings:
+        condition = finding['label']
+        if condition not in covered:
+            out.append(finding)
+            continue
+        base = {**finding, 'track_used': 'color_fused', 'ml': pred,
+                'color': {'verdict': 'inconclusive', 'confidence': 0}, 'agreement': 'ml_no_opinion',
+                'roi_only': True}
+        if condition in LOW_SAMPLE_CONDITIONS:
+            out.append({**base, 'failure_reason': 'insufficient_data_for_confident_call'})
+            continue
+        verdict, confidence = _cnn_signal_for(condition, pred, rules)
+        if verdict is None:
+            out.append({**base, 'failure_reason': 'no_confident_ai_call'})
+            continue
+        out.append({**base, 'verdict': verdict, 'confidence': confidence,
+            'value': None, 'unit': None, 'track_used': 'color_fused',
+            'agreement': 'ml_only', 'failure_reason': None,
+            'evidence_type': 'appearance', 'color': {'verdict': 'inconclusive', 'confidence': 0},
+            'ml': pred})
     return out
