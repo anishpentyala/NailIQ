@@ -1,0 +1,80 @@
+{
+ "n": 750,
+ "all_abstained": 750,
+ "any_flag": 0,
+ "per_condition": {
+  "beaus_lines": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "cyanosis": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "koilonychia": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "leukonychia": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "lindsays_nails": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "melanonychia": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "muehrckes_lines": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "onychogryphosis": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "onycholysis": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "pitting": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "splinter_hemorrhages": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "terrys_nails": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  }
+ },
+ "flagged": []
+}

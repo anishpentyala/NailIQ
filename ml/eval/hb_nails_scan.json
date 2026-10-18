@@ -1,0 +1,294 @@
+{
+ "n": 750,
+ "all_abstained": 705,
+ "any_flag": 26,
+ "per_condition": {
+  "beaus_lines": {
+   "outside": 0,
+   "within": 44,
+   "inconclusive": 706,
+   "fp_of_all": 0.0
+  },
+  "cyanosis": {
+   "outside": 0,
+   "within": 41,
+   "inconclusive": 709,
+   "fp_of_all": 0.0
+  },
+  "koilonychia": {
+   "outside": 5,
+   "within": 2,
+   "inconclusive": 743,
+   "fp_of_all": 0.007
+  },
+  "leukonychia": {
+   "outside": 0,
+   "within": 45,
+   "inconclusive": 705,
+   "fp_of_all": 0.0
+  },
+  "lindsays_nails": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "melanonychia": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  },
+  "muehrckes_lines": {
+   "outside": 22,
+   "within": 23,
+   "inconclusive": 705,
+   "fp_of_all": 0.029
+  },
+  "onychogryphosis": {
+   "outside": 1,
+   "within": 2,
+   "inconclusive": 747,
+   "fp_of_all": 0.001
+  },
+  "onycholysis": {
+   "outside": 1,
+   "within": 44,
+   "inconclusive": 705,
+   "fp_of_all": 0.001
+  },
+  "pitting": {
+   "outside": 1,
+   "within": 36,
+   "inconclusive": 713,
+   "fp_of_all": 0.001
+  },
+  "splinter_hemorrhages": {
+   "outside": 1,
+   "within": 39,
+   "inconclusive": 710,
+   "fp_of_all": 0.001
+  },
+  "terrys_nails": {
+   "outside": 0,
+   "within": 0,
+   "inconclusive": 750,
+   "fp_of_all": 0.0
+  }
+ },
+ "flagged": [
+  {
+   "patient": "2",
+   "nail": 2,
+   "hb": "108.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "5",
+   "nail": 1,
+   "hb": "84.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "5",
+   "nail": 2,
+   "hb": "84.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "19",
+   "nail": 0,
+   "hb": "148.0",
+   "flags": [
+    "koilonychia"
+   ]
+  },
+  {
+   "patient": "19",
+   "nail": 1,
+   "hb": "148.0",
+   "flags": [
+    "koilonychia",
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "21",
+   "nail": 0,
+   "hb": "144.0",
+   "flags": [
+    "splinter_hemorrhages"
+   ]
+  },
+  {
+   "patient": "21",
+   "nail": 1,
+   "hb": "144.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "29",
+   "nail": 0,
+   "hb": "145.0",
+   "flags": [
+    "koilonychia",
+    "muehrckes_lines",
+    "onychogryphosis"
+   ]
+  },
+  {
+   "patient": "32",
+   "nail": 0,
+   "hb": "156.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "33",
+   "nail": 0,
+   "hb": "99.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "62",
+   "nail": 0,
+   "hb": "141.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "82",
+   "nail": 0,
+   "hb": "117.0",
+   "flags": [
+    "koilonychia",
+    "onycholysis"
+   ]
+  },
+  {
+   "patient": "91",
+   "nail": 0,
+   "hb": "130.0",
+   "flags": [
+    "koilonychia",
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "99",
+   "nail": 2,
+   "hb": "151.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "144",
+   "nail": 1,
+   "hb": "127.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "176",
+   "nail": 1,
+   "hb": "58.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "215",
+   "nail": 2,
+   "hb": "136.0",
+   "flags": [
+    "pitting"
+   ]
+  },
+  {
+   "patient": "247",
+   "nail": 0,
+   "hb": "151.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "288",
+   "nail": 0,
+   "hb": "44.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "293",
+   "nail": 0,
+   "hb": "49.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "297",
+   "nail": 1,
+   "hb": "109.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "309",
+   "nail": 0,
+   "hb": "136.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "310",
+   "nail": 0,
+   "hb": "118.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "324",
+   "nail": 2,
+   "hb": "132.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "326",
+   "nail": 0,
+   "hb": "124.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  },
+  {
+   "patient": "339",
+   "nail": 2,
+   "hb": "139.0",
+   "flags": [
+    "muehrckes_lines"
+   ]
+  }
+ ]
+}
