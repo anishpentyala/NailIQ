@@ -23,7 +23,7 @@ def _patch(monkeypatch, probs, thr=0.1, available=("onycholysis", "leukonychia",
 
 
 def test_enabled_allowlist():
-    assert set(spec.ENABLED) == {"onycholysis", "leukonychia", "melanonychia"}
+    assert set(spec.ENABLED) == {"onycholysis", "leukonychia"}
 
 
 def test_outside_and_within_per_sign(monkeypatch):
@@ -33,7 +33,8 @@ def test_outside_and_within_per_sign(monkeypatch):
     assert out["onycholysis"]["track_used"] == "color_fused" and out["onycholysis"]["value"] is None
     assert 0.5 <= out["onycholysis"]["confidence"] <= 0.9
     assert out["leukonychia"]["verdict"] == "within" and out["leukonychia"]["display_name"] == "White nails (leukonychia)"
-    assert out["melanonychia"]["verdict"] == "outside" and out["melanonychia"]["display_name"] == "Dark nail band (melanonychia)"
+    # melanonychia is withheld (not in ENABLED): its classical finding passes through untouched
+    assert out["melanonychia"]["verdict"] == "within" and out["melanonychia"].get("track_used") != "color_fused"
     assert out["pitting"] == {"label": "pitting", "verdict": "within"}
 
 

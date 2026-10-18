@@ -90,9 +90,16 @@ be collected against it -- that is how these conditions can earn their way back 
 Re-run the tuner after any retrain or data change and update UNVALIDATED_CONDITIONS.
 """
 
+# 2026-10-18 (false-positive reduction): melanonychia is withheld again -- the one real healthy phone
+# subject scores 0.05-0.16 on its specialist (dataset healthy nails score < 0.005), so a cutoff that clears
+# the phone photo would drop dataset recall to ~33%. terrys_nails is withheld too: it was the largest source
+# of false alarms (3.0% of healthy nails) and a tighter rule drops VALID recall to 48.7% (<50% bar); its
+# labels were also found mostly not visually Terry's (Haiku audit, 2026-10-17).
 UNVALIDATED_CONDITIONS = {
     "pallor",
     "lindsays_nails",
+    "melanonychia",
+    "terrys_nails",
 }
 
 

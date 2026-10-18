@@ -16,7 +16,8 @@ import json
 from pathlib import Path
 
 MANIFEST = Path("ml/models/nail_color_classifier_labels.json")
-ENABLE = {"koilonychia": {"floor": 0.1}}
+# floor 0.3 (2026-10-18 FP reduction): valid 58.7% / 1.3% FP, test 63.9% / 1.7% (was floor 0.1: 78.0%/2.2%, 70.8%/3.8%)
+ENABLE = {"koilonychia": {"floor": 0.3}}
 
 
 def main():

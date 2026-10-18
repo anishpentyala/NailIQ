@@ -76,12 +76,12 @@ CNN_ONLY_CONDITIONS = {"onychogryphosis"}
 # class. The pale/white-band conditions are routinely a close second to a neighbouring
 # class, so top-class-only voting threw real positives away.
 OVR_THRESHOLD = {
-    "cyanosis": 0.3,        # 2026-09-16 retrain: was 0.15
+    "cyanosis": 0.15,       # 2026-10-18 FP reduction (with support 0.1): valid 56.9%/2.5% -> 53.8%/0.6%; was 0.3
     "terrys_nails": 0.3,    # 2026-09-16 retrain: was 0.4
     "beaus_lines": 0.15,
     "muehrckes_lines": 0.15,
     "pitting": 0.15,
-    "splinter_hemorrhages": 0.3,  # NEW 2026-09-16 retrain
+    "splinter_hemorrhages": 0.4,  # 2026-10-18 FP reduction: valid 71.4%/2.8% -> 65.3%/1.6%; was 0.3
     "lindsays_nails": 0.15,       # NEW 2026-09-16 retrain -- class restored via NIHATI
     # 2026-09-23, CNN-only: strict valid 53.8% -> 72.3% (FP 0.0%), test 50.0% -> 67.6% (FP 0.0%)
     "onychogryphosis": 0.15,
@@ -94,7 +94,7 @@ OVR_THRESHOLD = {
 # the CNN read as "pallor" -- which fusion treated as no opinion, handing those
 # conditions to a near-chance heuristic.
 HEURISTIC_MIN_CNN_SUPPORT = {
-    "cyanosis": 0.02,       # 2026-09-16 retrain: was 0.05
+    "cyanosis": 0.1,        # 2026-10-18 FP reduction: was 0.02
     "beaus_lines": 0.02,
     "pitting": 0.02,
     "pallor": 0.05,         # 2026-09-16 retrain: was 0.20

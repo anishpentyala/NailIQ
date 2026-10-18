@@ -26,7 +26,7 @@ import numpy as np
 
 from . import color_classifier
 
-ENABLED = ("onycholysis", "leukonychia", "melanonychia")
+ENABLED = ("onycholysis", "leukonychia")  # melanonychia withheld 2026-10-18: real-phone false alarm
 _MODELS = Path(__file__).resolve().parent.parent / "models"
 _cache = {}
 

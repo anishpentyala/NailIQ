@@ -1,0 +1,682 @@
+{
+ "n": 558,
+ "by_source": {
+  "ghana": 312,
+  "arthitaya": 16,
+  "nihati": 52,
+  "knm": 84,
+  "chaa": 94
+ },
+ "per_condition": {
+  "beaus_lines": {
+   "shown_outside": 2,
+   "n": 558,
+   "fp": 0.004,
+   "pre_policy_outside": 2,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "0/84",
+    "chaa": "2/94"
+   }
+  },
+  "cyanosis": {
+   "shown_outside": 14,
+   "n": 558,
+   "fp": 0.025,
+   "pre_policy_outside": 14,
+   "by_source": {
+    "ghana": "3/312",
+    "arthitaya": "0/16",
+    "nihati": "3/52",
+    "knm": "0/84",
+    "chaa": "8/94"
+   }
+  },
+  "koilonychia": {
+   "shown_outside": 16,
+   "n": 558,
+   "fp": 0.029,
+   "pre_policy_outside": 16,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "2/16",
+    "nihati": "2/52",
+    "knm": "2/84",
+    "chaa": "10/94"
+   }
+  },
+  "leukonychia": {
+   "shown_outside": 12,
+   "n": 558,
+   "fp": 0.022,
+   "pre_policy_outside": 12,
+   "by_source": {
+    "ghana": "10/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "1/84",
+    "chaa": "1/94"
+   }
+  },
+  "lindsays_nails": {
+   "shown_outside": 0,
+   "n": 558,
+   "fp": 0.0,
+   "pre_policy_outside": 0,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "0/84",
+    "chaa": "0/94"
+   }
+  },
+  "melanonychia": {
+   "shown_outside": 4,
+   "n": 558,
+   "fp": 0.007,
+   "pre_policy_outside": 4,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "1/52",
+    "knm": "0/84",
+    "chaa": "3/94"
+   }
+  },
+  "muehrckes_lines": {
+   "shown_outside": 2,
+   "n": 558,
+   "fp": 0.004,
+   "pre_policy_outside": 2,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "0/84",
+    "chaa": "2/94"
+   }
+  },
+  "onychogryphosis": {
+   "shown_outside": 0,
+   "n": 558,
+   "fp": 0.0,
+   "pre_policy_outside": 0,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "0/84",
+    "chaa": "0/94"
+   }
+  },
+  "onycholysis": {
+   "shown_outside": 3,
+   "n": 558,
+   "fp": 0.005,
+   "pre_policy_outside": 3,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "2/84",
+    "chaa": "1/94"
+   }
+  },
+  "pallor": {
+   "shown_outside": 0,
+   "n": 558,
+   "fp": 0.0,
+   "pre_policy_outside": 100,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "0/52",
+    "knm": "0/84",
+    "chaa": "0/94"
+   }
+  },
+  "pitting": {
+   "shown_outside": 7,
+   "n": 558,
+   "fp": 0.013,
+   "pre_policy_outside": 7,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "2/52",
+    "knm": "0/84",
+    "chaa": "5/94"
+   }
+  },
+  "splinter_hemorrhages": {
+   "shown_outside": 14,
+   "n": 558,
+   "fp": 0.025,
+   "pre_policy_outside": 14,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "0/16",
+    "nihati": "2/52",
+    "knm": "2/84",
+    "chaa": "10/94"
+   }
+  },
+  "terrys_nails": {
+   "shown_outside": 17,
+   "n": 558,
+   "fp": 0.03,
+   "pre_policy_outside": 17,
+   "by_source": {
+    "ghana": "0/312",
+    "arthitaya": "2/16",
+    "nihati": "5/52",
+    "knm": "9/84",
+    "chaa": "1/94"
+   }
+  }
+ },
+ "any_flag": {
+  "ghana": 13,
+  "arthitaya": 4,
+  "nihati": 10,
+  "knm": 16,
+  "chaa": 34
+ },
+ "all_abstained": {
+  "ghana": 6,
+  "nihati": 1,
+  "knm": 4,
+  "chaa": 4
+ },
+ "flagged": {
+  "ghana": [
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-009 (3).png",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-009 (4).png",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-009 (6).png",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038 (2).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038 (3).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038 (4).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038 (5).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038 (6).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-038.png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-169 (11).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-169 (12).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-169 (5).png",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\fingernails-ghana-anemia\\Fingernails\\Non-Anrmic-FN-169 (6).png",
+    "flags": [
+     "leukonychia"
+    ]
+   }
+  ],
+  "arthitaya": [
+   {
+    "path": "data\\raw\\nail-dataset-arthitaya\\Nail\\normal\\normal (18).jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-dataset-arthitaya\\Nail\\normal\\normal (4).jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-dataset-arthitaya\\Nail\\normal\\normal (49).jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-dataset-arthitaya\\Nail\\normal\\normal (59).jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   }
+  ],
+  "nihati": [
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\test\\healthy\\7KGqkdA6pspmO6fbhskX_171.PNG",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\test\\healthy\\XSzgbOItjEK8PiqJYsOL_253.PNG",
+    "flags": [
+     "koilonychia",
+     "melanonychia",
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\Jgk56c3DoO10PuWeDl2v_128.PNG",
+    "flags": [
+     "cyanosis",
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\Nd2ubSyPYIQDasWEbrH2_161.PNG",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\Z64fLMOS9QZGhI6EnKqe_177.PNG",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\fXL2bhmYsHqwf8w3kt6q_115.PNG",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\graogo5yipNyoWQjEXPX_244.PNG",
+    "flags": [
+     "cyanosis",
+     "splinter_hemorrhages",
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\oIrb6dwTeL8nrDS8RT94_62.PNG",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\qimFoJPnT3o50Q5KjbmZ_65.PNG",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-classification-nihati\\train\\healthy\\vSwHUBjBcFWNMsNASBN0_197.PNG",
+    "flags": [
+     "terrys_nails"
+    ]
+   }
+  ],
+  "knm": [
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\test\\images\\h136_png.rf.75b1bda219b9a969648edf74c2670ddb.jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\test\\images\\h186_png.rf.637eff97e983aece8722cb7b52b3f60c.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\test\\images\\h235_png.rf.92ee577e122026cf304c953951bf262b.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\test\\images\\h240_png.rf.506afaa846f14f07a34908f2584c2738.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\test\\images\\h286_png.rf.df7fbac444328eb95b79972f8440df04.jpg",
+    "flags": [
+     "onycholysis"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h152_png.rf.2fed4578dc520e518563eee23a801f7d.jpg",
+    "flags": [
+     "onycholysis"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h181_png.rf.10eb6653abd2c078742045d14416571c.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h185_png.rf.86d7c1421e8eeb1adf14b736efda30c3.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h205_png.rf.5933e213fe6c757da7f2fe922867c471.jpg",
+    "flags": [
+     "leukonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h246_png.rf.afd78c33bfb2ef20049704258cbfa055.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h282_png.rf.5a7278ce680ff87f4929c07a96cce4a0.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h66_png.rf.14a9f66615c0b9329cd5a613e3db4796.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h69_png.rf.f0bfebb4e2aafa1d79aa550a846f12fc.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h70_png.rf.1007bcc33fba0316c03417abd7d5a089.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h92_png.rf.faf6d9f61ce073e7231c508f572150a8.jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\nail-disease-detection-mxoqy\\valid\\images\\h93_png.rf.b20ed6db50f8407863c5a1203d074bce.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   }
+  ],
+  "chaa": [
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy124_png.rf.470bf55337da9768db7c63a1b2e55ab2.jpg",
+    "flags": [
+     "leukonychia",
+     "melanonychia",
+     "onycholysis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy14_png.rf.8ec122edc89b7f06e350dbe6ec03366a.jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy183_png.rf.ca07e4faecad9e25581d5649139ddb24.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy189_png.rf.3666f0e83fc4cbc1cd41cf0032362483.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy19_png.rf.c66ebc1d376995248604e9b68a039953.jpg",
+    "flags": [
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy202_png.rf.30bad21fbb1e138b33bdae236c280219.jpg",
+    "flags": [
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy204_png.rf.8d3a8c12e2024d61acb3a4eddb097394.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy217_png.rf.0d5bfb6a22bc1a407d0ed2c6474f9faa.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy233_png.rf.dab7574f8d8dcb0ff7476c45a6c926fb.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy241_png.rf.fe0f3c2f23edadee61e6a2fac8fd521c.jpg",
+    "flags": [
+     "beaus_lines"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy266_png.rf.409c7aa4250a7891206b70958a92c022.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy270_png.rf.48de8c5965c5075c964c49d0cd2e1c5b.jpg",
+    "flags": [
+     "terrys_nails"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy297_png.rf.07d3d6a6459a6fd373babca1374c94aa.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy298_png.rf.33b12bcf6a9a8c821179a1e2acb16407.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy311_png.rf.e725e8c7cc4c998d8e8f0bb9a626ae0e.jpg",
+    "flags": [
+     "beaus_lines"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy324_png.rf.da57367112d17fdc5b4cdf7941df4ce4.jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy344_png.rf.f62d1c0e2701e189ffe5444b4420e692.jpg",
+    "flags": [
+     "koilonychia",
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy363_png.rf.d7a932469f8890e30afbcbae76a89a1d.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy37_png.rf.a75a4f11f9879767b1f7a8e59bb2fe3c.jpg",
+    "flags": [
+     "koilonychia",
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy418_png.rf.499d15be8551a03a2eccddcfbe253a2a.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy45_png.rf.2bb58317fef59f57f547656eba295a5b.jpg",
+    "flags": [
+     "melanonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy49_png.rf.204a9decd7c815e1f2adbe0ff31ca1d4.jpg",
+    "flags": [
+     "koilonychia",
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy52_png.rf.851b19140426fecd715656a8edb02969.jpg",
+    "flags": [
+     "koilonychia",
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy660_png.rf.b2bcaec890c300b0e5fbef99d391e96e.jpg",
+    "flags": [
+     "koilonychia",
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy681_png.rf.9dbb2a00c13c3215ed16782033f5de38.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy760_png.rf.007f9917d7da2f2fc39bce7d1ec5e8aa.jpg",
+    "flags": [
+     "koilonychia",
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy86_png.rf.d270968a6fb13c02b6c86326497d9503.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy93_png.rf.cfe33845b16beffe27233152fad33ce0.jpg",
+    "flags": [
+     "melanonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\train\\images\\augmented_healthy955_png.rf.f73a83235563ac025f42749c30576d2b.jpg",
+    "flags": [
+     "cyanosis"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\valid\\images\\Healthy-275-_png.rf.a43313e7e323162b020d60dff6c395d8.jpg",
+    "flags": [
+     "splinter_hemorrhages"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\valid\\images\\Screenshot-2023-07-25-110425_png.rf.8954069e654de36b4d416ce145ed6dcc.jpg",
+    "flags": [
+     "pitting"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\valid\\images\\Screenshot-2023-07-25-110601_png.rf.bc1baf66222c922249332dc94f2c7915.jpg",
+    "flags": [
+     "koilonychia",
+     "muehrckes_lines"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\valid\\images\\Screenshot-2023-07-25-111440_png.rf.553431db20898f782637e66f46fb2cf2.jpg",
+    "flags": [
+     "koilonychia"
+    ]
+   },
+   {
+    "path": "data\\raw\\yolov8-nails-segmentation-ckvkd\\valid\\images\\Screenshot-2023-07-25-115436_png.rf.a686a21c4f293103e16000cf55686d63.jpg",
+    "flags": [
+     "muehrckes_lines"
+    ]
+   }
+  ]
+ }
+}
