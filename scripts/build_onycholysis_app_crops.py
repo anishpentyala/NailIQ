@@ -22,7 +22,7 @@ from ml.eval.eval_end_to_end import gather                                   # n
 from ml.eval.eval_onycholysis_specialist_e2e import front_end, source_of     # noqa: E402
 
 OUT = REPO / "data" / "raw" / "onych_app_crops"
-TARGETS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails")
+TARGETS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails", "clubbing")
 
 
 def _one(sp, cls, src, p, counts, abstained, i, items):
@@ -44,7 +44,7 @@ def _one(sp, cls, src, p, counts, abstained, i, items):
 def main():
     abstained, counts = [], {}
     for sp in ("train", "valid", "test"):
-        items = gather(sp, include_authorized=True)
+        items = gather(sp, include_authorized=True, include_shapes=True)
         print(sp, len(items), "source images", flush=True)
         for i, (p, labels) in enumerate(sorted(items.items(), key=lambda kv: str(kv[0]))):
             src = source_of(p)

@@ -1,0 +1,17 @@
+{
+  "threshold": 0.106,
+  "n_pos": 752,
+  "n_healthy": 699,
+  "recall": 0.706,
+  "healthy_fp": 0.109,
+  "auc": 0.899,
+  "oracle_recall_at_5pct_fp": 0.523,
+  "ghana_fp": 0.81,
+  "cal_fp_check": 0.032,
+  "healthy_by_source_fp": {
+    "knm": 0.112,
+    "arthitaya": 0.0,
+    "chaa": 0.106,
+    "nihati": 0.042
+  }
+}

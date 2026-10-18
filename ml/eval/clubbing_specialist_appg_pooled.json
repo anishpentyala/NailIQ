@@ -1,0 +1,62 @@
+{
+  "knm": {
+    "threshold": 0.058,
+    "n_pos": 703,
+    "n_healthy": 704,
+    "recall": 0.596,
+    "healthy_fp": 0.055,
+    "auc": 0.905,
+    "oracle_recall_at_5pct_fp": 0.589,
+    "ghana_fp": 0.0,
+    "cal_fp_check": 0.03,
+    "healthy_by_source_fp": {
+      "arthitaya": 0.0,
+      "nihati": 0.043,
+      "chaa": 0.047,
+      "ghana": 0.0,
+      "knm": 0.06
+    }
+  },
+  "arthitaya": {
+    "threshold": 0.03,
+    "n_pos": 46,
+    "n_healthy": 182,
+    "recall": 0.978,
+    "healthy_fp": 0.192,
+    "auc": 0.988,
+    "oracle_recall_at_5pct_fp": 0.935,
+    "ghana_fp": 0.0,
+    "cal_fp_check": 0.03,
+    "healthy_by_source_fp": {
+      "arthitaya": 0.415,
+      "nihati": 0.13,
+      "chaa": 0.182,
+      "ghana": 0.0,
+      "knm": 0.087
+    }
+  },
+  "nihati": {
+    "threshold": 0.06,
+    "n_pos": 32,
+    "n_healthy": 377,
+    "recall": 1.0,
+    "healthy_fp": 0.109,
+    "auc": 0.999,
+    "oracle_recall_at_5pct_fp": 1.0,
+    "ghana_fp": 0.0,
+    "cal_fp_check": 0.032,
+    "healthy_by_source_fp": {
+      "arthitaya": 0.0,
+      "nihati": 0.13,
+      "chaa": 0.116,
+      "ghana": 0.0,
+      "knm": 0.042
+    }
+  },
+  "pooled": {
+    "n_pos": 781,
+    "recall": 0.635,
+    "n_healthy": 1263,
+    "healthy_fp": 0.091
+  }
+}
