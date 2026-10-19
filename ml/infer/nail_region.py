@@ -29,6 +29,8 @@ from . import image_quality
 
 # Below these the region is too small to trust -> inconclusive.
 MIN_REGION_PX = 400
+# Median Lab chroma (sqrt(a*^2+b*^2)) of the finger mask below which it is a neutral backdrop, not skin.
+NEUTRAL_CHROMA_MAX = 3.5
 MIN_REGION_FRAC = 0.02
 
 # Distal length fraction taken as nail, and the central width kept (inset from the
@@ -74,6 +76,15 @@ def compute_nail_region(image_bgr, contour, nail_bbox=None):
     finger_px = int(xs.size)
     if finger_px < MIN_REGION_PX:
         return None, "nail_region_unclear"
+
+    # No-finger guard (2026-10-18): the "finger" contour can be a white/grey backdrop blob (a table, paper),
+    # and leukonychia then read "outside" on a photo with no nail in it. Skin and nail of any tone, and a
+    # blue finger, carry colour in the raw (un-white-balanced) photo; a finger-sized neutral blob does not.
+    if nail_bbox is None:
+        _, a_raw, b_raw = image_quality.lab_real(image_bgr)
+        chroma = float(np.hypot(np.median(a_raw[ys, xs]), np.median(b_raw[ys, xs])))
+        if chroma < NEUTRAL_CHROMA_MAX:
+            return None, "nail_region_unclear"
 
     P = np.stack([xs, ys], axis=1).astype(np.float64)
     mean = P.mean(axis=0)

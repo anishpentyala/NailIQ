@@ -137,6 +137,26 @@ _DEFAULT_OVR = dict(OVR_THRESHOLD)
 _DEFAULT_SUPPORT = dict(HEURISTIC_MIN_CNN_SUPPORT)
 
 
+# HEALTHY_MAX: a specific-sign "outside" on C is withheld (inconclusive) when the CNN still gives `healthy`
+# at least this probability. Idea from the "healthy vs specific disease" asymmetry in Oehler's Han-replication
+# README: networks separate healthy from diseased far better than they name the disease. Picked on the
+# cached VALID probabilities (tau 0.1), scored on TEST (ml/eval/e2e_*_shapes.json), without it -> with it:
+#   splinter_hemorrhages valid 71%/2.8% -> 67%/1.3%, test 74%/2.1% -> 72%/0.4%
+#   pitting              valid 61%/0.9% -> 59%/0.0%, test 72%/1.7% -> 69%/0.4%
+# Cyanosis was tried and rejected (valid recall 57% -> 42%). Applied in _fuse_one and fuse_roi.
+HEALTHY_MAX = {"splinter_hemorrhages": 0.1, "pitting": 0.1}
+
+
+def _healthy_gate(finding, pred):
+    cap = HEALTHY_MAX.get(finding["label"])
+    if cap is None or finding.get("verdict") != "outside" or not pred:
+        return finding
+    if (pred.get("probs") or {}).get("healthy", 0.0) >= cap:
+        return {**finding, "verdict": "inconclusive", "confidence": 0.0,
+                "agreement": "healthy_signal", "failure_reason": "no_confident_ai_call"}
+    return finding
+
+
 def _cnn_signal_for(condition, pred, rules=None):
     """Map a CNN prediction onto one condition's within/outside axis (or no opinion)."""
     if pred is None:
@@ -160,6 +180,10 @@ def _boost(heur_conf, cnn_conf):
 
 
 def _fuse_one(heur, pred, rules=None):
+    return _healthy_gate(_fuse_one_raw(heur, pred, rules), pred)
+
+
+def _fuse_one_raw(heur, pred, rules=None):
     """heur: a classical colour finding for a CNN-covered condition. pred: CNN dict."""
     base = {
         "label": heur["label"],
@@ -253,9 +277,9 @@ def fuse_roi(findings, pred, covered_conditions, rules=None):
         if verdict is None:
             out.append({**base, 'failure_reason': 'no_confident_ai_call'})
             continue
-        out.append({**base, 'verdict': verdict, 'confidence': confidence,
+        out.append(_healthy_gate({**base, 'verdict': verdict, 'confidence': confidence,
             'value': None, 'unit': None, 'track_used': 'color_fused',
             'agreement': 'ml_only', 'failure_reason': None,
             'evidence_type': 'appearance', 'color': {'verdict': 'inconclusive', 'confidence': 0},
-            'ml': pred})
+            'ml': pred}, pred))
     return out
