@@ -48,9 +48,11 @@ def feats(paths, bs=64):
 
 
 def main():
-    meta = json.load(open(VF / "meta.json"))
+    classes = tuple(sys.argv[1:]) or ("melanonychia", "onycholysis", "whitespot")
+    base = json.load(open(VF / "meta.json"))
+    meta = base + [m for c in classes if (VF / f"meta_{c}.json").exists() for m in json.load(open(VF / f"meta_{c}.json"))]
     rows = []
-    for cls in ("melanonychia", "onycholysis", "whitespot"):
+    for cls in classes:
         files = [f for m in meta if m["cls"] == cls for f in m["files"]]
         lab = json.load(open(VF / f"vis_{cls}.json"))
         idx = [int(k) for k, v in lab.items() if v in ("Y", "N")]
@@ -69,6 +71,9 @@ def main():
         for p, s in zip(allp, pa):
             rows.append([str(p.relative_to(ROOT)).replace("\\", "/"), cls, f"{s:.4f}"])
         print(f"  scored {len(allp)} crops, {int((pa >= KEEP_P).sum())} at p>={KEEP_P}", flush=True)
+    # merge: keep rows of classes not re-scored in this run
+    old = list(csv.reader(open(ROOT / "visible_signs.csv")))[1:] if (ROOT / "visible_signs.csv").exists() else []
+    rows = [r for r in old if r[1] not in classes] + rows
     with open(ROOT / "visible_signs.csv", "w", newline="") as f:
         csv.writer(f).writerows([["crop", "cls", "p_visible"], *rows])
 
