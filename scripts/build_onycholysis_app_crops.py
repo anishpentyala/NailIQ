@@ -22,7 +22,7 @@ from ml.eval.eval_end_to_end import gather                                   # n
 from ml.eval.eval_onycholysis_specialist_e2e import front_end, source_of     # noqa: E402
 
 OUT = REPO / "data" / "raw" / "onych_app_crops"
-TARGETS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails", "clubbing")
+TARGETS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails", "clubbing", "beaus_lines", "muehrckes_lines")
 
 
 def _one(sp, cls, src, p, counts, abstained, i, items):

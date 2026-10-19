@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import train_onycholysis_specialist as T  # noqa: E402
 
 ROOT = Path("data/raw/onych_app_crops")
-OTHERS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails", "clubbing", "onychomycosis", "psoriasis", "naildystrophy")
+OTHERS = ("onycholysis", "melanonychia", "leukonychia", "terrys_nails", "clubbing", "beaus_lines", "muehrckes_lines", "onychomycosis", "psoriasis", "naildystrophy")
 
 
 def collect(target):
