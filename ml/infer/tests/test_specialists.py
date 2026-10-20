@@ -23,7 +23,7 @@ def _patch(monkeypatch, probs, thr=0.1, available=("onycholysis", "leukonychia",
 
 
 def test_enabled_allowlist():
-    assert set(spec.ENABLED) == {"onycholysis", "leukonychia"}
+    assert set(spec.ENABLED) == {"onycholysis", "leukonychia", "beaus_lines"}
 
 
 def test_outside_and_within_per_sign(monkeypatch):

@@ -26,7 +26,7 @@ import numpy as np
 
 from . import color_classifier
 
-ENABLED = ("onycholysis", "leukonychia")  # melanonychia withheld 2026-10-18: real-phone false alarm; beaus_lines specialist trained but not enabled (unverified, see CLAUDE.md)
+ENABLED = ("onycholysis", "leukonychia", "beaus_lines")  # melanonychia withheld 2026-10-18: real-phone false alarm. beaus_lines enabled 2026-10-19: healthy scan 33/558 any-flag (was 32), LOSO pooled recall only ~57%
 _MODELS = Path(__file__).resolve().parent.parent / "models"
 _cache = {}
 
