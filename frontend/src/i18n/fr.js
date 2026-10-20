@@ -242,6 +242,8 @@ export default {
     "badgeFused": "Géométrie + IA",
     "badgeColor": "Vérif. couleur",
     "badgeColorFused": "Couleur + IA",
+    "badgeLimited": "Validation limitée",
+    "limitedNote": "Validation limitée : cette vérification a détecté moins de 60 % des cas réels lors de nos tests ; à interpréter avec prudence.",
     "feedbackQ": "Cela correspond-il à ce que vous voyez ?",
     "feedbackYes": "Oui",
     "feedbackNo": "Non",

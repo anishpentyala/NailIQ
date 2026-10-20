@@ -107,6 +107,7 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
       {isFused && <span className="track-badge">{t('result.badgeFused')}</span>}
       {isColor && <span className="track-badge">{t('result.badgeColor')}</span>}
       {isColorFused && <span className="track-badge">{t('result.badgeColorFused')}</span>}
+      {finding.validation_tier === 'limited' && <span className="track-badge">{t('result.badgeLimited')}</span>}
       <div className={`result-icon result-icon--${finding.verdict}`}>
         <Icon name={VERDICT_ICON[finding.verdict] ?? 'helpCircle'} size={22} />
       </div>
@@ -129,6 +130,12 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
       )}
       <p className="result-message">{message}</p>
       {finding.track_used === 'appearance' && <p className="result-tone-caveat">{t('crop.appearanceNote')}</p>}
+      {finding.validation_tier === 'limited' && finding.verdict !== 'inconclusive' && (
+        <p className="result-tone-caveat">
+          <Icon name="info" size={14} />
+          {t('result.limitedNote')}
+        </p>
+      )}
       {toneCaveat && finding.verdict !== 'inconclusive' && (
         <p className="result-tone-caveat">
           <Icon name="info" size={14} />

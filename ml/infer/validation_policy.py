@@ -103,8 +103,16 @@ UNVALIDATED_CONDITIONS = {
     "lindsays_nails",
     "melanonychia",
     "terrys_nails",
-    "muehrckes_lines",
+    "muehrckes_lines",   # re-withheld 2026-10-20: specialist enabled for a day, real-camera Hb check flagged 20/43 (46.5%) readable ordinary nails
 }
+
+# Two-tier bar (2026-10-20, set by the project owner and to be disclosed with any quoted count):
+#   validated  = recall >= 60% at <= 5% healthy false alarms on held-out data
+#   limited    = recall >= 50% (below 60%) at <= 5% false alarms; shown with a "Limited validation" label.
+# beaus_lines: source-held-out pooled recall ~57% / 4.0% FP (own final splits 89-96%).
+# muehrckes_lines was tried as limited on 2026-10-20 and reverted (own final splits 91.7%/3.2% n=24, 75%/3.8% n=12, but
+# source-held-out KNM 53%/6.2%, NIHATI 77%/7.9%, and 46.5% flagged on real-camera Hb nails).
+LIMITED_VALIDATION = {"beaus_lines"}
 
 
 def apply(findings, roi_mode='legacy', metadata=None, approved=False):
@@ -117,5 +125,7 @@ def apply(findings, roi_mode='legacy', metadata=None, approved=False):
         if not approved and (blocked_mode or f["label"] in blocked_conditions) and f["verdict"] != "inconclusive":
             f = {**f, "unvalidated_verdict": f["verdict"], "verdict": "inconclusive",
                  "confidence": 0.0, "failure_reason": "not_validated"}
+        if f["label"] in LIMITED_VALIDATION and f["verdict"] != "inconclusive":
+            f = {**f, "validation_tier": "limited"}
         out.append(f)
     return out

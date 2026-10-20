@@ -209,6 +209,8 @@ export default {
     badgeFused: 'Geometría + IA',
     badgeColor: 'Revisión de color',
     badgeColorFused: 'Color + IA',
+    badgeLimited: 'Validación limitada',
+    limitedNote: 'Validación limitada: esta revisión detectó menos del 60 % de los casos reales en nuestras pruebas; tómala con precaución.',
     feedbackQ: '¿Esto coincide con lo que ves?',
     feedbackYes: 'Sí',
     feedbackNo: 'No',

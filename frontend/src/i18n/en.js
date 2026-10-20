@@ -210,6 +210,8 @@ export default {
     badgeFused: 'Geometry + AI',
     badgeColor: 'Color check',
     badgeColorFused: 'Color + AI',
+    badgeLimited: 'Limited validation',
+    limitedNote: 'Limited validation: this check caught fewer than 60% of real cases in our tests, so treat it with extra caution.',
     feedbackQ: 'Does this match what you see?',
     feedbackYes: 'Yes',
     feedbackNo: 'No',

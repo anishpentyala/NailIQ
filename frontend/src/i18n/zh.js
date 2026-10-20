@@ -205,6 +205,8 @@ export default {
     badgeFused: '几何 + AI',
     badgeColor: '颜色检查',
     badgeColorFused: '颜色 + AI',
+    badgeLimited: '有限验证',
+    limitedNote: '有限验证：在我们的测试中，此项检查识别出的真实病例不足 60%，请谨慎对待。',
     feedbackQ: '这与您看到的相符吗？',
     feedbackYes: '相符',
     feedbackNo: '不符',

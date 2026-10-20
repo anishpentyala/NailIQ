@@ -26,7 +26,7 @@ import numpy as np
 
 from . import color_classifier
 
-ENABLED = ("onycholysis", "leukonychia", "beaus_lines")  # melanonychia withheld 2026-10-18: real-phone false alarm. beaus_lines enabled 2026-10-19: healthy scan 33/558 any-flag (was 32), LOSO pooled recall only ~57%
+ENABLED = ("onycholysis", "leukonychia", "beaus_lines")  # melanonychia withheld 2026-10-18 (real-phone false alarm). beaus_lines (2026-10-19) is a LIMITED-validation sign, see validation_policy.LIMITED_VALIDATION. muehrckes_lines was tried 2026-10-20 and reverted: flags 20/43 (46.5%) readable real-camera Hb nails
 _MODELS = Path(__file__).resolve().parent.parent / "models"
 _cache = {}
 

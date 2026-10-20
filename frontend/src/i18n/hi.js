@@ -208,6 +208,8 @@ export default {
     badgeFused: 'ज्यामिति + AI',
     badgeColor: 'रंग जाँच',
     badgeColorFused: 'रंग + AI',
+    badgeLimited: 'सीमित सत्यापन',
+    limitedNote: 'सीमित सत्यापन: हमारे परीक्षणों में इस जाँच ने 60% से कम वास्तविक मामलों को पकड़ा, इसलिए अतिरिक्त सावधानी रखें।',
     feedbackQ: 'क्या यह वैसा ही है जैसा आपको दिखता है?',
     feedbackYes: 'हाँ',
     feedbackNo: 'नहीं',
