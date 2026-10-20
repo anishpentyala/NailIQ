@@ -57,15 +57,24 @@ def main():
     ap.add_argument("--epochs", type=int, default=10)
     ap.add_argument("--seeds", type=int, default=2)
     ap.add_argument("--tag", default="")
+    ap.add_argument("--synth-dir", type=Path, default=None, help="synthetic sign PNGs <dir>/<sign>/<base_src>__k.png (train only)")
     a = ap.parse_args()
-    name = f"{a.target}_specialist"
+    name = f"{a.target}_specialist" + ("_synth" if a.synth_dir else "")
     items = collect(a.target)
+    syn = []
+    if a.synth_dir:
+        for d in sorted(a.synth_dir.glob("*")):
+            for f in sorted(d.glob("*.png")):
+                x = T.load(f)
+                syn.append(dict(p=f, src="synth", base=f.name.split("__")[0], split="train", y=int(d.name == a.target),
+                                kind="pos" if d.name == a.target else "other", cls=d.name, x=x, h=T.dhash(x)))
+        print("synthetic", len(syn), "positives", sum(i["y"] for i in syn), flush=True)
     pos_src = sorted({i["src"] for i in items if i["y"] == 1})
     print("loaded", len(items), "positives by source", {s: sum(1 for i in items if i["y"] == 1 and i["src"] == s) for s in pos_src}, flush=True)
     sc = lambda ms, L: np.mean([T.predict(m, L) for m in ms], 0)  # noqa: E731
     report = {}
     for held in [h for h in a.folds.split(",") if h]:
-        tr = [i for i in items if i["src"] != held and (i["y"] == 1 or i["split"] == "train")]
+        tr = [i for i in items if i["src"] != held and (i["y"] == 1 or i["split"] == "train")] + [i for i in syn if i["base"] != held]
         Htr = np.stack([i["h"] for i in tr])
         cal_h = clean([i for i in items if i["src"] != held and i["kind"] == "healthy" and i["split"] == "valid"], Htr)
         ev_pos = clean([i for i in items if i["src"] == held and i["y"] == 1], Htr)
@@ -82,7 +91,7 @@ def main():
         torch.save([m.state_dict() for m in ms], f"ml/models/{name}__{a.tag}heldout_{held}.pt")
         json.dump(r, open(f"ml/eval/{name}_{a.tag}{held}.json", "w"), indent=2)
     if a.final:
-        tr = [i for i in items if i["split"] == "train"]
+        tr = [i for i in items if i["split"] == "train"] + syn
         Htr = np.stack([i["h"] for i in tr])
         n_p0 = sum(1 for i in items if i["y"] == 1 and i["split"] != "train")
         n_h0 = sum(1 for i in items if i["kind"] == "healthy" and i["split"] != "train")
