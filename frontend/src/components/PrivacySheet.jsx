@@ -11,7 +11,7 @@ export default function PrivacySheet({ onClose }) {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
-    sheetRef.current?.focus()
+    sheetRef.current?.focus({ preventScroll: true })
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 

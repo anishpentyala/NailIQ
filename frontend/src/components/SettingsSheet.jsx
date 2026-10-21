@@ -35,7 +35,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
-    sheetRef.current?.focus()
+    sheetRef.current?.focus({ preventScroll: true })
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 

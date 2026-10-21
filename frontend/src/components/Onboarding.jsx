@@ -84,10 +84,12 @@ export default function Onboarding({ onDone }) {
   useEffect(() => {
     const el = scrollerRef.current
     if (!el) return
-    const onScroll = () => setY(el.scrollTop)
-    onScroll()
+    let raf = 0
+    const update = () => { raf = 0; setY(el.scrollTop) }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    setY(el.scrollTop)
     el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
+    return () => { el.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
   }, [])
 
   // which two sections we are between, and how far (0..1) toward the next
