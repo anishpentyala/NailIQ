@@ -417,7 +417,7 @@ export default {
 
     welcomeTitle: 'Tus uñas dicen mucho',
 
-    welcomeText: 'Algunos cambios en las uñas aparecen pronto en la anemia y en afecciones del corazón, los pulmones y el hígado. NailIQ revisa ocho de ellos con dos fotos.',
+    welcomeText: 'Algunos cambios en las uñas aparecen pronto en la anemia y en afecciones del corazón, los pulmones y el hígado. NailIQ busca varios de ellos con dos fotos.',
 
     shapeTitle: 'Forma y superficie',
 

@@ -388,7 +388,7 @@ export default {
 
     welcomeTitle: '指甲能透露很多信息',
 
-    welcomeText: '一些指甲变化会在贫血以及心、肺、肝的疾病中较早出现。NailIQ 通过两张照片检查其中八项。',
+    welcomeText: '一些指甲变化会在贫血以及心、肺、肝的疾病中较早出现。NailIQ 通过两张照片查找其中的多项。',
 
     shapeTitle: '形状与表面',
 

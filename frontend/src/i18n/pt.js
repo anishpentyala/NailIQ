@@ -397,7 +397,7 @@ export default {
     "replay": "Rever a introdução",
     "scrollHint": "Role para explorar",
     "welcomeTitle": "Suas unhas dizem muito",
-    "welcomeText": "Algumas mudanças nas unhas aparecem cedo na anemia e em condições do coração, dos pulmões e do fígado. O NailIQ verifica oito delas com duas fotos.",
+    "welcomeText": "Algumas mudanças nas unhas aparecem cedo na anemia e em condições do coração, dos pulmões e do fígado. O NailIQ procura vários deles com duas fotos.",
     "shapeTitle": "Forma e superfície",
     "shapeText": "Observamos como a unha se curva, se a superfície é lisa e qual a espessura.",
     "colorTitle": "Cor e o que há por baixo",

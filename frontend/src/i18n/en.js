@@ -421,7 +421,7 @@ export default {
 
     welcomeTitle: 'Your nails can say a lot',
 
-    welcomeText: 'Some nail changes show up early in anemia and in heart, lung, and liver conditions. NailIQ checks eight of them from two photos.',
+    welcomeText: 'Some nail changes show up early in anemia and in heart, lung, and liver conditions. NailIQ looks for several of them from two photos.',
 
     shapeTitle: 'Shape and surface',
 

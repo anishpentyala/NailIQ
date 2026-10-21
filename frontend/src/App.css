@@ -2573,3 +2573,13 @@
 .ob-start { margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { .ob-nail, .ob-scan, .ob-hint { animation: none; } }
 :root.a11y-reduce-motion .ob-nail, :root.a11y-reduce-motion .ob-scan, :root.a11y-reduce-motion .ob-hint { animation: none; }
+
+/* Continuous scroll tour: points brighten as they cross the fixed scan line (--near is 0..1 per point). */
+.ob-point { opacity: calc(0.16 + 0.84 * var(--near, 0)); transition: none; }
+.ob-point .ob-point-core, .ob-point.is-active .ob-point-core { transform: scale(calc(0.8 + 0.8 * var(--near, 0))); transition: none; }
+.ob-point .ob-point-zone { opacity: var(--near, 0); transition: none; }
+.ob-reticle { position: absolute; left: 0; right: 0; height: 0; z-index: 1; pointer-events: none; transition: opacity 0.3s; }
+.ob-reticle::before { content: ''; position: absolute; left: 0; right: 0; top: 0; border-top: 1px solid rgba(61, 219, 179, 0.55); box-shadow: 0 0 14px 1px rgba(61, 219, 179, 0.55); }
+.ob-reticle span { position: absolute; top: -5px; width: 10px; height: 10px; background: #3ddbb3; transform: rotate(45deg); box-shadow: 0 0 10px #3ddbb3; }
+.ob-reticle span:first-child { left: 12px; }
+.ob-reticle span:last-child { right: 12px; }
