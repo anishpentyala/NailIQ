@@ -58,6 +58,10 @@ export default {
     "whoFor": "Criado como uma avaliação inicial gratuita para quem não faz exames de rotina - mas que nunca substitui esses exames.",
     "latestAssessment": "Avaliação mais recente",
     "confidencePct": "{pct}% de confiança",
+    "greeting": "Olá",
+    "howNails": "Como estão suas unhas hoje?",
+    "notScanned": "Ainda não escaneado",
+    "lastScan": "Último escaneamento {when}",
     "noScans": "Ainda não há escaneamentos",
     "firstResult": "Seu primeiro resultado aparecerá aqui.",
     "scanId": "ID do escaneamento",
@@ -188,6 +192,8 @@ export default {
     }
   },
   "result": {
+    "scanResults": "Resultados do exame",
+    "tapCard": "Toque num sinal para ver detalhes",
     "reportTitle": "Relatório de triagem de saúde das unhas NailIQ",
     "summaryWithin": "Tudo parece estar dentro da faixa típica.",
     "summaryOutsideOne": "1 sinal está fora da faixa típica.",

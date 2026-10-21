@@ -59,6 +59,10 @@ export default {
     whoFor: '为没有定期体检的人打造的免费初步检查，绝不能替代体检。',
     latestAssessment: '最新评估',
     confidencePct: '置信度 {pct}%',
+    greeting: '你好',
+    howNails: '你今天的指甲怎么样?',
+    notScanned: '尚未扫描',
+    lastScan: '上次扫描 {when}',
     noScans: '还没有扫描记录',
     firstResult: '您的第一个结果会显示在这里。',
     scanId: '扫描编号',
@@ -144,6 +148,8 @@ export default {
   },
 
   result: {
+    scanResults: '扫描结果',
+    tapCard: '点按某项体征查看详情',
     reportTitle: 'NailIQ 指甲健康筛查报告',
     summaryWithin: '一切看起来都在典型范围内。',
     summaryOutsideOne: '有 1 项征象超出典型范围。',

@@ -153,22 +153,22 @@ button {
    the user's explicit override). Only overrides the variables - component
    styles stay untouched, same approach as high contrast below. */
 :root.theme-dark {
-  --bg: #101416;
-  --surface: #1a2124;
-  --text: #eef3f2;
-  --text-muted: #93a19f;
+  --bg: #0b0c0e;
+  --surface: #16181b;
+  --text: #f2f4f4;
+  --text-muted: #8a9094;
   --primary: #3ddbb3;
   --primary-dark: #7fe4c9;
   --primary-bg: rgba(61, 219, 179, 0.16);
-  --warn: #e0ac5c;
-  --warn-bg: rgba(224, 172, 92, 0.16);
+  --warn: #f5a524;
+  --warn-bg: rgba(245, 165, 36, 0.14);
   --danger: #e2776a;
   --danger-bg: rgba(226, 119, 106, 0.16);
   --border: rgba(255, 255, 255, 0.1);
   --hairline: rgba(255, 255, 255, 0.14);
   --fill-secondary: rgba(255, 255, 255, 0.08);
   --shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
-  --glass-bg: rgba(16, 20, 22, 0.82);
+  --glass-bg: rgba(11, 12, 14, 0.82);
   --skin-1: #c79f7f;
   --skin-2: #cdab8d;
   --skin-3: #dcc4ad;

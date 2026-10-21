@@ -79,7 +79,7 @@ function App() {
 
       <div className="tab-fade" key={activeTab}>
         {activeTab === 'home' && (
-          <HomeScreen onStartScan={startScan} onViewHistory={() => setActiveTab('history')} />
+          <HomeScreen onStartScan={startScan} />
         )}
 
         {activeTab === 'scan' && (
@@ -96,7 +96,7 @@ function App() {
         {activeTab === 'learn' && <InfoSection />}
       </div>
 
-      <BottomNav active={activeTab} onChange={setActiveTab} />
+      <BottomNav active={activeTab} onChange={setActiveTab} onOpenSettings={() => setSettingsOpen(true)} />
 
       {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
     </div>

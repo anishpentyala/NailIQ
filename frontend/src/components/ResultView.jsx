@@ -3,7 +3,7 @@ import { failureReasonMessage } from '../failureReasons'
 import { submitFeedback } from '../api'
 import Icon from './Icon'
 import NailDiagram, { AnnotatedNailDiagram } from './NailDiagram'
-import { conditionSummary, conditionNextStep } from '../conditions'
+import { conditionSummary, conditionNextStep, signNameParts, CONDITION_ICONS as CONDITION_ICON } from '../conditions'
 import { useI18n, findingName } from '../i18n'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
@@ -102,7 +102,7 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   const toneCaveat = toneCaveatText(t, finding)
 
   return (
-    <div className="finding-card" style={{ '--finding-delay': `${index * 50}ms` }}>
+    <div className="finding-card" id={`finding-${finding.label}`} style={{ '--finding-delay': `${index * 50}ms` }}>
       {(isMl || isAiOnly) && <span className="track-badge">{t(finding.evidence_type === 'appearance' ? 'crop.appearance' : 'result.badgeMl')}</span>}
       {isFused && <span className="track-badge">{t('result.badgeFused')}</span>}
       {isColor && <span className="track-badge">{t('result.badgeColor')}</span>}
@@ -153,59 +153,131 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   )
 }
 
-// shows the photo with a box around the measured nail area, with a toggle to
-// switch to the Grad-CAM heatmap if the AI model ran
-function MeasuredOverlay({ topImage, bbox, gradcam }) {
+// Circular close-up of the nail the checks measured, with a glowing outline on the measured area. The photo is
+// zoomed so the measured box sits at the centre; the glow marks where we looked, never where a sign "is".
+function HeroPhoto({ topImage, bbox, gradcam, tone }) {
   const { t } = useI18n()
   const [view, setView] = useState('measured')
-  if (!topImage || !bbox) return null
-  const [x0, y0, x1, y1] = bbox
+  const [ar, setAr] = useState(1)
+  if (!topImage) return null
   const showGradcam = gradcam && view === 'gradcam'
 
+  let imgStyle = { left: 0, top: 0, width: '100%' }
+  let box = null
+  if (bbox) {
+    const [x0, y0, x1, y1] = bbox
+    const bw = Math.max(x1 - x0, 0.04)
+    const cx = (x0 + x1) / 2
+    const cy = (y0 + y1) / 2
+    const w = Math.max(55 / bw, 100, 100 * ar) // image width as % of the circle
+    const h = w / ar
+    const left = Math.min(0, Math.max(100 - w, 50 - cx * w))
+    const top = Math.min(0, Math.max(100 - h, 50 - cy * h))
+    imgStyle = { left: `${left}%`, top: `${top}%`, width: `${w}%` }
+    box = {
+      left: `${left + x0 * w}%`,
+      top: `${top + y0 * h}%`,
+      width: `${(x1 - x0) * w}%`,
+      height: `${(y1 - y0) * h}%`,
+    }
+  }
+
   return (
-    <div className="measured-overlay">
-      <div className="measured-overlay-frame">
+    <div className="hero-photo-wrap">
+      <div className={`hero-photo hero-photo--${tone}`}>
         {showGradcam ? (
-          <img src={`data:image/jpeg;base64,${gradcam}`} alt={t('result.gradcamAlt')} />
+          <img className="hero-photo-img hero-photo-img--fill" src={`data:image/jpeg;base64,${gradcam}`} alt={t('result.gradcamAlt')} />
         ) : (
           <>
-            <img src={`data:image/jpeg;base64,${topImage}`} alt={t('result.photoAlt')} />
-            <div
-              className="measured-box"
-              style={{
-                left: `${x0 * 100}%`,
-                top: `${y0 * 100}%`,
-                width: `${(x1 - x0) * 100}%`,
-                height: `${(y1 - y0) * 100}%`,
-              }}
+            <img
+              className="hero-photo-img"
+              style={imgStyle}
+              src={`data:image/jpeg;base64,${topImage}`}
+              alt={t('result.photoAlt')}
+              onLoad={(e) => setAr(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight || 1)}
             />
+            {box && <div className="hero-measure" style={box} />}
           </>
         )}
+        <div className="hero-scanline" aria-hidden="true" />
       </div>
       {gradcam && (
-        <div className="measured-overlay-toggle" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'measured'}
-            className={view === 'measured' ? 'active' : ''}
-            onClick={() => setView('measured')}
-          >
+        <div className="hero-toggle" role="tablist">
+          <button type="button" role="tab" aria-selected={view === 'measured'} className={view === 'measured' ? 'active' : ''} onClick={() => setView('measured')}>
             {t('result.measuredToggle')}
           </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'gradcam'}
-            className={view === 'gradcam' ? 'active' : ''}
-            onClick={() => setView('gradcam')}
-          >
+          <button type="button" role="tab" aria-selected={view === 'gradcam'} className={view === 'gradcam' ? 'active' : ''} onClick={() => setView('gradcam')}>
             {t('result.gradcamToggle')}
           </button>
         </div>
       )}
-      <p className="measured-caption">{showGradcam ? t('result.gradcamCaption') : t('result.measuredCaption')}</p>
+      <p className="hero-photo-caption">{showGradcam ? t('result.gradcamCaption') : t('result.measuredCaption')}</p>
     </div>
+  )
+}
+
+function jumpToFinding(label) {
+  const el = document.getElementById(`finding-${label}`)
+  if (!el) return
+  const details = el.closest('details')
+  if (details) details.open = true
+  const calm = document.documentElement.classList.contains('a11y-reduce-motion')
+  el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' })
+  el.classList.remove('is-flash')
+  void el.offsetWidth
+  el.classList.add('is-flash')
+}
+
+function ScanHero({ findings, outside, inconclusive, topImage, bbox, gradcam, onReset }) {
+  const { t } = useI18n()
+  let tone = 'within'
+  let summary = t('result.summaryWithin')
+  if (outside.length > 0) {
+    tone = 'outside'
+    summary = outside.length === 1 ? t('result.summaryOutsideOne') : t('result.summaryOutside', { n: outside.length })
+  } else if (inconclusive.length > 0 && inconclusive.length === findings.length) {
+    tone = 'inconclusive'
+    summary = t('result.summaryInconclusive')
+  }
+  // worth-a-look first, then readable-and-fine, then couldn't-analyze
+  const rank = { outside: 0, within: 1, inconclusive: 2 }
+  const ordered = [...findings].sort((a, b) => rank[a.verdict] - rank[b.verdict])
+
+  return (
+    <section className={`scan-hero scan-hero--${tone}`} role="status">
+      <div className="scan-hero-top">
+        <button type="button" className="scan-hero-back" aria-label={t('result.scanAgain')} onClick={onReset}>
+          <Icon name="chevronRight" size={20} className="flip-x" />
+        </button>
+        <h2 className="scan-hero-title">{t('result.scanResults')}</h2>
+      </div>
+
+      <div className="scan-hero-body">
+        <div className="scan-hero-cards">
+          {ordered.map((f, i) => (
+            <button
+              type="button"
+              key={f.label}
+              className={`sign-card sign-card--${f.verdict}`}
+              style={{ '--finding-delay': `${i * 45}ms` }}
+              onClick={() => jumpToFinding(f.label)}
+            >
+              <span className="sign-card-icon"><Icon name={CONDITION_ICON[f.label] ?? VERDICT_ICON[f.verdict]} size={16} /></span>
+              <span className="sign-card-label">{signNameParts(findingName(t, f)).label}</span>
+              <span className="sign-card-name">{signNameParts(findingName(t, f)).term}</span>
+              <span className="sign-card-status">{t(`verdict.${f.verdict}.label`)}</span>
+              {f.validation_tier === 'limited' && <span className="sign-card-tag">{t('result.badgeLimited')}</span>}
+            </button>
+          ))}
+        </div>
+        <HeroPhoto topImage={topImage} bbox={bbox} gradcam={gradcam} tone={tone} />
+      </div>
+
+      <div className="scan-hero-summary">
+        <p className="scan-hero-summary-main">{summary}</p>
+        <p className="scan-hero-summary-sub">{t('result.tapCard')} · {t('result.notARiskScore')}</p>
+      </div>
+    </section>
   )
 }
 
@@ -392,11 +464,21 @@ export default function ResultView({ result, topImage, onReset }) {
         <h1>{t('result.reportTitle')}</h1>
         <p>{new Date().toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
-      <ResultSummary outside={outside} inconclusive={inconclusive} total={findings.length} />
+      <ScanHero
+        findings={findings}
+        outside={outside}
+        inconclusive={inconclusive}
+        topImage={topImage}
+        bbox={bbox}
+        gradcam={gradcam}
+        onReset={onReset}
+      />
+      <div className="print-only-block">
+        <ResultSummary outside={outside} inconclusive={inconclusive} total={findings.length} />
+      </div>
       <ScanDashboard findings={findings} imageQuality={imageQuality} />
       <AnnotatedNailDiagram findings={findings} />
       <NextSteps outside={outside} inconclusive={inconclusive} />
-      <MeasuredOverlay topImage={topImage} bbox={bbox} gradcam={gradcam} />
 
       {outside.length > 0 && (
         <section className="result-group">

@@ -22,7 +22,7 @@ const DEFAULTS = {
   highContrast: false,
   largeText: false,
   reduceMotion: false,
-  darkMode: null, // null = follow the OS color-scheme preference
+  darkMode: true, // dark by default; the toggle in Settings overrides (null would follow the OS)
 }
 
 function loadStored() {

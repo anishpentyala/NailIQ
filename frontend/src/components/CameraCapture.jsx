@@ -208,6 +208,14 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
       {/* Finger guide overlay */}
       {!cameraError && (
         <div className="cam-guide-overlay">
+          <svg className="cam-track" viewBox="0 0 100 100" aria-hidden="true">
+            <circle className="cam-track-circle" cx="50" cy="50" r="48" />
+            <g className="cam-track-spin">
+              <rect className="cam-track-diamond" x="19" y="19" width="62" height="62" />
+              <circle cx="19" cy="19" r="1.6" /><circle cx="81" cy="19" r="1.6" />
+              <circle cx="19" cy="81" r="1.6" /><circle cx="81" cy="81" r="1.6" />
+            </g>
+          </svg>
           <div className={`cam-guide-ring ${isSide ? 'cam-guide-ring--landscape' : 'cam-guide-ring--zoom'}`}>
             <FrameGuideSilhouette step={step} />
             <div className="cam-guide-corners">

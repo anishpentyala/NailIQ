@@ -61,6 +61,10 @@ export default {
       'Built as a free first look for anyone who does not get regular checkups - never a replacement for one.',
     latestAssessment: 'Latest assessment',
     confidencePct: '{pct}% confidence',
+    greeting: 'Hello',
+    howNails: 'How are your nails today?',
+    notScanned: 'Not scanned yet',
+    lastScan: 'Last scan {when}',
     noScans: 'No scans yet',
     firstResult: 'Your first result will show up here.',
     scanId: 'Scan ID',
@@ -149,6 +153,8 @@ export default {
   },
 
   result: {
+    scanResults: 'Scan results',
+    tapCard: 'Tap a sign for details',
     reportTitle: 'NailIQ Nail Health Screening Report',
     summaryWithin: 'Everything looks within the typical range.',
     summaryOutsideOne: '1 sign is outside the typical range.',

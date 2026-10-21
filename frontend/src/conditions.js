@@ -25,7 +25,7 @@ export const WITHHELD_KEYS = [
 
 export const visibleFindings = (findings) => (findings ?? []).filter((f) => CONDITION_KEYS.includes(f.label))
 
-const CONDITION_ICONS = {
+export const CONDITION_ICONS = {
   clubbing: 'finger',
   koilonychia: 'spoon',
   leukonychia: 'sparkle',
@@ -74,4 +74,13 @@ export function conditionNextStep(t, label) {
   const key = `conditions.${label}.points.action`
   const text = t(key)
   return text === key ? null : text
+}
+
+// "Nail curvature (koilonychia)" -> { label: "Nail curvature", term: "koilonychia" }; names without parentheses
+// (or the full-width ones some locales use) fall back to the whole name as the term.
+export function signNameParts(name) {
+  const m = /^(.*?)\s*[(（]([^)）]+)[)）]\s*$/.exec(name ?? '')
+  if (!m || !m[1]) return { label: '', term: name ?? '' }
+  const term = m[2]
+  return { label: m[1], term: term.charAt(0).toUpperCase() + term.slice(1) }
 }

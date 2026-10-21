@@ -58,6 +58,10 @@ export default {
     "whoFor": "Conçu comme un premier bilan gratuit pour toutes les personnes qui ne passent pas régulièrement de bilans de santé - il ne remplace en aucun cas ces derniers.",
     "latestAssessment": "Dernière évaluation",
     "confidencePct": "{pct}% de confiance",
+    "greeting": "Bonjour",
+    "howNails": "Comment vont vos ongles aujourd'hui ?",
+    "notScanned": "Pas encore scanné",
+    "lastScan": "Dernier scan {when}",
     "noScans": "Aucun scan pour le moment",
     "firstResult": "Votre premier résultat apparaîtra ici.",
     "scanId": "ID du scan",
@@ -188,6 +192,8 @@ export default {
     }
   },
   "result": {
+    "scanResults": "Résultats du scan",
+    "tapCard": "Touchez un signe pour les détails",
     "reportTitle": "Rapport de dépistage de la santé des ongles NailIQ",
     "summaryWithin": "Tout semble dans la plage typique.",
     "summaryOutsideOne": "1 signe est hors de la plage typique.",

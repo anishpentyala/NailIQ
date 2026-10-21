@@ -60,6 +60,10 @@ export default {
       'Creado como una primera revisión gratuita para quienes no tienen chequeos médicos regulares - nunca un reemplazo de ellos.',
     latestAssessment: 'Última evaluación',
     confidencePct: '{pct}% de confianza',
+    greeting: 'Hola',
+    howNails: '¿Cómo están tus uñas hoy?',
+    notScanned: 'Aún sin escanear',
+    lastScan: 'Último escaneo {when}',
     noScans: 'Aún no hay escaneos',
     firstResult: 'Tu primer resultado aparecerá aquí.',
     scanId: 'ID del escaneo',
@@ -148,6 +152,8 @@ export default {
   },
 
   result: {
+    scanResults: 'Resultados del escaneo',
+    tapCard: 'Toca un signo para ver detalles',
     reportTitle: 'Informe de detección de salud de uñas NailIQ',
     summaryWithin: 'Todo parece estar dentro del rango típico.',
     summaryOutsideOne: '1 signo está fuera del rango típico.',

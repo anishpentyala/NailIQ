@@ -2298,3 +2298,208 @@
 .nail-crop-actions button:last-child { background: #e5e5ea; color: #1c1c1e; }
 .nail-crop-actions button:disabled { opacity: 0.5; }
 .nail-crop-box button:focus-visible { outline: 3px solid #007aff; outline-offset: 3px; }
+
+/* ================= Scan results hero (dark, "instrument panel" look) =================
+   Left: one compact card per sign. Right: circular close-up of the nail with a glowing outline on the area the
+   checks measured. The hero stays dark in every theme, like an immersive scan screen. */
+.result-card {
+  background: transparent;
+  box-shadow: none;
+  padding: 0 0 var(--sp-4);
+}
+
+.scan-hero {
+  --h-card: #17181b;
+  --h-text: #f3f4f4;
+  --h-muted: #81878b;
+  --h-good: #5fcf80;
+  --h-warn: #f5a524;
+  --h-idle: #9aa0a4;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(120% 70% at 100% 20%, rgba(255, 255, 255, 0.05), transparent 60%), #0a0b0d;
+  color: var(--h-text);
+  border-radius: 28px;
+  padding: 14px 14px 20px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset, 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.scan-hero-top { display: flex; align-items: center; gap: 10px; }
+.scan-hero-back {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.07); border: none; color: var(--h-text);
+}
+.scan-hero-back:active { transform: scale(0.94); }
+.flip-x { transform: scaleX(-1); }
+.scan-hero-title { font-size: 0.9375rem; font-weight: 500; color: var(--h-text); letter-spacing: 0.01em; }
+
+.scan-hero-body {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin-top: 16px;
+}
+.scan-hero-cards { display: flex; flex-direction: column; gap: 10px; }
+
+.sign-card {
+  --c: var(--h-idle);
+  text-align: left;
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 12px 12px 13px;
+  background: var(--h-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  color: var(--h-text);
+  animation: finding-in 0.35s var(--ease-out) both;
+  animation-delay: var(--finding-delay, 0s);
+  transition: transform 0.15s var(--ease-out), border-color 0.2s;
+}
+.sign-card:active { transform: scale(0.97); }
+.sign-card--within { --c: var(--h-good); }
+.sign-card--outside { --c: var(--h-warn); border-color: rgba(245, 165, 36, 0.4); box-shadow: 0 0 20px rgba(245, 165, 36, 0.12); }
+.sign-card--inconclusive { --c: var(--h-idle); }
+.sign-card-icon { color: var(--c); display: inline-flex; filter: drop-shadow(0 0 5px var(--c)); }
+.sign-card-name { font-size: 1.0625rem; font-weight: 500; line-height: 1.15; word-break: break-word; hyphens: auto; }
+.sign-card-status { font-size: 0.6875rem; font-weight: 600; line-height: 1.25; color: var(--c); }
+.sign-card-tag {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.625rem; line-height: 1;
+  padding: 3px 7px; border-radius: 999px;
+  color: var(--h-muted); border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.hero-photo-wrap {
+  position: sticky; top: 60px;
+  display: flex; flex-direction: column; align-items: flex-start;
+}
+.hero-photo {
+  --glow: var(--h-good);
+  --glow-soft: rgba(95, 207, 128, 0.22);
+  position: relative;
+  width: 330px; height: 330px; flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 60px var(--glow-soft);
+}
+.hero-photo--outside { --glow: var(--h-warn); --glow-soft: rgba(245, 165, 36, 0.25); }
+.hero-photo--inconclusive { --glow: var(--h-idle); --glow-soft: rgba(154, 160, 164, 0.15); }
+.hero-photo::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+}
+.hero-photo-img { position: absolute; max-width: none; height: auto; display: block; filter: saturate(0.85) contrast(1.06); }
+.hero-photo-img--fill { inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.hero-measure {
+  position: absolute; z-index: 2;
+  border: 2px solid var(--glow);
+  border-radius: 12px;
+  box-shadow: 0 0 16px 2px var(--glow), inset 0 0 14px var(--glow-soft);
+  animation: hero-pulse 2.6s ease-in-out infinite;
+}
+.hero-measure::before,
+.hero-measure::after {
+  content: ''; position: absolute; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--glow); box-shadow: 0 0 10px 3px var(--glow);
+}
+.hero-measure::before { left: -6px; top: -6px; }
+.hero-measure::after { right: -6px; bottom: -6px; }
+@keyframes hero-pulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+
+.hero-scanline {
+  position: absolute; left: 0; right: 0; top: -25%; height: 25%; z-index: 3; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--glow-soft), transparent);
+  animation: hero-scan 3.4s ease-in-out infinite;
+}
+@keyframes hero-scan { 0% { top: -25%; } 100% { top: 100%; } }
+:root.a11y-reduce-motion .hero-scanline { display: none; }
+@media (prefers-reduced-motion: reduce) { .hero-scanline { display: none; } }
+
+.hero-toggle { display: flex; gap: 4px; margin-top: 10px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); }
+.hero-toggle button {
+  border: none; background: transparent; color: var(--h-muted);
+  font-size: 0.6875rem; font-weight: 600; padding: 5px 9px; border-radius: 999px;
+}
+.hero-toggle button.active { background: rgba(255, 255, 255, 0.16); color: var(--h-text); }
+.hero-photo-caption { margin-top: 8px; max-width: 200px; font-size: 0.6875rem; line-height: 1.35; color: var(--h-muted); }
+
+.scan-hero-summary { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.scan-hero-summary-main { font-size: 1.0625rem; font-weight: 500; line-height: 1.4; color: var(--h-text); }
+.scan-hero--outside .scan-hero-summary-main { color: var(--h-warn); }
+.scan-hero-summary-sub { margin-top: 4px; font-size: 0.75rem; color: var(--h-muted); }
+
+.finding-card.is-flash { animation: card-flash 1.3s ease-out; border-radius: 14px; }
+@keyframes card-flash {
+  0% { box-shadow: 0 0 0 2px var(--warn), 0 0 22px var(--warn-bg); }
+  100% { box-shadow: 0 0 0 2px transparent, 0 0 0 transparent; }
+}
+
+.print-only-block { display: none; }
+@media print {
+  .scan-hero { display: none !important; }
+  .print-only-block { display: block; }
+}
+
+/* Result cards: small muted label over a larger term, like the reference's "Blood Glucose / 125 mg/dl" stacks. */
+.sign-card-label { font-size: 0.6875rem; color: var(--h-muted); line-height: 1.2; }
+.sign-card-name { font-size: 1.0625rem; margin-top: -2px; }
+.hero-photo { width: 300px; height: 300px; }
+
+/* ================= Home dashboard ================= */
+.home-dash { display: flex; flex-direction: column; gap: 14px; }
+.home-dash-head { display: flex; flex-direction: column; gap: 2px; }
+.home-dash-hello { font-size: 0.8125rem; color: var(--text-muted); }
+.home-dash-title { font-size: 1.5rem; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.home-dash-sub { margin-top: 6px; font-size: 0.8125rem; line-height: 1.45; color: var(--text-muted); }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dash-tile {
+  --c: var(--text-muted);
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 14px 12px; min-height: 148px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  animation: finding-in 0.35s var(--ease-out) both;
+  animation-delay: var(--finding-delay, 0s);
+}
+.dash-tile--within { --c: #5fcf80; }
+.dash-tile--outside { --c: #f5a524; border-color: rgba(245, 165, 36, 0.4); box-shadow: 0 0 20px rgba(245, 165, 36, 0.1); }
+.dash-tile--inconclusive, .dash-tile--none { --c: var(--text-muted); }
+.dash-tile-icon { color: var(--c); display: inline-flex; margin-bottom: 4px; filter: drop-shadow(0 0 5px var(--c)); }
+.dash-tile-label { font-size: 0.75rem; color: var(--text-muted); line-height: 1.2; }
+.dash-tile-term { font-size: 1.25rem; font-weight: 500; line-height: 1.15; word-break: break-word; }
+.dash-tile-status { font-size: 0.6875rem; font-weight: 600; color: var(--c); line-height: 1.25; }
+.dash-tile-dots { margin-top: auto; padding-top: 8px; display: flex; gap: 5px; min-height: 14px; }
+.dash-tile-dots .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); opacity: 0.45; }
+.dash-tile-dots .dot--within { background: #5fcf80; opacity: 1; }
+.dash-tile-dots .dot--outside { background: #f5a524; opacity: 1; box-shadow: 0 0 6px #f5a524; }
+.home-dash-last { text-align: center; font-size: 0.75rem; color: var(--text-muted); }
+.home-dash .home-cta { align-self: stretch; }
+
+/* ================= Bottom bar with a raised, glowing scan button ================= */
+.bottom-nav { align-items: flex-end; }
+.bottom-nav-scan {
+  flex: none; width: 58px; height: 58px; margin: -22px 6px 0;
+  border: 4px solid var(--bg); border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--primary); color: #04251c;
+  box-shadow: 0 0 22px rgba(61, 219, 179, 0.55), 0 6px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s var(--ease-out);
+}
+.bottom-nav-scan:active { transform: scale(0.93); }
+.bottom-nav-scan.active { box-shadow: 0 0 30px rgba(61, 219, 179, 0.8), 0 6px 14px rgba(0, 0, 0, 0.4); }
+
+/* ================= Camera: animated alignment frame (circle + turning diamond) ================= */
+.cam-track {
+  position: absolute; width: min(94%, 420px); aspect-ratio: 1; opacity: 0.55; overflow: visible;
+}
+.cam-track-circle, .cam-track-diamond { fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.35; }
+.cam-track-spin { transform-origin: 50% 50%; animation: cam-spin 16s linear infinite; }
+.cam-track-spin circle { fill: rgba(255, 255, 255, 0.7); }
+@keyframes cam-spin { to { transform: rotate(360deg); } }
+:root.a11y-reduce-motion .cam-track-spin { animation: none; }
+@media (prefers-reduced-motion: reduce) { .cam-track-spin { animation: none; } }
