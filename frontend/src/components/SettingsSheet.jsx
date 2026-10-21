@@ -52,7 +52,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
       >
         <div className="sheet-handle" aria-hidden="true" />
 
-        <header className="sheet-header">
+        <div className="sheet-header">
           <span className="sheet-header-icon">
             <Icon name="settings" size={22} />
           </span>
@@ -63,7 +63,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
           <button type="button" className="sheet-close" onClick={onClose} aria-label={t('settings.close')}>
             <Icon name="x" size={22} />
           </button>
-        </header>
+        </div>
 
         <div className="sheet-body">
           <h3 className="settings-group-title" id="settings-language-label">{t('settings.language')}</h3>

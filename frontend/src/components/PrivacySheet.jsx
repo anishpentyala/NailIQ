@@ -28,7 +28,7 @@ export default function PrivacySheet({ onClose }) {
       >
         <div className="sheet-handle" aria-hidden="true" />
 
-        <header className="sheet-header">
+        <div className="sheet-header">
           <span className="sheet-header-icon">
             <Icon name="info" size={22} />
           </span>
@@ -38,7 +38,7 @@ export default function PrivacySheet({ onClose }) {
           <button type="button" className="sheet-close" onClick={onClose} aria-label={t('privacy.close')}>
             <Icon name="x" size={22} />
           </button>
-        </header>
+        </div>
 
         <div className="sheet-body">
           <h3 className="settings-group-title">{t('privacy.photosTitle')}</h3>

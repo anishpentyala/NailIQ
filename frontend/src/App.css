@@ -502,7 +502,21 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+.history-card-dots { display: flex; gap: 5px; margin-top: 7px; }
+.history-card-dots .history-finding-dot { width: 8px; height: 8px; }
+.history-card-chevron { display: inline-flex; color: var(--text-muted); transition: transform 0.25s var(--ease-spring, ease); flex-shrink: 0; }
+.history-card-chevron.is-open { transform: rotate(90deg); }
+:root.a11y-reduce-motion .history-card-chevron { transition: none; }
 
 .history-card-icon {
   width: 40px;
@@ -2576,3 +2590,15 @@
 .ob-start { margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { .ob-hint { animation: none; } .ob-point.is-active .ob-point-ring { animation: none; } }
 :root.a11y-reduce-motion .ob-hint, :root.a11y-reduce-motion .ob-point.is-active .ob-point-ring { animation: none; }
+
+/* Brand lockup in the home nav bar (replaces the plain "NailIQ" text). */
+.navbar-logo { display: block; height: 48px; width: auto; margin: -4px 0 -2px -6px; }
+.navbar-logo-compact { display: inline-block; vertical-align: middle; height: 26px; width: auto; }
+
+.navbar-wrap { display: contents; }
+
+/* Light theme: the amber badge text was 2.6:1 on its tinted pill; darker amber for readable text. */
+:root:not(.theme-dark) .history-changed-badge { color: #7a5200; }
+
+/* Light theme: the translucent bottom bar lets tinted content through, so inactive labels need extra contrast. */
+:root:not(.theme-dark) .bottom-nav-item:not(.active) { color: #3f4e52; }

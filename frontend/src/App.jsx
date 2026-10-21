@@ -78,11 +78,12 @@ function App() {
     <div className="app" ref={scrollRef}>
       <NavBar
         title={title}
+        brand={activeTab === 'home'}
         scrollRef={scrollRef}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      <div className="tab-fade" key={activeTab}>
+      <main className="tab-fade" key={activeTab}>
         {activeTab === 'home' && (
           <HomeScreen onStartScan={startScan} />
         )}
@@ -99,7 +100,7 @@ function App() {
         {activeTab === 'history' && <HistoryView />}
 
         {activeTab === 'learn' && <InfoSection />}
-      </div>
+      </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} onOpenSettings={() => setSettingsOpen(true)} />
 

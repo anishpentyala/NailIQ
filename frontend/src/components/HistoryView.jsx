@@ -81,26 +81,39 @@ function FindingDetail({ finding }) {
   )
 }
 
-function ScanCard({ scan, previousScan }) {
+function ScanCard({ scan, previousScan, defaultOpen }) {
   const { t, lang } = useI18n()
+  const [open, setOpen] = useState(defaultOpen)
   const status = overallStatus(scan.findings, t)
   const changed = changedLabels(scan, previousScan)
 
   return (
     <div className="home-card history-card">
-      <div className="history-card-head">
+      <button
+        type="button"
+        className="history-card-head"
+        aria-expanded={open}
+        aria-controls={`scan-body-${scan.id}`}
+        onClick={() => setOpen((o) => !o)}
+      >
         <div className={`result-icon result-icon--${status.verdict} history-card-icon`}>
           <Icon name={VERDICT_ICON[status.verdict]} size={20} />
         </div>
         <div className="history-card-info">
           <span className="history-card-status">{status.label}</span>
           <span className="history-card-time">{relativeTime(scan.created_at, t, lang)}</span>
+          {!open && (
+            <span className="history-card-dots" aria-hidden="true">
+              {scan.findings.map((f) => <span key={f.label} className={`history-finding-dot history-finding-dot--${f.verdict}`} />)}
+            </span>
+          )}
         </div>
         {scan.isPlaceholder && <span className="history-example-badge">{t('history.example')}</span>}
         {changed.size > 0 && <span className="history-changed-badge">{t('history.changed')}</span>}
-      </div>
+        <span className={`history-card-chevron ${open ? 'is-open' : ''}`}><Icon name="chevronRight" size={16} /></span>
+      </button>
 
-      <div className="history-card-body">
+      {open && <div className="history-card-body" id={`scan-body-${scan.id}`}>
         {scan.findings.map((f) => (
           <details key={f.label} className="history-finding-detail">
             <summary className="history-finding-row">
@@ -122,7 +135,7 @@ function ScanCard({ scan, previousScan }) {
             <FindingDetail finding={f} />
           </details>
         ))}
-      </div>
+      </div>}
     </div>
   )
 }
@@ -204,7 +217,7 @@ export default function HistoryView() {
           <AngleTrend scans={scans} />
           <div className="history-list">
             {scans.map((scan, i) => (
-              <ScanCard key={scan.id} scan={scan} previousScan={scans[i + 1]} />
+              <ScanCard key={scan.id} scan={scan} previousScan={scans[i + 1]} defaultOpen={i === 0} />
             ))}
           </div>
         </>
