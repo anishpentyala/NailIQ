@@ -239,6 +239,7 @@ export default {
     "scanAgain": "Escanear novamente",
     "disclaimer": "O NailIQ é uma ferramenta educacional de triagem, não um dispositivo médico. Ele não diagnostica nenhuma condição. Sempre consulte um médico em caso de preocupações com a saúde.",
     "sources": "Método e honestidade: o limiar do ângulo de baqueteamento segue Hsu et al. (2024); as verificações de cor e textura utilizam limiares heurísticos não calibrados e constituem sinais de triagem, não medições. As leituras de cor são ajustadas de acordo com a iluminação e o tom de pele, mas a precisão em condições reais não foi verificada.",
+    "pointsCaption": "Pontos brilhantes: onde o modelo de IA mais olhou. Não é um diagnóstico.",
     "measuredCaption": "A caixa mostra a área da unha que as verificações de cor mediram.",
     "measuredToggle": "Área medida",
     "gradcamToggle": "Atenção da IA",

@@ -2503,3 +2503,24 @@
 @keyframes cam-spin { to { transform: rotate(360deg); } }
 :root.a11y-reduce-motion .cam-track-spin { animation: none; }
 @media (prefers-reduced-motion: reduce) { .cam-track-spin { animation: none; } }
+
+/* Attention points on the hero photo: dormant until the scroll "reaches" them, then pop in with a ping ring. */
+.hero-point {
+  position: absolute; z-index: 4; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+  background: var(--glow); box-shadow: 0 0 14px 4px var(--glow);
+  transform: scale(0); opacity: 0; transition: transform 0.5s var(--ease-spring), opacity 0.4s;
+}
+.hero-point.is-on { transform: scale(var(--s, 1)); opacity: 1; }
+.hero-point::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid var(--glow);
+  animation: hero-ping 1.8s ease-out infinite; opacity: 0;
+}
+.hero-point.is-on::after { opacity: 1; }
+@keyframes hero-ping { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(2.1); opacity: 0; } }
+.hero-photo-img { will-change: left, top, width; }
+
+/* sticky needs a tall (stretched) parent and no overflow:hidden ancestor, so the hero clips instead */
+.scan-hero { overflow: clip; }
+.scan-hero-body { align-items: stretch; }
+.hero-photo-wrap { position: static; display: block; }
+.hero-photo-sticky { position: sticky; top: 60px; display: flex; flex-direction: column; align-items: flex-start; }

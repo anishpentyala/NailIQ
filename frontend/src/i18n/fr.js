@@ -239,6 +239,7 @@ export default {
     "scanAgain": "Scanner à nouveau",
     "disclaimer": "NailIQ est un outil éducatif de dépistage, pas un dispositif médical. Il ne diagnostique aucune maladie. Consultez toujours un médecin pour vos préoccupations de santé.",
     "sources": "Méthode et honnêteté : le seuil d'angle de l'hippocratisme suit Hsu et al. (2024) ; les vérifications de couleur et de texture utilisent des seuils heuristiques non calibrés et sont des signaux de dépistage, pas des mesures. Les lectures de couleur s'ajustent à l'éclairage et à la carnation, mais leur précision en conditions réelles n'est pas vérifiée.",
+    "pointsCaption": "Points lumineux : où le modèle d'IA a le plus regardé. Pas un diagnostic.",
     "measuredCaption": "Le cadre montre la zone de l'ongle mesurée par les vérifications de couleur.",
     "measuredToggle": "Zone mesurée",
     "gradcamToggle": "Attention de l'IA",

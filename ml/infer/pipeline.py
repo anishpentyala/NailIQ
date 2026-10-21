@@ -185,6 +185,14 @@ def _gradcam_b64(image_b64):
     return gradcam.overlay_b64(image)
 
 
+def _attention_points(image_b64):
+    """Where the AI model's attention peaked on the top photo (normalized x/y), or []."""
+    image = decode_base64_image(image_b64)
+    if image is None:
+        return []
+    return gradcam.attention_points(image)
+
+
 def _photo_quality(image):
     """Focus-only quality dict for a decoded photo, or a zero score if it won't decode."""
     if image is None:
@@ -315,6 +323,7 @@ def analyze(side_image_b64, top_image_b64, top_nail_bbox=None):
                   if any(f['verdict'] != 'inconclusive' for f in geometry) else None)
         geometry = fusion.fuse(geometry, ml_top)
         overlay['gradcam'] = _gradcam_b64(top_image_b64) if ml_top is not None else None
+        overlay['attention_points'] = _attention_points(top_image_b64) if ml_top is not None else []
     routed_shapes = overlay.pop('_routed_shapes', None)
     if routed_shapes is not None:
         from .routing import merge_shape

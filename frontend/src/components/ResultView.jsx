@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { failureReasonMessage } from '../failureReasons'
 import { submitFeedback } from '../api'
 import Icon from './Icon'
@@ -153,37 +153,84 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   )
 }
 
-// Circular close-up of the nail the checks measured, with a glowing outline on the measured area. The photo is
-// zoomed so the measured box sits at the centre; the glow marks where we looked, never where a sign "is".
-function HeroPhoto({ topImage, bbox, gradcam, tone }) {
+// Scroll progress (0 -> 1) of the hero inside the app's scroll container. The photo "flies" over the finger as the
+// user scrolls past the sign cards. With reduced motion it stays at 0 and every point is shown.
+function useHeroProgress(ref) {
+  const [p, setP] = useState(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || document.documentElement.classList.contains('a11y-reduce-motion')) return
+    const hero = el.closest('.scan-hero')
+    const scroller = el.closest('.app')
+    if (!hero || !scroller) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const sr = scroller.getBoundingClientRect()
+      const hr = hero.getBoundingClientRect()
+      const travel = Math.max(1, hr.height - sr.height * 0.55)
+      setP(Math.min(1, Math.max(0, (sr.top - hr.top) / travel)))
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    update()
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    return () => { scroller.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [ref])
+  return p
+}
+
+const ease = (x) => x * x * (3 - 2 * x)
+
+// Circular close-up of the nail. The photo drifts and zooms as the page scrolls, visiting each point where the AI
+// model's attention peaked (real Grad-CAM peaks from the backend); each point lights up when the view reaches it.
+// The outline marks the area the color checks measured. Points show where the model looked, never what a sign is.
+function HeroPhoto({ topImage, bbox, gradcam, attention, tone }) {
   const { t } = useI18n()
+  const wrapRef = useRef(null)
+  const progress = useHeroProgress(wrapRef)
+  const reduced = typeof document !== 'undefined' && document.documentElement.classList.contains('a11y-reduce-motion')
   const [view, setView] = useState('measured')
   const [ar, setAr] = useState(1)
   if (!topImage) return null
   const showGradcam = gradcam && view === 'gradcam'
 
+  const pts = (attention ?? []).slice(0, 3)
   let imgStyle = { left: 0, top: 0, width: '100%' }
   let box = null
+  let dots = []
   if (bbox) {
     const [x0, y0, x1, y1] = bbox
     const bw = Math.max(x1 - x0, 0.04)
-    const cx = (x0 + x1) / 2
-    const cy = (y0 + y1) / 2
-    const w = Math.max(55 / bw, 100, 100 * ar) // image width as % of the circle
+    const center = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 }
+    // waypoints: the measured nail first, then each attention point
+    const way = [center, ...pts]
+    const seg = way.length - 1
+    const f = seg === 0 ? 0 : progress * seg
+    const i = Math.min(Math.floor(f), Math.max(seg - 1, 0))
+    const k = seg === 0 ? 0 : ease(f - i)
+    const a = way[i]
+    const b = way[Math.min(i + 1, way.length - 1)]
+    const fx = a.x + (b.x - a.x) * k
+    const fy = a.y + (b.y - a.y) * k
+    const zoom = 1 + 0.25 * ease(Math.min(1, progress * 1.6)) // pushes in as the scan "locks on"
+    const w = Math.max(55 / bw, 100, 100 * ar) * zoom // image width as % of the circle
     const h = w / ar
-    const left = Math.min(0, Math.max(100 - w, 50 - cx * w))
-    const top = Math.min(0, Math.max(100 - h, 50 - cy * h))
+    const left = Math.min(0, Math.max(100 - w, 40 - fx * w)) // anchored left of centre: the right of the circle is off-screen
+    const top = Math.min(0, Math.max(100 - h, 50 - fy * h))
     imgStyle = { left: `${left}%`, top: `${top}%`, width: `${w}%` }
-    box = {
-      left: `${left + x0 * w}%`,
-      top: `${top + y0 * h}%`,
-      width: `${(x1 - x0) * w}%`,
-      height: `${(y1 - y0) * h}%`,
-    }
+    box = { left: `${left + x0 * w}%`, top: `${top + y0 * h}%`, width: `${(x1 - x0) * w}%`, height: `${(y1 - y0) * h}%` }
+    dots = pts.map((pt, n) => ({
+      key: n,
+      left: `${left + pt.x * w}%`,
+      top: `${top + pt.y * h}%`,
+      on: reduced || progress >= (n + 0.35) / (pts.length + 0.35) * 0.95,
+      size: 0.7 + 0.5 * (pt.strength ?? 1),
+    }))
   }
 
   return (
-    <div className="hero-photo-wrap">
+    <div className="hero-photo-wrap" ref={wrapRef}>
+      <div className="hero-photo-sticky">
       <div className={`hero-photo hero-photo--${tone}`}>
         {showGradcam ? (
           <img className="hero-photo-img hero-photo-img--fill" src={`data:image/jpeg;base64,${gradcam}`} alt={t('result.gradcamAlt')} />
@@ -197,6 +244,9 @@ function HeroPhoto({ topImage, bbox, gradcam, tone }) {
               onLoad={(e) => setAr(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight || 1)}
             />
             {box && <div className="hero-measure" style={box} />}
+            {dots.map((d) => (
+              <span key={d.key} className={`hero-point ${d.on ? 'is-on' : ''}`} style={{ left: d.left, top: d.top, '--s': d.size }} />
+            ))}
           </>
         )}
         <div className="hero-scanline" aria-hidden="true" />
@@ -211,7 +261,10 @@ function HeroPhoto({ topImage, bbox, gradcam, tone }) {
           </button>
         </div>
       )}
-      <p className="hero-photo-caption">{showGradcam ? t('result.gradcamCaption') : t('result.measuredCaption')}</p>
+      <p className="hero-photo-caption">
+        {showGradcam ? t('result.gradcamCaption') : pts.length > 0 ? t('result.pointsCaption') : t('result.measuredCaption')}
+      </p>
+      </div>
     </div>
   )
 }
@@ -228,7 +281,7 @@ function jumpToFinding(label) {
   el.classList.add('is-flash')
 }
 
-function ScanHero({ findings, outside, inconclusive, topImage, bbox, gradcam, onReset }) {
+function ScanHero({ findings, outside, inconclusive, topImage, bbox, gradcam, attention, onReset }) {
   const { t } = useI18n()
   let tone = 'within'
   let summary = t('result.summaryWithin')
@@ -270,7 +323,7 @@ function ScanHero({ findings, outside, inconclusive, topImage, bbox, gradcam, on
             </button>
           ))}
         </div>
-        <HeroPhoto topImage={topImage} bbox={bbox} gradcam={gradcam} tone={tone} />
+        <HeroPhoto topImage={topImage} bbox={bbox} gradcam={gradcam} attention={attention} tone={tone} />
       </div>
 
       <div className="scan-hero-summary">
@@ -471,6 +524,7 @@ export default function ResultView({ result, topImage, onReset }) {
         topImage={topImage}
         bbox={bbox}
         gradcam={gradcam}
+        attention={result.overlay?.attention_points ?? []}
         onReset={onReset}
       />
       <div className="print-only-block">

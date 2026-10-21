@@ -206,6 +206,7 @@ export default {
       'NailIQ es una herramienta educativa de detección, no un dispositivo médico. No diagnostica ninguna condición. Consulta siempre a un médico sobre tus preocupaciones de salud.',
     sources:
       'Método y honestidad: el umbral del ángulo de acropaquia sigue a Hsu et al. (2024); las revisiones de color y textura usan umbrales heurísticos sin calibrar y son señales de detección, no mediciones. Las lecturas de color se ajustan a la iluminación y al tono de piel, pero su precisión en el mundo real no está verificada.',
+    pointsCaption: 'Puntos brillantes: donde más se fijó el modelo de IA. No es un diagnóstico.',
     measuredCaption: 'El recuadro muestra el área de la uña que midieron las revisiones de color.',
     measuredToggle: 'Área medida',
     gradcamToggle: 'Atención de la IA',

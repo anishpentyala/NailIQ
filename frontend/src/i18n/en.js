@@ -207,6 +207,7 @@ export default {
       'NailIQ is an educational screening tool, not a medical device. It does not diagnose any condition. Always consult a doctor about health concerns.',
     sources:
       'Method & honesty: the clubbing-angle threshold follows Hsu et al. (2024); the color and texture checks use uncalibrated heuristic thresholds and are screening signals, not measurements. Color readings adjust for lighting and skin tone, but real-world accuracy is unverified.',
+    pointsCaption: 'Glowing points: where the AI model looked most. Not a diagnosis.',
     measuredCaption: 'The box shows the nail area the color checks measured.',
     photoAlt: 'Your top-down nail photo',
     measuredToggle: 'Measured area',

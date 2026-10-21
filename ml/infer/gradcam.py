@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 
 from . import classifier
-from .preprocessing import crop_to_finger_roi
+from .preprocessing import crop_to_finger_roi, finger_roi_box
 
 OVERLAY_SIZE = 256
 
@@ -97,3 +97,79 @@ def overlay_b64(image_bgr):
         return base64.b64encode(buf.tobytes()).decode("ascii")
     except Exception:  # noqa: BLE001 -- explanation must never break the response
         return None
+
+
+MAX_ATTENTION_POINTS = 3
+MIN_PEAK_FRAC = 0.6  # a secondary peak must be at least this fraction of the strongest one
+PEAK_SEPARATION = 0.2  # minimum distance between peaks, as a fraction of the heat map's side
+
+
+def cam_peaks_to_image_points(cam, roi_box, image_hw, img_size, k=MAX_ATTENTION_POINTS):
+    """Turn a Grad-CAM map into up to `k` attention points in the ORIGINAL photo's normalized coordinates.
+
+    `cam` is the (h, w) heat map over the center-cropped `img_size` square the model saw. That square came from the
+    ROI crop (`roi_box`, pixel box in the original photo) after `Resize(256)` on the shorter side + `CenterCrop`,
+    so a heat-map cell is mapped back through the same steps. Points are where the model's attention peaked, not
+    where any particular sign was found. Returns [{"x", "y", "strength"}], strongest first (strength in 0-1).
+    """
+    cam = np.asarray(cam, dtype=np.float32)
+    if cam.size == 0 or cam.max() <= 0:
+        return []
+    cam = cv2.GaussianBlur(cam, (0, 0), max(cam.shape) / 24)
+    cam = cam / (cam.max() + 1e-8)
+    ch, cw = cam.shape
+    x0, y0, x1, y1 = roi_box
+    rw, rh = x1 - x0, y1 - y0
+    s = 256 / min(rw, rh)
+    ox = (rw * s - img_size) / 2
+    oy = (rh * s - img_size) / 2
+    H, W = image_hw
+
+    work = cam.copy()
+    points = []
+    for _ in range(k):
+        iy, ix = np.unravel_index(int(work.argmax()), work.shape)
+        peak = float(cam[iy, ix])
+        if points and peak < MIN_PEAK_FRAC * points[0]["strength"]:
+            break
+        if peak <= 0:
+            break
+        u, v = (ix + 0.5) / cw, (iy + 0.5) / ch
+        px = x0 + (ox + u * img_size) / s
+        py = y0 + (oy + v * img_size) / s
+        points.append({"x": round(float(np.clip(px / W, 0, 1)), 4), "y": round(float(np.clip(py / H, 0, 1)), 4),
+                       "strength": round(peak, 3)})
+        yy, xx = np.ogrid[:ch, :cw]
+        work[((xx - ix) / cw) ** 2 + ((yy - iy) / ch) ** 2 < PEAK_SEPARATION ** 2] = 0
+        if work.max() <= 0:
+            break
+    return points
+
+
+def attention_points(image_bgr, k=MAX_ATTENTION_POINTS):
+    """Attention points (see cam_peaks_to_image_points) for the top photo, or [] if unavailable."""
+    if not is_available():
+        return []
+    try:
+        from torchvision import transforms
+
+        s = classifier._load()
+        torch = s["torch"]
+        model = s["members"][0][0]
+        box = finger_roi_box(image_bgr)
+        h, w = image_bgr.shape[:2]
+        if box is None:
+            box = (0, 0, w, h)
+        x0, y0, x1, y1 = box
+        rgb = cv2.cvtColor(image_bgr[y0:y1, x0:x1], cv2.COLOR_BGR2RGB)
+        tensor = torch.from_numpy(np.ascontiguousarray(rgb)).permute(2, 0, 1).float() / 255.0
+        size = s["meta"]["img_size"]
+        tf = transforms.Compose([
+            transforms.Resize(256, antialias=True),
+            transforms.CenterCrop(size),
+            transforms.Normalize(s["meta"]["mean"], s["meta"]["std"]),
+        ])
+        cam = _heatmap(model, tf(tensor).unsqueeze(0), model.features[-1], torch)
+        return cam_peaks_to_image_points(cam, box, (h, w), size, k)
+    except Exception:  # noqa: BLE001 -- explanation must never break the response
+        return []

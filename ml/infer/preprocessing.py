@@ -164,21 +164,11 @@ def extract_best_contour(image_bgr, min_area=MIN_CONTOUR_AREA):
 ROI_PAD_FRAC = 0.15
 
 
-def crop_to_finger_roi(image_bgr, pad_frac=ROI_PAD_FRAC):
-    """Crop to the detected finger's bounding box (with padding).
-
-    The classifier was hurt by background clutter: feeding the whole frame let it
-    key off whatever was behind the finger. Cropping to the finger ROI first --
-    using the same contour detector the geometry track relies on -- aligns what
-    the CNN sees at inference with the tight nail crops it trained on.
-
-    Falls back to the original image when no finger contour is found (e.g. an
-    already-cropped dataset image, or a frame the detector can't segment), so it
-    never throws and never returns an empty crop.
-    """
+def finger_roi_box(image_bgr, pad_frac=ROI_PAD_FRAC):
+    """(x0, y0, x1, y1) pixel box of the detected finger plus padding, or None when no finger contour is found."""
     contour, validation = extract_best_contour(image_bgr)
     if not validation["is_valid"]:
-        return image_bgr
+        return None
 
     h, w = image_bgr.shape[:2]
     xs, ys = contour[:, 0], contour[:, 1]
@@ -191,6 +181,24 @@ def crop_to_finger_roi(image_bgr, pad_frac=ROI_PAD_FRAC):
     y0 = max(0, y0 - pad_y)
     x1 = min(w, x1 + pad_x)
     y1 = min(h, y1 + pad_y)
+    return (x0, y0, x1, y1) if x1 > x0 and y1 > y0 else None
 
+
+def crop_to_finger_roi(image_bgr, pad_frac=ROI_PAD_FRAC):
+    """Crop to the detected finger's bounding box (with padding).
+
+    The classifier was hurt by background clutter: feeding the whole frame let it
+    key off whatever was behind the finger. Cropping to the finger ROI first --
+    using the same contour detector the geometry track relies on -- aligns what
+    the CNN sees at inference with the tight nail crops it trained on.
+
+    Falls back to the original image when no finger contour is found (e.g. an
+    already-cropped dataset image, or a frame the detector can't segment), so it
+    never throws and never returns an empty crop.
+    """
+    box = finger_roi_box(image_bgr, pad_frac)
+    if box is None:
+        return image_bgr
+    x0, y0, x1, y1 = box
     crop = image_bgr[y0:y1, x0:x1]
     return crop if crop.size else image_bgr
