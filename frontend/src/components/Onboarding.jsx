@@ -16,10 +16,10 @@ const NAIL_X = 0.49
 // `side` is where the text sits; the nail moves to the opposite side. tx/ty are where the focus point lands on screen.
 const SECTIONS = [
   { id: 'welcome', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.34, s: 0.8, r: 0 },
-  { id: 'koilonychia', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.27 }, tx: 0.76, ty: 0.4, s: 1.15, r: 5, dot: { x: 0.3, y: 0.27 } },
-  { id: 'leukonychia', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.34 }, tx: 0.24, ty: 0.42, s: 1.25, r: -5, dot: { x: 0.6, y: 0.34 } },
-  { id: 'pitting', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.4 }, tx: 0.76, ty: 0.44, s: 1.4, r: 5, dot: { x: 0.38, y: 0.4 } },
-  { id: 'cyanosis', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.45 }, tx: 0.24, ty: 0.4, s: 1.25, r: -5, dot: { x: 0.5, y: 0.47 } },
+  { id: 'koilonychia', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.27 }, tx: 0.73, ty: 0.4, s: 1.15, r: 5, dot: { x: 0.62, y: 0.27 } },
+  { id: 'leukonychia', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.34 }, tx: 0.27, ty: 0.42, s: 1.25, r: -5, dot: { x: 0.37, y: 0.34 } },
+  { id: 'pitting', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.4 }, tx: 0.73, ty: 0.44, s: 1.4, r: 5, dot: { x: 0.6, y: 0.4 } },
+  { id: 'cyanosis', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.45 }, tx: 0.27, ty: 0.4, s: 1.25, r: -5, dot: { x: 0.38, y: 0.47 } },
   { id: 'photos', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.3, s: 0.7, r: 0 },
 ]
 const SIGN_SECTIONS = SECTIONS.filter((s) => s.dot)
