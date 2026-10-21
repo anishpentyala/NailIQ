@@ -395,6 +395,7 @@ export default {
     "start": "Começar",
     "example": "Ilustração de exemplo de uma unha saudável",
     "replay": "Rever a introdução",
+    "scrollHint": "Role para explorar",
     "welcomeTitle": "Suas unhas dizem muito",
     "welcomeText": "Algumas mudanças nas unhas aparecem cedo na anemia e em condições do coração, dos pulmões e do fígado. O NailIQ verifica oito delas com duas fotos.",
     "shapeTitle": "Forma e superfície",

@@ -413,6 +413,8 @@ export default {
 
     replay: 'Ver la introducción otra vez',
 
+    scrollHint: 'Desplázate para explorar',
+
     welcomeTitle: 'Tus uñas dicen mucho',
 
     welcomeText: 'Algunos cambios en las uñas aparecen pronto en la anemia y en afecciones del corazón, los pulmones y el hígado. NailIQ revisa ocho de ellos con dos fotos.',

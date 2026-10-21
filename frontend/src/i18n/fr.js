@@ -395,6 +395,7 @@ export default {
     "start": "Commencer",
     "example": "Illustration d'exemple d'un ongle sain",
     "replay": "Revoir la présentation",
+    "scrollHint": "Faites défiler pour explorer",
     "welcomeTitle": "Vos ongles en disent long",
     "welcomeText": "Certains changements des ongles apparaissent tôt dans l'anémie et dans des affections du cœur, des poumons et du foie. NailIQ en vérifie huit à partir de deux photos.",
     "shapeTitle": "Forme et surface",
