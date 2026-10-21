@@ -12,20 +12,19 @@ const IMG_H = 1820
 const IMG_AR = IMG_W / IMG_H
 const NAIL_X = 0.49
 
-// One scroll section each: the text scrolls like a normal page while the sticky photo flies to that section's pose.
-// `side` is where the text sits; a sign's own point (focus) is pinned to the free side of the screen at (tx, ty), so
-// the card never covers it. Everything else is free choreography: zoom s, spin r, 3D lean rx/ry (degrees).
+// One scroll section each: the text scrolls like a normal page while the sticky photo moves and resizes to that
+// section's pose (never rotated). `side` is where the text sits; a sign's own point (focus) is pinned to the free side
+// of the screen at (tx, ty), so the card never covers it. `s` is the size: small versions sit beside the text.
 const SECTIONS = [
-  { id: 'welcome', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.36, s: 0.8, r: 0, rx: 16, ry: -8 },
-  { id: 'koilonychia', side: 'left', group: 'shape', dot: { x: 0.58, y: 0.27 }, tx: 0.72, ty: 0.38, s: 1.3, r: -14, rx: 8, ry: -30 },
-  { id: 'leukonychia', side: 'right', group: 'color', dot: { x: 0.42, y: 0.34 }, tx: 0.28, ty: 0.62, s: 2.0, r: 24, rx: -14, ry: 14 },
-  { id: 'pitting', side: 'left', group: 'shape', dot: { x: 0.55, y: 0.4 }, tx: 0.72, ty: 0.3, s: 1.5, r: 85, rx: 0, ry: 0 },
-  { id: 'cyanosis', side: 'right', group: 'color', dot: { x: 0.42, y: 0.47 }, tx: 0.28, ty: 0.45, s: 1.35, r: -28, rx: 14, ry: -16 },
-  { id: 'photos', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.3, s: 0.68, r: 0, rx: 0, ry: 0 },
+  { id: 'welcome', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.36, s: 0.8 },
+  { id: 'koilonychia', side: 'left', group: 'shape', dot: { x: 0.58, y: 0.27 }, tx: 0.74, ty: 0.3, s: 0.5 },
+  { id: 'leukonychia', side: 'right', group: 'color', dot: { x: 0.42, y: 0.34 }, tx: 0.26, ty: 0.64, s: 2.3 },
+  { id: 'pitting', side: 'left', group: 'shape', dot: { x: 0.55, y: 0.4 }, tx: 0.72, ty: 0.26, s: 1.1 },
+  { id: 'cyanosis', side: 'right', group: 'color', dot: { x: 0.42, y: 0.47 }, tx: 0.26, ty: 0.52, s: 0.55 },
+  { id: 'photos', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.3, s: 0.68 },
 ].map((sec) => ({ ...sec, focus: sec.focus ?? sec.dot }))
 const SIGN_SECTIONS = SECTIONS.filter((s) => s.dot)
 
-const PERSPECTIVE = 1100
 const ease = (x) => x * x * (3 - 2 * x)
 const lerp = (a, b, t) => a + (b - a) * t
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
@@ -105,9 +104,6 @@ export default function Onboarding({ onDone }) {
     tx: lerp(A.tx, B.tx, u),
     ty: lerp(A.ty, B.ty, u),
     s: lerp(A.s, B.s, u),
-    r: lerp(A.r, B.r, u),
-    rx: lerp(A.rx, B.rx, u),
-    ry: lerp(A.ry, B.ry, u),
   }
 
   // each sign's point glows while the camera is on (or arriving at) its section; the welcome view shows them all softly
@@ -118,22 +114,10 @@ export default function Onboarding({ onDone }) {
     near[p.id] = clamp01(Math.max(w, soft))
   })
 
-  // Place photo point (fx, fy) at screen (tx, ty). The camera box is transformed about its center as
-  // perspective(d) translate(dx, dy) rotateX rotateY rotate scale, so push the point through the same rotations and
-  // perspective divide, then solve for the translation.
+  // Place photo point (fx, fy) at screen (tx, ty); the camera box is scaled about its center.
   const Wc = size.H * IMG_AR
-  const rad = (v) => (v * Math.PI) / 180
-  const lx = (pose.fx * Wc - Wc / 2) * pose.s
-  const ly = (pose.fy * size.H - size.H / 2) * pose.s
-  const x1 = Math.cos(rad(pose.r)) * lx - Math.sin(rad(pose.r)) * ly
-  const y1 = Math.sin(rad(pose.r)) * lx + Math.cos(rad(pose.r)) * ly
-  const x2 = Math.cos(rad(pose.ry)) * x1
-  const z2 = -Math.sin(rad(pose.ry)) * x1
-  const y3 = Math.cos(rad(pose.rx)) * y1 - Math.sin(rad(pose.rx)) * z2
-  const z3 = Math.sin(rad(pose.rx)) * y1 + Math.cos(rad(pose.rx)) * z2
-  const k = PERSPECTIVE / (PERSPECTIVE - z3)
-  const dx = (pose.tx * size.W - size.W / 2) / k - x2
-  const dy = (pose.ty * size.H - size.H / 2) / k - y3
+  const dx = pose.tx * size.W - size.W / 2 - pose.s * (pose.fx * Wc - Wc / 2)
+  const dy = pose.ty * size.H - size.H / 2 - pose.s * (pose.fy * size.H - size.H / 2)
 
   const finish = () => {
     markOnboarded()
@@ -157,7 +141,7 @@ export default function Onboarding({ onDone }) {
                 width: Wc,
                 height: size.H,
                 left: (size.W - Wc) / 2,
-                transform: `perspective(${PERSPECTIVE}px) translate(${dx}px, ${dy}px) rotateX(${pose.rx}deg) rotateY(${pose.ry}deg) rotate(${pose.r}deg) scale(${pose.s})`,
+                transform: `translate(${dx}px, ${dy}px) scale(${pose.s})`,
               }}
             >
               <NailPhoto near={near} />
