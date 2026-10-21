@@ -368,6 +368,41 @@ export default {
     },
   },
 
+  onboarding: {
+
+    label: 'NailIQ 介绍',
+
+    skip: '跳过',
+
+    next: '下一步',
+
+    back: '上一步',
+
+    start: '开始',
+
+    example: '健康指甲示意图(示例)',
+
+    replay: '重新查看介绍',
+
+    welcomeTitle: '指甲能透露很多信息',
+
+    welcomeText: '一些指甲变化会在贫血以及心、肺、肝的疾病中较早出现。NailIQ 通过两张照片检查其中八项。',
+
+    shapeTitle: '形状与表面',
+
+    shapeText: '我们会查看指甲的弧度、表面是否光滑,以及厚度。',
+
+    colorTitle: '颜色与甲下情况',
+
+    colorText: '我们会查看指甲和甲床的颜色、甲下的痕迹,以及指甲是否翘起。',
+
+    photosTitle: '两张照片,一枚指甲',
+
+    photosText: '请拍一张侧面照和一张俯视照。照片分析后即被丢弃。NailIQ 从不做诊断,只会告诉您某项体征看起来在典型范围内还是范围外。',
+
+  },
+
+
   settings: {
     title: '设置',
     open: '打开设置',

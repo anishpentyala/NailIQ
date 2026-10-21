@@ -387,6 +387,24 @@ export default {
       "onychogryphosis": "grossa, curvada"
     }
   },
+  "onboarding": {
+    "label": "Introdução ao NailIQ",
+    "skip": "Pular",
+    "next": "Avançar",
+    "back": "Voltar",
+    "start": "Começar",
+    "example": "Ilustração de exemplo de uma unha saudável",
+    "replay": "Rever a introdução",
+    "welcomeTitle": "Suas unhas dizem muito",
+    "welcomeText": "Algumas mudanças nas unhas aparecem cedo na anemia e em condições do coração, dos pulmões e do fígado. O NailIQ verifica oito delas com duas fotos.",
+    "shapeTitle": "Forma e superfície",
+    "shapeText": "Observamos como a unha se curva, se a superfície é lisa e qual a espessura.",
+    "colorTitle": "Cor e o que há por baixo",
+    "colorText": "Observamos a cor da unha e do leito, marcas sob a unha e se ela está se soltando.",
+    "photosTitle": "Duas fotos, uma unha",
+    "photosText": "Tire uma foto de lado e uma de cima. Suas fotos são analisadas e descartadas. O NailIQ nunca diagnostica: apenas indica se um sinal parece dentro ou fora da faixa típica.",
+  },
+
   "settings": {
     "title": "Configurações",
     "open": "Abrir configurações",

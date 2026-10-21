@@ -401,6 +401,41 @@ export default {
     },
   },
 
+  onboarding: {
+
+    label: 'NailIQ introduction',
+
+    skip: 'Skip',
+
+    next: 'Next',
+
+    back: 'Back',
+
+    start: 'Get started',
+
+    example: 'Example illustration of a healthy nail',
+
+    replay: 'Replay intro',
+
+    welcomeTitle: 'Your nails can say a lot',
+
+    welcomeText: 'Some nail changes show up early in anemia and in heart, lung, and liver conditions. NailIQ checks eight of them from two photos.',
+
+    shapeTitle: 'Shape and surface',
+
+    shapeText: 'We look at how the nail curves, whether its surface is smooth, and how thick it is.',
+
+    colorTitle: 'Color and what\'s underneath',
+
+    colorText: 'We look at the color of the nail and its bed, marks beneath the nail, and whether it\'s lifting away.',
+
+    photosTitle: 'Two photos, one nail',
+
+    photosText: 'Take a side view and a top-down view. Your photos are analyzed and discarded. NailIQ never diagnoses - it only tells you whether a sign looks within or outside the typical range.',
+
+  },
+
+
   settings: {
     title: 'Settings',
     open: 'Open settings',

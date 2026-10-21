@@ -7,6 +7,8 @@ import HistoryView from './components/HistoryView'
 import BottomNav from './components/BottomNav'
 import SettingsSheet from './components/SettingsSheet'
 import NavBar from './components/NavBar'
+import Onboarding from './components/Onboarding'
+import { hasOnboarded } from './onboardingState'
 import { analyzeImages } from './api'
 import { useI18n } from './i18n'
 import './App.css'
@@ -19,6 +21,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [intro, setIntro] = useState(() => !hasOnboarded())
   const scrollRef = useRef(null)
 
   const handleCapture = useCallback(async ({ sideImage, topImage, topNailBbox }) => {
@@ -52,6 +55,8 @@ function App() {
     setError(null)
     setActiveTab('home')
   }, [])
+
+  if (intro) return <Onboarding onDone={() => setIntro(false)} />
 
   // go full-screen while the camera is active
   const isCameraActive = activeTab === 'scan' && !result && !error
@@ -98,7 +103,12 @@ function App() {
 
       <BottomNav active={activeTab} onChange={setActiveTab} onOpenSettings={() => setSettingsOpen(true)} />
 
-      {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsSheet
+          onClose={() => setSettingsOpen(false)}
+          onReplayIntro={() => { setSettingsOpen(false); setIntro(true) }}
+        />
+      )}
     </div>
   )
 }

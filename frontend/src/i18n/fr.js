@@ -387,6 +387,24 @@ export default {
       "onychogryphosis": "épais, recourbé"
     }
   },
+  "onboarding": {
+    "label": "Présentation de NailIQ",
+    "skip": "Passer",
+    "next": "Suivant",
+    "back": "Retour",
+    "start": "Commencer",
+    "example": "Illustration d'exemple d'un ongle sain",
+    "replay": "Revoir la présentation",
+    "welcomeTitle": "Vos ongles en disent long",
+    "welcomeText": "Certains changements des ongles apparaissent tôt dans l'anémie et dans des affections du cœur, des poumons et du foie. NailIQ en vérifie huit à partir de deux photos.",
+    "shapeTitle": "Forme et surface",
+    "shapeText": "Nous regardons la courbure de l'ongle, si sa surface est lisse et son épaisseur.",
+    "colorTitle": "Couleur et ce qu'il y a dessous",
+    "colorText": "Nous regardons la couleur de l'ongle et du lit, les marques sous l'ongle et s'il se décolle.",
+    "photosTitle": "Deux photos, un ongle",
+    "photosText": "Prenez une vue de profil et une vue de dessus. Vos photos sont analysées puis supprimées. NailIQ ne pose jamais de diagnostic : il indique seulement si un signe semble dans la plage typique ou en dehors.",
+  },
+
   "settings": {
     "title": "Paramètres",
     "open": "Ouvrir les paramètres",

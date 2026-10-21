@@ -397,6 +397,41 @@ export default {
     },
   },
 
+  onboarding: {
+
+    label: 'Introducción a NailIQ',
+
+    skip: 'Omitir',
+
+    next: 'Siguiente',
+
+    back: 'Atrás',
+
+    start: 'Empezar',
+
+    example: 'Ilustración de ejemplo de una uña sana',
+
+    replay: 'Ver la introducción otra vez',
+
+    welcomeTitle: 'Tus uñas dicen mucho',
+
+    welcomeText: 'Algunos cambios en las uñas aparecen pronto en la anemia y en afecciones del corazón, los pulmones y el hígado. NailIQ revisa ocho de ellos con dos fotos.',
+
+    shapeTitle: 'Forma y superficie',
+
+    shapeText: 'Observamos cómo se curva la uña, si su superficie es lisa y qué tan gruesa es.',
+
+    colorTitle: 'Color y lo que hay debajo',
+
+    colorText: 'Observamos el color de la uña y del lecho, las marcas debajo de la uña y si se está levantando.',
+
+    photosTitle: 'Dos fotos, una uña',
+
+    photosText: 'Toma una vista lateral y una vista desde arriba. Tus fotos se analizan y se descartan. NailIQ nunca diagnostica: solo te dice si un signo parece dentro o fuera del rango típico.',
+
+  },
+
+
   settings: {
     title: 'Configuración',
     open: 'Abrir configuración',

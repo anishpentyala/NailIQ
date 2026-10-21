@@ -25,7 +25,7 @@ function Toggle({ id, label, description, checked, onChange }) {
   )
 }
 
-export default function SettingsSheet({ onClose }) {
+export default function SettingsSheet({ onClose, onReplayIntro }) {
   const { t, lang, setLang, highContrast, largeText, reduceMotion, darkMode, setPref } = useI18n()
   const sheetRef = useRef(null)
   const [privacyOpen, setPrivacyOpen] = useState(false)
@@ -121,6 +121,11 @@ export default function SettingsSheet({ onClose }) {
           >
             <Icon name="info" size={16} />
             {t('settings.privacyLink')}
+          </button>
+
+          <button type="button" className="settings-link" onClick={onReplayIntro}>
+            <Icon name="sparkle" size={16} />
+            {t('onboarding.replay')}
           </button>
 
           <p className="settings-note">{t('settings.note')}</p>
