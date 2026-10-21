@@ -21,7 +21,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [intro, setIntro] = useState(() => !hasOnboarded())
+  const [intro, setIntro] = useState(() => !hasOnboarded() || new URLSearchParams(window.location.search).has('intro'))
   const scrollRef = useRef(null)
 
   const handleCapture = useCallback(async ({ sideImage, topImage, topNailBbox }) => {
