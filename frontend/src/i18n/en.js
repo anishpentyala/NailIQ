@@ -413,7 +413,7 @@ export default {
 
     start: 'Get started',
 
-    example: 'Example illustration of a healthy nail',
+    example: 'Example photo of a healthy nail',
 
     replay: 'Replay intro',
 

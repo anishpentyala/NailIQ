@@ -409,7 +409,7 @@ export default {
 
     start: 'Empezar',
 
-    example: 'Ilustración de ejemplo de una uña sana',
+    example: 'Foto de ejemplo de una uña sana',
 
     replay: 'Ver la introducción otra vez',
 

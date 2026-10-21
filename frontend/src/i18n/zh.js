@@ -380,7 +380,7 @@ export default {
 
     start: '开始',
 
-    example: '健康指甲示意图(示例)',
+    example: '健康指甲示例照片',
 
     replay: '重新查看介绍',
 

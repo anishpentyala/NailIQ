@@ -393,7 +393,7 @@ export default {
     "next": "Avançar",
     "back": "Voltar",
     "start": "Começar",
-    "example": "Ilustração de exemplo de uma unha saudável",
+    "example": "Foto de exemplo de uma unha saudável",
     "replay": "Rever a introdução",
     "scrollHint": "Role para explorar",
     "welcomeTitle": "Suas unhas dizem muito",

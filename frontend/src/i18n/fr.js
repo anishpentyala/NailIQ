@@ -393,7 +393,7 @@ export default {
     "next": "Suivant",
     "back": "Retour",
     "start": "Commencer",
-    "example": "Illustration d'exemple d'un ongle sain",
+    "example": "Photo d'exemple d'un ongle sain",
     "replay": "Revoir la présentation",
     "scrollHint": "Faites défiler pour explorer",
     "welcomeTitle": "Vos ongles en disent long",
