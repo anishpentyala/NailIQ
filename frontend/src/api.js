@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { visibleFindings } from './conditions'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
@@ -8,7 +9,7 @@ export async function analyzeImages({ sideImage, topImage, topNailBbox }) {
     top_image: topImage,
     ...(topNailBbox ? { top_nail_bbox: topNailBbox } : {}),
   })
-  return res.data
+  return { ...res.data, findings: visibleFindings(res.data.findings) }
 }
 
 export async function validatePhoto(base64Image, view, topNailBbox) {
@@ -22,7 +23,8 @@ export async function validatePhoto(base64Image, view, topNailBbox) {
 
 export async function getHistory(limit) {
   const res = await axios.get(`${API_BASE}/history`, { params: limit ? { limit } : undefined })
-  return res.data
+  const data = res.data
+  return { ...data, scans: (data.scans ?? []).map((scan) => ({ ...scan, findings: visibleFindings(scan.findings) })) }
 }
 
 export async function submitFeedback({ scanId, label, shownVerdict, agreed, note }) {

@@ -40,7 +40,7 @@ export default {
     heroAlt: 'Illustration of a phone scanning a fingernail',
     heroTitle: "Spot nail changes worth a doctor's look",
     heroText:
-      'Some nail signs of anemia, heart, lung, and liver conditions show up early - but develop too slowly to notice on your own. Two quick photos check for fourteen of them.',
+      'Some nail signs of anemia, heart, lung, and liver conditions show up early - but develop too slowly to notice on your own. Two quick photos check for eight of them.',
     cta: 'Start a scan',
     whyTitle: 'Why it matters',
     whyRows: {
@@ -91,6 +91,7 @@ export default {
       },
     },
     showAll: 'Show all {n}',
+    notYet: "Six more signs are still being validated and aren't reported yet.",
     showLess: 'Show less',
     dailyTip: 'Daily tip',
     tips: [

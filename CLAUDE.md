@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
+**Reported count (2026-10-20, owner decision): the app says EIGHT everywhere** - koilonychia, leukonychia, cyanosis, onycholysis, Beau's lines (Limited validation), splinter hemorrhages, pitting, onychogryphosis. `frontend/src/conditions.js` (`CONDITION_KEYS` / `WITHHELD_KEYS`) is the single source of truth; `frontend/src/api.js` filters `/analyze` and `/history` findings through `visibleFindings`, the hero text and home list say eight, and the withheld six (clubbing, melanonychia, pallor, Terry's, Lindsay's, Muehrcke's) are never shown. The backend still computes all fourteen (needed for /feedback and future re-validation). When a sign is enabled or withheld, update `CONDITION_KEYS`, the hero text in all six locales, `README.md`, and `validation_policy.py` together.
+
 NailIQ: a precautionary screener for nail-based signs of systemic disease. It
 covers fourteen conditions across four tracks: digital clubbing and koilonychia/spoon
 nails (side-profile geometry, fused with a top-down CNN), eleven top-down

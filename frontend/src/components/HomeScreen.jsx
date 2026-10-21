@@ -3,6 +3,7 @@ import Icon from './Icon'
 import { getHistory } from '../api'
 import { overallStatus, relativeTime } from '../scanStatus'
 import { useI18n, findingName } from '../i18n'
+import { CONDITION_KEYS } from '../conditions'
 
 function tipOfTheDay(tips) {
   const start = new Date(new Date().getFullYear(), 0, 0)
@@ -139,7 +140,7 @@ const WHY_ROWS = [
   { key: 'baseline', icon: 'history' },
 ]
 
-const SCREEN_ROWS = [
+const ALL_ROWS = [
   { key: 'clubbing', icon: 'finger' },
   { key: 'koilonychia', icon: 'spoon' },
   { key: 'leukonychia', icon: 'sparkle' },
@@ -155,6 +156,8 @@ const SCREEN_ROWS = [
   { key: 'pitting', icon: 'search' },
   { key: 'onychogryphosis', icon: 'finger' },
 ]
+
+const SCREEN_ROWS = ALL_ROWS.filter((r) => CONDITION_KEYS.includes(r.key))
 
 const COLLAPSED_ROW_COUNT = 4
 
@@ -237,6 +240,7 @@ export default function HomeScreen({ onStartScan, onViewHistory }) {
             </span>
             <span className="info-chevron"><Icon name="chevronRight" size={18} /></span>
           </button>
+          <p className="home-not-yet">{t('home.notYet')}</p>
         </div>
       </section>
 

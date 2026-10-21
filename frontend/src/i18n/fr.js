@@ -38,7 +38,7 @@ export default {
     "title": "Accueil",
     "heroAlt": "Illustration d'un téléphone scannant un ongle",
     "heroTitle": "Repérez les changements d'ongles qui méritent un avis médical",
-    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles - mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient quatorze.",
+    "heroText": "Certains signes d'anémie et de maladies du cœur, des poumons et du foie apparaissent tôt sur les ongles - mais évoluent trop lentement pour être remarqués seul. Deux photos rapides en vérifient huit.",
     "cta": "Lancer un scan",
     "whyTitle": "Pourquoi est-ce important ?",
     "whyRows": {
@@ -136,6 +136,7 @@ export default {
       }
     },
     "showAll": "Afficher les {n}",
+    "notYet": "Six autres signes sont encore en cours de validation et ne sont pas encore signalés.",
     "showLess": "Afficher moins",
     "dailyTip": "Conseil du jour",
     "tips": [

@@ -38,7 +38,7 @@ export default {
     "title": "Início",
     "heroAlt": "Ilustração de um celular escaneando uma unha",
     "heroTitle": "Identifique alterações nas unhas que merecem uma consulta médica",
-    "heroText": "Alguns sinais de anemia e de doenças cardíacas, pulmonares e hepáticas surgem cedo nas unhas - mas se desenvolvem tão lentamente que é difícil percebê-los por conta própria. Duas fotos rápidas verificam catorze desses sinais.",
+    "heroText": "Alguns sinais de anemia e de doenças cardíacas, pulmonares e hepáticas surgem cedo nas unhas - mas se desenvolvem tão lentamente que é difícil percebê-los por conta própria. Duas fotos rápidas verificam oito desses sinais.",
     "cta": "Iniciar um escaneamento",
     "whyTitle": "Por que isso é importante",
     "whyRows": {
@@ -136,6 +136,7 @@ export default {
       }
     },
     "showAll": "Ver todos os {n}",
+    "notYet": "Outros seis sinais ainda estão em validação e ainda não são informados.",
     "showLess": "Ver menos",
     "dailyTip": "Dica do dia",
     "tips": [

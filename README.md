@@ -3,7 +3,7 @@
 A precautionary screener for nail-based signs of systemic disease. Digital clubbing
 is present in ~35% of non-small-cell lung cancer cases and is also linked to heart
 disease, COPD, and liver disease; koilonychia (spoon nails) is linked to iron
-deficiency anemia. NailIQ screens for **fourteen** such signs - clubbing and
+deficiency anemia. NailIQ reports **eight** such signs (seven validated at >= 60% recall with <= 5% false alarms on held-out dataset photos, plus Beau's lines labeled "Limited validation"; six more are built but deliberately not reported because they did not pass). The engine covers fourteen: clubbing and
 koilonychia from the side profile, plus twelve signs from a top-down view:
 leukonychia, melanonychia, pallor, cyanosis, Terry's nails, Lindsay's nails,
 onycholysis, Beau's lines, Muehrcke's lines, splinter hemorrhages, pitting, and
@@ -175,7 +175,7 @@ Request:
 `side_image` drives the geometry track; `top_image` is classified by the CNN (fused
 with geometry into the two shape findings) and is measured by the color/texture track
 (twelve findings - ten fused with the color CNN, melanonychia classical-heuristic-only,
-onychogryphosis CNN-only). A scan returns **fourteen findings** in total.
+onychogryphosis CNN-only). The API returns fourteen findings per scan; the app shows only the eight validated/limited ones (`frontend/src/conditions.js`, filtered in `frontend/src/api.js`) and the six withheld ones come back `not_validated`.
 
 Response (the two geometry conditions come back `track_used: "fused"` when the CNN is
 available; five color conditions come back `track_used: "color_fused"`; the remaining

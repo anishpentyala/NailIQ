@@ -39,7 +39,7 @@ export default {
     heroAlt: 'Ilustración de un teléfono escaneando una uña',
     heroTitle: 'Detecta cambios en tus uñas que merecen una revisión médica',
     heroText:
-      'Algunos signos de anemia y de condiciones del corazón, los pulmones y el hígado aparecen primero en las uñas, pero cambian tan lento que es difícil notarlo por tu cuenta. Dos fotos rápidas revisan catorce de ellos.',
+      'Algunos signos de anemia y de condiciones del corazón, los pulmones y el hígado aparecen primero en las uñas, pero cambian tan lento que es difícil notarlo por tu cuenta. Dos fotos rápidas revisan ocho de ellos.',
     cta: 'Iniciar un escaneo',
     whyTitle: 'Por qué importa',
     whyRows: {
@@ -90,6 +90,7 @@ export default {
       },
     },
     showAll: 'Ver los {n}',
+    notYet: 'Otros seis signos aún se están validando y todavía no se informan.',
     showLess: 'Ver menos',
     dailyTip: 'Consejo del día',
     tips: [
