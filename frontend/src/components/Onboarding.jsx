@@ -10,29 +10,26 @@ import nailPhoto from '../assets/onboarding-nail.webp'
 const IMG_W = 900
 const IMG_H = 1820
 const IMG_AR = IMG_W / IMG_H
-const SIGNS = [
-  { key: 'koilonychia', x: 0.3, y: 0.27, group: 'shape' },
-  { key: 'leukonychia', x: 0.6, y: 0.34, group: 'color' },
-  { key: 'pitting', x: 0.38, y: 0.4, group: 'shape' },
-  { key: 'cyanosis', x: 0.5, y: 0.47, group: 'color' },
-]
+const NAIL_X = 0.49
 
-// Camera path, in terms of which point of the photo sits on the fixed scan line (REF_Y of the screen): zoom in to the
-// fingertip (intro), glide DOWN the finger through the signs (travel), pull back out (outro).
-const REF_Y = 0.4
-const FOCUS_X = 0.49
-const START = { s: 0.85, cy: 0.385 }
-const TOP = { s: 1.9, cy: 0.22 }
-const BOTTOM = { s: 1.9, cy: 0.52 }
-const END = { s: 0.8, cy: 0.45 }
-const NEAR_WINDOW = 0.045 // how close (photo fraction) a point must be to the scan line to light up
+// One scroll section each: the text scrolls like a normal page while the sticky photo glides to that section's pose.
+// `side` is where the text sits; the nail moves to the opposite side. tx/ty are where the focus point lands on screen.
+const SECTIONS = [
+  { id: 'welcome', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.34, s: 0.8, r: 0 },
+  { id: 'koilonychia', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.27 }, tx: 0.76, ty: 0.4, s: 1.15, r: 5, dot: { x: 0.3, y: 0.27 } },
+  { id: 'leukonychia', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.34 }, tx: 0.24, ty: 0.42, s: 1.25, r: -5, dot: { x: 0.6, y: 0.34 } },
+  { id: 'pitting', side: 'left', group: 'shape', focus: { x: NAIL_X, y: 0.4 }, tx: 0.76, ty: 0.44, s: 1.4, r: 5, dot: { x: 0.38, y: 0.4 } },
+  { id: 'cyanosis', side: 'right', group: 'color', focus: { x: NAIL_X, y: 0.45 }, tx: 0.24, ty: 0.4, s: 1.25, r: -5, dot: { x: 0.5, y: 0.47 } },
+  { id: 'photos', wide: true, focus: { x: NAIL_X, y: 0.385 }, tx: 0.5, ty: 0.3, s: 0.7, r: 0 },
+]
+const SIGN_SECTIONS = SECTIONS.filter((s) => s.dot)
 
 const ease = (x) => x * x * (3 - 2 * x)
 const lerp = (a, b, t) => a + (b - a) * t
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 
 // The example nail photo with the sign points drawn over it (SVG in the photo's own coordinates).
-function NailPhoto({ near, mode }) {
+function NailPhoto({ near }) {
   return (
     <div className="ob-nail">
       <img className="ob-nail-img" src={nailPhoto} alt="" draggable="false" />
@@ -43,12 +40,12 @@ function NailPhoto({ near, mode }) {
             <stop offset="1" stopColor="#3ddbb3" stopOpacity="0" />
           </radialGradient>
         </defs>
-        {SIGNS.map((p) => (
+        {SIGN_SECTIONS.map((p) => (
           <g
-            key={p.key}
-            className={`ob-point ${near[p.key] > 0.6 ? 'is-active' : ''}`}
-            style={{ '--near': mode === 'none' ? 0 : near[p.key] }}
-            transform={`translate(${p.x * IMG_W} ${p.y * IMG_H})`}
+            key={p.id}
+            className={`ob-point ${near[p.id] > 0.6 ? 'is-active' : ''}`}
+            style={{ '--near': near[p.id] }}
+            transform={`translate(${p.dot.x * IMG_W} ${p.dot.y * IMG_H})`}
           >
             <circle className="ob-point-zone" r="120" fill="url(#obZone)" />
             <circle className="ob-point-ring" r="40" />
@@ -64,13 +61,14 @@ export default function Onboarding({ onDone }) {
   const { t } = useI18n()
   const scrollerRef = useRef(null)
   const [size, setSize] = useState({ W: 390, H: 844 })
-  const [y, setY] = useState(0) // scroll position in px
+  const [y, setY] = useState(0)
   const reduced = typeof document !== 'undefined' && document.documentElement.classList.contains('a11y-reduce-motion')
 
-  const intro = size.H * 0.5
-  const travel = size.H * 0.95
-  const outro = size.H * 0.5
-  const total = intro + travel + outro
+  // section heights (px) and the scroll position at which each section's text is centered
+  const heights = SECTIONS.map((sec) => (sec.id === 'welcome' ? size.H : size.H * 0.95))
+  const tops = heights.map((_, i) => heights.slice(0, i).reduce((a, b) => a + b, 0))
+  const maxScroll = heights.reduce((a, b) => a + b, 0) - size.H
+  const anchors = SECTIONS.map((_, i) => Math.min(maxScroll, Math.max(0, tops[i] + heights[i] / 2 - size.H / 2)))
 
   useEffect(() => {
     const el = scrollerRef.current
@@ -85,107 +83,112 @@ export default function Onboarding({ onDone }) {
   useEffect(() => {
     const el = scrollerRef.current
     if (!el) return
-    const onScroll = () => setY(Math.min(total, Math.max(0, el.scrollTop)))
+    const onScroll = () => setY(el.scrollTop)
     onScroll()
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
-  }, [total])
+  }, [])
 
-  // continuous camera: no steps, so scrolling reads as moving down the finger
-  let s
-  let cy
-  if (y < intro) {
-    const u = ease(y / intro)
-    s = lerp(START.s, TOP.s, u)
-    cy = lerp(START.cy, TOP.cy, u)
-  } else if (y < intro + travel) {
-    const u = (y - intro) / travel
-    s = TOP.s
-    cy = lerp(TOP.cy, BOTTOM.cy, u)
-  } else {
-    const u = ease((y - intro - travel) / outro)
-    s = lerp(BOTTOM.s, END.s, u)
-    cy = lerp(BOTTOM.cy, END.cy, u)
+  // which two sections we are between, and how far (0..1) toward the next
+  let i = 0
+  while (i < SECTIONS.length - 2 && y >= anchors[i + 1]) i += 1
+  const span = Math.max(1, anchors[i + 1] - anchors[i])
+  let u = clamp01((y - anchors[i]) / span)
+  u = reduced ? Math.round(u) : ease(u)
+  const A = SECTIONS[i]
+  const B = SECTIONS[i + 1]
+  const pose = {
+    fx: lerp(A.focus.x, B.focus.x, u),
+    fy: lerp(A.focus.y, B.focus.y, u),
+    tx: lerp(A.tx, B.tx, u),
+    ty: lerp(A.ty, B.ty, u),
+    s: lerp(A.s, B.s, u),
+    r: lerp(A.r, B.r, u),
   }
-  const phase = y < intro * 0.55 ? 'welcome' : y < intro + travel + outro * 0.25 ? 'signs' : 'photos'
-  const mode = phase === 'welcome' ? 'all' : phase === 'photos' ? 'none' : 'focus'
 
+  // each sign's point glows while the camera is on (or arriving at) its section; the welcome view shows them all softly
   const near = {}
-  SIGNS.forEach((p) => {
-    near[p.key] = mode === 'all' ? 0.55 : clamp01(1 - Math.abs(cy - p.y) / NEAR_WINDOW)
+  SIGN_SECTIONS.forEach((p) => {
+    const w = (A.id === p.id ? 1 - u : 0) + (B.id === p.id ? u : 0)
+    const soft = A.id === 'welcome' ? (1 - u) * 0.5 : 0
+    near[p.id] = clamp01(Math.max(w, soft))
   })
-  const current = SIGNS.reduce((best, p) => (Math.abs(cy - p.y) < Math.abs(cy - best.y) ? p : best), SIGNS[0])
 
-  // put photo point (FOCUS_X, cy) on the scan line, scaled about the camera box center
+  // place photo point (fx, fy) at screen (tx, ty); transform is applied about the camera box center
   const Wc = size.H * IMG_AR
-  const dx = -s * (FOCUS_X * Wc - Wc / 2)
-  const dy = REF_Y * size.H - size.H / 2 - s * (cy * size.H - size.H / 2)
-  const scanOpacity = phase === 'signs' ? 1 : phase === 'welcome' ? clamp01((y / intro) * 1.4) * 0.6 : 0.2
+  const px = pose.fx * Wc - Wc / 2
+  const py = pose.fy * size.H - size.H / 2
+  const rad = (pose.r * Math.PI) / 180
+  const rx = Math.cos(rad) * px - Math.sin(rad) * py
+  const ry = Math.sin(rad) * px + Math.cos(rad) * py
+  const dx = pose.tx * size.W - size.W / 2 - pose.s * rx
+  const dy = pose.ty * size.H - size.H / 2 - pose.s * ry
 
   const finish = () => {
     markOnboarded()
     onDone()
   }
-
-  const name = signNameParts(t(`findingNames.${current.key}`))
+  const lastSection = y >= maxScroll - 4
 
   return (
     <div className="onboarding" role="dialog" aria-modal="true" aria-label={t('onboarding.label')}>
+      <div className="ob-top">
+        <div className="ob-progress" aria-hidden="true"><span style={{ width: `${maxScroll ? (y / maxScroll) * 100 : 0}%` }} /></div>
+        {!lastSection && <button type="button" className="ob-skip" onClick={finish}>{t('onboarding.skip')}</button>}
+      </div>
+
       <div className="ob-scroller" ref={scrollerRef} tabIndex={0}>
-        <div className="ob-track" style={{ height: size.H + total }}>
+        <div className="ob-track">
           <div className="ob-sticky" style={{ height: size.H }}>
-            <div className="ob-stage">
-              <div
-                className="ob-camera"
-                style={{
-                  width: Wc,
-                  height: size.H,
-                  left: (size.W - Wc) / 2,
-                  transform: `translate(${dx}px, ${dy}px) scale(${s})`,
-                }}
+            <div
+              className="ob-camera"
+              style={{
+                width: Wc,
+                height: size.H,
+                left: (size.W - Wc) / 2,
+                transform: `translate(${dx}px, ${dy}px) rotate(${pose.r}deg) scale(${pose.s})`,
+              }}
+            >
+              <NailPhoto near={near} />
+            </div>
+            <span className="ob-example">{t('onboarding.example')}</span>
+          </div>
+
+          <div className="ob-secs" style={{ marginTop: -size.H }}>
+            {SECTIONS.map((sec, k) => (
+              <section
+                key={sec.id}
+                className={`ob-sec ${sec.wide ? 'ob-sec--wide' : `ob-sec--${sec.side}`}`}
+                style={{ height: heights[k] }}
               >
-                <NailPhoto near={near} mode={mode} />
-              </div>
-              <div className="ob-reticle" style={{ top: `${REF_Y * 100}%`, opacity: reduced ? 0.4 : scanOpacity }} aria-hidden="true">
-                <span /><span />
-              </div>
-              <span className="ob-example">{t('onboarding.example')}</span>
-            </div>
-
-            <div className="ob-top">
-              <div className="ob-progress" aria-hidden="true"><span style={{ width: `${(y / total) * 100}%` }} /></div>
-              {phase !== 'photos' && (
-                <button type="button" className="ob-skip" onClick={finish}>{t('onboarding.skip')}</button>
-              )}
-            </div>
-
-            <div className="ob-panel" aria-live="polite">
-              <div className="ob-card" key={phase === 'signs' ? current.key : phase}>
-                {phase === 'signs' ? (
-                  <>
-                    <span className="ob-kicker">
-                      <Icon name={CONDITION_ICONS[current.key]} size={14} /> {t(`onboarding.${current.group}Title`)}
-                    </span>
-                    <h2 className="ob-title">{name.term}</h2>
-                    <p className="ob-text">{t(`conditions.${current.key}.summary`)}</p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="ob-title">{t(`onboarding.${phase}Title`)}</h2>
-                    <p className="ob-text">{t(`onboarding.${phase}Text`)}</p>
-                  </>
-                )}
-                {phase === 'welcome' && (
-                  <p className="ob-hint"><Icon name="chevronRight" size={14} className="rot-down" /> {t('onboarding.scrollHint')}</p>
-                )}
-                {phase === 'photos' && (
-                  <>
-                    <p className="ob-fine">{t('app.disclaimer')}</p>
-                    <button type="button" className="primary-btn ob-start" onClick={finish}>{t('onboarding.start')}</button>
-                  </>
-                )}
-              </div>
-            </div>
+                <div className="ob-card">
+                  {sec.dot ? (
+                    <>
+                      <span className="ob-kicker">
+                        <Icon name={CONDITION_ICONS[sec.id]} size={14} /> {t(`onboarding.${sec.group}Title`)}
+                      </span>
+                      <h2 className="ob-title">{signNameParts(t(`findingNames.${sec.id}`)).term}</h2>
+                      <p className="ob-text">{t(`conditions.${sec.id}.summary`)}</p>
+                      <p className="ob-lead">{t(`conditions.${sec.id}.lead`)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="ob-title">{t(`onboarding.${sec.id}Title`)}</h2>
+                      <p className="ob-text">{t(`onboarding.${sec.id}Text`)}</p>
+                    </>
+                  )}
+                  {sec.id === 'welcome' && (
+                    <p className="ob-hint"><Icon name="chevronRight" size={14} className="rot-down" /> {t('onboarding.scrollHint')}</p>
+                  )}
+                  {sec.id === 'photos' && (
+                    <>
+                      <p className="ob-fine">{t('app.disclaimer')}</p>
+                      <button type="button" className="primary-btn ob-start" onClick={finish}>{t('onboarding.start')}</button>
+                    </>
+                  )}
+                </div>
+              </section>
+            ))}
           </div>
         </div>
       </div>
