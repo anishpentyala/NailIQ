@@ -1,7 +1,10 @@
 import axios from 'axios'
 import { visibleFindings } from './conditions'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
+// On localhost the backend is on :5000. Opened from any other host (an HTTPS tunnel for phone testing), use the same
+// origin: the Vite dev server proxies the API paths to the backend (see vite.config.js).
+const onLocalhost = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname)
+const API_BASE = import.meta.env.VITE_API_BASE || (onLocalhost ? 'http://localhost:5000' : '')
 
 export async function analyzeImages({ sideImage, topImage, topNailBbox }) {
   const res = await axios.post(`${API_BASE}/analyze`, {

@@ -8,5 +8,10 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 5173,
     strictPort: true,
+    // Phone testing: an HTTPS tunnel (random hostname) points at this server; the API paths go to the Flask backend.
+    allowedHosts: true,
+    proxy: Object.fromEntries(
+      ['/analyze', '/validate_photo', '/history', '/feedback'].map((p) => [p, `http://127.0.0.1:${process.env.API_PORT || 5000}`]),
+    ),
   },
 })
