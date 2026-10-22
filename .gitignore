@@ -67,3 +67,7 @@ backend/tests/__pycache__/
 
 # stray stderr logs from background jobs
 *.err
+
+# local phone-testing certificate material
+data/phone_test_certs/
+data/phone_test_logs/
