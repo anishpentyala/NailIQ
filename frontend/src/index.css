@@ -87,6 +87,13 @@ body {
   background: var(--bg);
 }
 
+/* Phones: pin the app to the real viewport. 100svh left a black strip under the bottom bar in iOS home-screen apps
+   (it comes out shorter than the screen there); fixed + inset covers the whole layout viewport. */
+html { background: var(--bg); }
+@media (max-width: 559px) {
+  #root { position: fixed; inset: 0; height: auto; max-width: none; margin: 0; }
+}
+
 /* On wide viewports (desktop demo/presentation), frame the app like a phone
    instead of stretching a 480px column across the page. Real phones never hit
    this breakpoint, so the on-device experience is unchanged. */
