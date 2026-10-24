@@ -1,13 +1,14 @@
 /* global process -- vite.config runs in Node, not the browser eslint env */
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // Phone testing over the home Wi-Fi: `PHONE_HTTPS=1 npm run dev` serves HTTPS on the LAN (iOS only allows the camera on
 // HTTPS) using the local certificate in data/phone_test_certs (see docs/PHONE_TESTING.md). Off by default.
 const phone = Boolean(process.env.PHONE_HTTPS)
-const certDir = path.resolve(__dirname, '../data/phone_test_certs')
+const certDir = fileURLToPath(new URL('../data/phone_test_certs', import.meta.url))
 
 // Lets the phone download the (name-constrained, key-deleted) local CA to install it.
 const serveCa = () => ({

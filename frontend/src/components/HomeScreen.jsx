@@ -4,6 +4,7 @@ import { getHistory } from '../api'
 import { relativeTime } from '../scanStatus'
 import { useI18n } from '../i18n'
 import { CONDITION_KEYS, CONDITION_ICONS, signNameParts } from '../conditions'
+import nailPhoto from '../assets/onboarding-nail.webp'
 
 function tipOfTheDay(tips) {
   const start = new Date(new Date().getFullYear(), 0, 0)
@@ -17,29 +18,86 @@ const WHY_ROWS = [
   { key: 'baseline', icon: 'history' },
 ]
 
-const DOT_SCANS = 6
+// The sign "radar": the example nail photo in the middle with a glowing point per sign, and a chip for each sign beside
+// it joined to its point by a curved line. Coordinates are in a 350x372 box that scales with the card. The points are
+// illustration spots on the example nail (where each sign tends to show), not detections. Each chip shows the sign's
+// verdict from the latest scan, in the same three verdicts as everywhere else.
+const BOX_W = 350
+const BOX_H = 372
+const PHOTO = { x: 110, y: 62, w: 130, h: 263 } // the finger photo's rectangle inside the box
+const CHIP_W = 112
+const CHIP_H = 68
+// Chips are scattered around the finger on purpose (uneven heights and distances). Within a side they keep the same
+// top-to-bottom order as their points on the nail, so the connecting lines never cross.
+const RADAR = [
+  { key: 'onycholysis', side: 'L', x: 2, y: 14, at: { x: 0.5, y: 0.255 } },
+  { key: 'koilonychia', side: 'L', x: 14, y: 96, at: { x: 0.4, y: 0.29 } },
+  { key: 'leukonychia', side: 'L', x: 0, y: 190, at: { x: 0.45, y: 0.35 } },
+  { key: 'cyanosis', side: 'L', x: 18, y: 292, at: { x: 0.41, y: 0.43 } },
+  { key: 'onychogryphosis', side: 'R', x: 232, y: 40, at: { x: 0.6, y: 0.265 } },
+  { key: 'splinter_hemorrhages', side: 'R', x: 238, y: 122, at: { x: 0.58, y: 0.32 } },
+  { key: 'pitting', side: 'R', x: 228, y: 206, at: { x: 0.56, y: 0.38 } },
+  { key: 'beaus_lines', side: 'R', x: 236, y: 296, at: { x: 0.54, y: 0.46 } },
+].filter((r) => CONDITION_KEYS.includes(r.key))
 
-// One dashboard card per sign: its verdict in the latest scan, plus a dot per recent scan (oldest -> newest) so a
-// change over time is visible at a glance. Dots carry the same three verdicts as everywhere else, never a score.
-function SignTile({ signKey, scans, index }) {
+function SignRadar({ scans }) {
   const { t } = useI18n()
-  const verdictOf = (scan) => scan.findings.find((f) => f.label === signKey)?.verdict ?? null
-  const latest = scans.length > 0 ? verdictOf(scans[0]) : null
-  const dots = scans.slice(0, DOT_SCANS).map(verdictOf).reverse()
-  const { label, term } = signNameParts(t(`findingNames.${signKey}`))
-  const tone = latest ?? 'none'
+  const [active, setActive] = useState(null)
+  const verdictOf = (key) => (scans.length > 0 ? scans[0].findings.find((f) => f.label === key)?.verdict ?? null : null)
 
   return (
-    <div className={`dash-tile dash-tile--${tone}`} style={{ '--finding-delay': `${index * 45}ms` }}>
-      <span className="dash-tile-icon"><Icon name={CONDITION_ICONS[signKey]} size={16} /></span>
-      <span className="dash-tile-label">{label}</span>
-      <span className="dash-tile-term">{term}</span>
-      <span className="dash-tile-status">{latest ? t(`verdict.${latest}.label`) : t('home.notScanned')}</span>
-      <span className="dash-tile-dots" aria-hidden="true">
-        {dots.map((v, i) => (
-          <i key={i} className={`dot dot--${v ?? 'none'}`} />
-        ))}
-      </span>
+    <div className="radar" style={{ aspectRatio: `${BOX_W} / ${BOX_H}` }}>
+      <img className="radar-photo" src={nailPhoto} alt="" draggable="false" style={{
+        left: `${(PHOTO.x / BOX_W) * 100}%`, top: `${(PHOTO.y / BOX_H) * 100}%`, width: `${(PHOTO.w / BOX_W) * 100}%`,
+      }} />
+      <svg className="radar-lines" viewBox={`0 0 ${BOX_W} ${BOX_H}`} aria-hidden="true">
+        <defs>
+          <radialGradient id="radarGlow">
+            <stop offset="0" stopColor="#3ddbb3" stopOpacity="0.55" />
+            <stop offset="1" stopColor="#3ddbb3" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {RADAR.map((r, i) => {
+          const px = PHOTO.x + r.at.x * PHOTO.w
+          const py = PHOTO.y + r.at.y * PHOTO.h
+          const x0 = r.side === 'L' ? r.x + CHIP_W : r.x
+          const y0 = r.y + CHIP_H / 2
+          const xm = (x0 + px) / 2
+          const tone = verdictOf(r.key) ?? 'none'
+          return (
+            <g key={r.key} className={`radar-link radar-link--${tone} ${active === r.key ? 'is-active' : ''}`} style={{ '--i': i }}>
+              <path className="radar-line" pathLength="1" d={`M ${x0} ${y0} C ${xm} ${y0} ${xm} ${py} ${px} ${py}`} />
+              <circle className="radar-halo" cx={px} cy={py} r="15" fill="url(#radarGlow)" />
+              <circle className="radar-dot" cx={px} cy={py} r="3.6" />
+            </g>
+          )
+        })}
+      </svg>
+      {RADAR.map((r, i) => {
+        const { term } = signNameParts(t(`findingNames.${r.key}`))
+        const latest = verdictOf(r.key)
+        const tone = latest ?? 'none'
+        return (
+          <button
+            key={r.key}
+            type="button"
+            aria-pressed={active === r.key}
+            className={`radar-chip radar-chip--${tone} ${active === r.key ? 'is-active' : ''}`}
+            style={{
+              left: `${(r.x / BOX_W) * 100}%`,
+              top: `${(r.y / BOX_H) * 100}%`,
+              width: `${(CHIP_W / BOX_W) * 100}%`,
+              height: `${(CHIP_H / BOX_H) * 100}%`,
+              '--i': i,
+            }}
+            onClick={() => setActive((a) => (a === r.key ? null : r.key))}
+          >
+            <span className="radar-chip-icon"><Icon name={CONDITION_ICONS[r.key]} size={14} /></span>
+            <span className="radar-chip-term">{term}</span>
+            <span className="radar-chip-status">{latest ? t(`verdict.${latest}.label`) : t('home.notScanned')}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -53,7 +111,7 @@ export default function HomeScreen({ onStartScan }) {
 
   useEffect(() => {
     let cancelled = false
-    getHistory(DOT_SCANS)
+    getHistory(1)
       .then((data) => {
         if (cancelled) return
         setScans(data.scans)
@@ -72,11 +130,7 @@ export default function HomeScreen({ onStartScan }) {
           <p className="home-dash-sub">{t('home.heroText')}</p>
         </header>
 
-        <div className="dash-grid">
-          {CONDITION_KEYS.map((key, i) => (
-            <SignTile key={key} signKey={key} scans={scans} index={i} />
-          ))}
-        </div>
+        <SignRadar scans={scans} />
 
         <p className="home-dash-last">
           {scanState === 'ready'

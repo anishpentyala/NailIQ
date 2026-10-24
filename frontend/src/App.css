@@ -2602,3 +2602,45 @@
 
 /* Light theme: the translucent bottom bar lets tinted content through, so inactive labels need extra contrast. */
 :root:not(.theme-dark) .bottom-nav-item:not(.active) { color: #3f4e52; }
+
+/* ================= Home "radar": nail photo in the middle, a chip per sign joined to a point on the nail ================= */
+.radar {
+  position: relative; width: 100%; overflow: hidden; border-radius: 26px; isolation: isolate; container-type: inline-size;
+  background: radial-gradient(70% 45% at 50% 28%, #1a2b27 0%, #0b0c0e 78%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.radar-photo {
+  position: absolute; z-index: 0; display: block; user-select: none; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 70%, transparent 99%);
+}
+.radar-lines { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+.radar-link { --c: rgba(255, 255, 255, 0.5); }
+.radar-link--within { --c: #5fcf80; }
+.radar-link--outside { --c: #f5a524; }
+.radar-line { fill: none; stroke: var(--c); stroke-width: 1.2; stroke-opacity: 0.55; stroke-dasharray: 1; stroke-dashoffset: 1; animation: radar-draw 0.9s var(--ease-out, ease-out) forwards; animation-delay: calc(var(--i) * 70ms + 250ms); }
+.radar-dot { fill: var(--c); filter: drop-shadow(0 0 3px var(--c)); transform-box: fill-box; transform-origin: center; transition: transform 0.25s; }
+.radar-link--none .radar-dot { fill: #3ddbb3; }
+.radar-halo { opacity: 0.35; transform-box: fill-box; transform-origin: center; transition: opacity 0.25s, transform 0.25s; }
+.radar-link.is-active .radar-line { stroke-opacity: 1; stroke-width: 1.8; }
+.radar-link.is-active .radar-dot { transform: scale(1.7); }
+.radar-link.is-active .radar-halo { opacity: 1; transform: scale(1.5); }
+@keyframes radar-draw { to { stroke-dashoffset: 0; } }
+.radar-chip {
+  --c: rgba(255, 255, 255, 0.55);
+  position: absolute; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  padding: 8px 9px; text-align: left; color: #f2f4f4; font: inherit; cursor: pointer;
+  background: rgba(16, 18, 21, 0.72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 14px; -webkit-tap-highlight-color: transparent;
+  animation: finding-in 0.4s var(--ease-out, ease-out) both; animation-delay: calc(var(--i) * 60ms);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.12s;
+}
+.radar-chip:active { transform: scale(0.97); }
+.radar-chip--within { --c: #5fcf80; }
+.radar-chip--outside { --c: #f5a524; border-color: rgba(245, 165, 36, 0.45); }
+.radar-chip.is-active { border-color: var(--c); box-shadow: 0 0 16px -2px var(--c); }
+.radar-chip-icon { display: inline-flex; color: var(--c); }
+.radar-chip-term { font-size: min(0.6875rem, 3cqw); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: break-word; hyphens: auto; }
+.radar-chip-status { font-size: min(0.625rem, 2.9cqw); line-height: 1.2; color: var(--c); }
+:root.a11y-reduce-motion .radar-line { animation: none; stroke-dashoffset: 0; }
+:root.a11y-reduce-motion .radar-chip { animation: none; }
+:root.a11y-contrast .radar-chip-status { color: #f2f4f4; }
