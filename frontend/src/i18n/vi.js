@@ -197,6 +197,7 @@ export default {
     "scanResults": "Kết quả quét",
     "tapCard": "Nhấn vào một biển báo để xem chi tiết",
     "oneLine": "Không phải là chẩn đoán. Xem Cài đặt → Tuyên bố miễn trừ và giới hạn.",
+    "seeMoreAi": "Xem thêm về phản hồi của AI",
     "reportTitle": "Báo cáo kiểm tra sức khỏe móng tay NailIQ",
     "summaryWithin": "Mọi thứ đều nằm trong phạm vi bình thường.",
     "summaryOutsideOne": "Có 1 chỉ số nằm ngoài phạm vi thông thường.",

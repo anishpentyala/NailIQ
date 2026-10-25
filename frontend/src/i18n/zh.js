@@ -156,6 +156,7 @@ export default {
     scanResults: '扫描结果',
     tapCard: '点按某项体征查看详情',
     oneLine: "这不是诊断。详见 设置 → 免责声明与局限。",
+    seeMoreAi: "查看更多 AI 回应详情",
     reportTitle: 'NailIQ 指甲健康筛查报告',
     summaryWithin: '一切看起来都在典型范围内。',
     summaryOutsideOne: '有 1 项征象超出典型范围。',

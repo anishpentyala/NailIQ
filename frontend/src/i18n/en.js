@@ -161,6 +161,7 @@ export default {
     scanResults: 'Scan results',
     tapCard: 'Tap a sign for details',
     oneLine: "Not a diagnosis. See Settings → Disclaimers & limitations.",
+    seeMoreAi: "See more about the AI's response",
     reportTitle: 'NailIQ Nail Health Screening Report',
     summaryWithin: 'Everything looks within the typical range.',
     summaryOutsideOne: '1 sign is outside the typical range.',

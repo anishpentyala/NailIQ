@@ -160,6 +160,7 @@ export default {
     scanResults: 'Resultados del escaneo',
     tapCard: 'Toca un signo para ver detalles',
     oneLine: "No es un diagnóstico. Consulta Ajustes → Avisos y limitaciones.",
+    seeMoreAi: "Ver más sobre la respuesta de la IA",
     reportTitle: 'Informe de detección de salud de uñas NailIQ',
     summaryWithin: 'Todo parece estar dentro del rango típico.',
     summaryOutsideOne: '1 signo está fuera del rango típico.',

@@ -200,6 +200,7 @@ export default {
     "scanResults": "Resultados do exame",
     "tapCard": "Toque num sinal para ver detalhes",
     "oneLine": "Não é um diagnóstico. Veja Configurações → Avisos e limitações.",
+    "seeMoreAi": "Ver mais sobre a resposta da IA",
     "reportTitle": "Relatório de triagem de saúde das unhas NailIQ",
     "summaryWithin": "Tudo parece estar dentro da faixa típica.",
     "summaryOutsideOne": "1 sinal está fora da faixa típica.",

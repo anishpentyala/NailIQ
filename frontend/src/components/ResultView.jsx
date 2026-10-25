@@ -86,6 +86,10 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
     agreementNote = t(key) !== key ? t(key) : null
   }
 
+  // the technical notes about the AI model sit behind a tap so the card stays plain
+  const showMlMatch = Boolean(mlMatch) && finding.verdict !== 'inconclusive'
+  const hasAiDetail = Boolean(matchLabel || agreementNote || showMlMatch)
+
   // only show the reference diagram when there's something worth a closer look
   const showDiagram = finding.verdict === 'outside' || finding.verdict === 'inconclusive'
   const summary = conditionSummary(t, finding.label)
@@ -108,14 +112,17 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
         </div>
       )}
       <div className={`result-verdict ${finding.verdict}`}>{verdictLabel}</div>
-      {matchLabel && (
-        <p className="result-match">
-          {t('result.closestMatch', { label: matchLabel, pct: Math.round(finding.confidence * 100) })}
-        </p>
-      )}
-      {agreementNote && <p className="result-match">{agreementNote}</p>}
-      {mlMatch && finding.verdict !== 'inconclusive' && (
-        <p className="result-match">{t('result.mlClosestMatch', { label: mlMatch })}</p>
+      {hasAiDetail && (
+        <details className="ai-more">
+          <summary>{t('result.seeMoreAi')}</summary>
+          {matchLabel && (
+            <p className="result-match">
+              {t('result.closestMatch', { label: matchLabel, pct: Math.round(finding.confidence * 100) })}
+            </p>
+          )}
+          {agreementNote && <p className="result-match">{agreementNote}</p>}
+          {showMlMatch && <p className="result-match">{t('result.mlClosestMatch', { label: mlMatch })}</p>}
+        </details>
       )}
       <p className="result-message">{message}</p>
       {showDiagram && summary && (

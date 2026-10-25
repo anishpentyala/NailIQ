@@ -197,6 +197,7 @@ export default {
     "scanResults": "스캔 결과",
     "tapCard": "자세한 내용을 보려면 표지판을 탭하세요",
     "oneLine": "진단이 아닙니다. 설정 → 고지 사항 및 한계를 참고하세요.",
+    "seeMoreAi": "AI 응답에 대해 더 보기",
     "reportTitle": "NailIQ 네일 건강 검진 보고서",
     "summaryWithin": "모든 수치가 정상 범위에 들어 있습니다.",
     "summaryOutsideOne": "1개의 신호가 일반적인 범위를 벗어났습니다.",
