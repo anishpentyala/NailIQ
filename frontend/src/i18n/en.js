@@ -113,12 +113,12 @@ export default {
     steps: {
       side: {
         instructions:
-          'Hold your finger sideways (profile view) inside the guide box, nail facing the camera. Use a plain background that fills the whole frame.',
+          'Hold your finger sideways (profile view) in the middle of the screen, nail facing the camera. Use a plain background that fills the whole frame.',
         shortLabel: 'Side Profile',
       },
       top: {
         instructions:
-          'Now photograph your finger from above inside the guide box, nail facing the camera. Use a plain background that fills the whole frame.',
+          'Now photograph your finger from above in the middle of the screen, nail facing the camera. Use a plain background that fills the whole frame.',
         shortLabel: 'Top Down',
       },
     },

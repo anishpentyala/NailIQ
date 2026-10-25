@@ -112,12 +112,12 @@ export default {
     steps: {
       side: {
         instructions:
-          'Sostén tu dedo de lado (vista de perfil) dentro del recuadro guía, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
+          'Sostén tu dedo de lado (vista de perfil) en el centro de la pantalla, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
         shortLabel: 'Perfil lateral',
       },
       top: {
         instructions:
-          'Ahora fotografía tu dedo desde arriba dentro del recuadro guía, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
+          'Ahora fotografía tu dedo desde arriba en el centro de la pantalla, con la uña hacia la cámara. Usa un fondo liso que llene todo el encuadre.',
         shortLabel: 'Desde arriba',
       },
     },

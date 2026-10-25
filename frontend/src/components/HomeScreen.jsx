@@ -19,26 +19,29 @@ const WHY_ROWS = [
 ]
 
 // The sign "radar": the example nail photo in the middle with a glowing point per sign, and a chip for each sign beside
-// it joined to its point by a curved line. Coordinates are in a 350x372 box that scales with the card. The points are
+// it joined to its point by a curved line. Coordinates are in a 350x480 box that scales with the card. The points are
 // illustration spots on the example nail (where each sign tends to show), not detections. Each chip shows the sign's
 // verdict from the latest scan, in the same three verdicts as everywhere else.
 const BOX_W = 350
-const BOX_H = 372
-const PHOTO = { x: 110, y: 62, w: 130, h: 263 } // the finger photo's rectangle inside the box
-const CHIP_W = 112
-const CHIP_H = 68
-// Chips are scattered around the finger on purpose (uneven heights and distances). Within a side they keep the same
-// top-to-bottom order as their points on the nail, so the connecting lines never cross.
+const BOX_H = 480
+const PHOTO = { x: 110, y: 150, w: 130, h: 263 } // the finger photo's rectangle inside the box
+const CHIP_W = 108
+const CHIP_H = 62
+// Chips hug the left and right edges of the card and are spread unevenly from top to bottom (uneven gaps and small
+// sideways offsets on purpose). Within a side they keep the same top-to-bottom order as their points on the nail, so the
+// connecting lines never cross.
+const RIGHT_X = BOX_W - CHIP_W
 const RADAR = [
-  { key: 'onycholysis', side: 'L', x: 2, y: 14, at: { x: 0.5, y: 0.255 } },
-  { key: 'koilonychia', side: 'L', x: 14, y: 96, at: { x: 0.4, y: 0.29 } },
-  { key: 'leukonychia', side: 'L', x: 0, y: 190, at: { x: 0.45, y: 0.35 } },
-  { key: 'cyanosis', side: 'L', x: 18, y: 292, at: { x: 0.41, y: 0.43 } },
-  { key: 'onychogryphosis', side: 'R', x: 232, y: 40, at: { x: 0.6, y: 0.265 } },
-  { key: 'splinter_hemorrhages', side: 'R', x: 238, y: 122, at: { x: 0.58, y: 0.32 } },
-  { key: 'pitting', side: 'R', x: 228, y: 206, at: { x: 0.56, y: 0.38 } },
-  { key: 'beaus_lines', side: 'R', x: 236, y: 296, at: { x: 0.54, y: 0.46 } },
+  { key: 'onycholysis', side: 'L', x: 0, y: 14, at: { x: 0.5, y: 0.255 } },
+  { key: 'koilonychia', side: 'L', x: 6, y: 124, at: { x: 0.4, y: 0.29 } },
+  { key: 'leukonychia', side: 'L', x: 0, y: 246, at: { x: 0.45, y: 0.35 } },
+  { key: 'cyanosis', side: 'L', x: 10, y: 372, at: { x: 0.41, y: 0.43 } },
+  { key: 'onychogryphosis', side: 'R', x: RIGHT_X, y: 48, at: { x: 0.6, y: 0.265 } },
+  { key: 'splinter_hemorrhages', side: 'R', x: RIGHT_X - 8, y: 160, at: { x: 0.58, y: 0.32 } },
+  { key: 'pitting', side: 'R', x: RIGHT_X, y: 276, at: { x: 0.56, y: 0.38 } },
+  { key: 'beaus_lines', side: 'R', x: RIGHT_X - 4, y: 398, at: { x: 0.54, y: 0.46 } },
 ].filter((r) => CONDITION_KEYS.includes(r.key))
+const STATUS_KEY = { within: 'history.withinRange', outside: 'history.outsideRange', inconclusive: 'history.inconclusive' }
 
 function SignRadar({ scans }) {
   const { t } = useI18n()
@@ -94,7 +97,7 @@ function SignRadar({ scans }) {
           >
             <span className="radar-chip-icon"><Icon name={CONDITION_ICONS[r.key]} size={14} /></span>
             <span className="radar-chip-term">{term}</span>
-            <span className="radar-chip-status">{latest ? t(`verdict.${latest}.label`) : t('home.notScanned')}</span>
+            <span className="radar-chip-status">{latest ? t(STATUS_KEY[latest]) : t('home.notScanned')}</span>
           </button>
         )
       })}

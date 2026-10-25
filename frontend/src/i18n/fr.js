@@ -156,11 +156,11 @@ export default {
   "camera": {
     "steps": {
       "side": {
-        "instructions": "Tenez votre doigt de côté (vue de profil) dans le cadre guide, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
+        "instructions": "Tenez votre doigt de côté (vue de profil) au centre de l’écran, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
         "shortLabel": "Profil"
       },
       "top": {
-        "instructions": "Photographiez maintenant votre doigt par le dessus dans le cadre guide, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
+        "instructions": "Photographiez maintenant votre doigt par le dessus au centre de l’écran, l'ongle face à la caméra. Utilisez un fond uni qui remplit tout le cadre.",
         "shortLabel": "Vue de dessus"
       }
     },

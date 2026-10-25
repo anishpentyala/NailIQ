@@ -110,11 +110,11 @@ export default {
   camera: {
     steps: {
       side: {
-        instructions: '将手指侧放在引导框内（侧面视角），指甲朝向相机。背景请使用纯色并铺满整个画面。',
+        instructions: '将手指侧放在屏幕中央（侧面视角），指甲朝向相机。背景请使用纯色并铺满整个画面。',
         shortLabel: '侧面轮廓',
       },
       top: {
-        instructions: '现在在引导框内从上方拍摄手指，指甲朝向相机。背景请使用纯色并铺满整个画面。',
+        instructions: '现在在屏幕中央从上方拍摄手指，指甲朝向相机。背景请使用纯色并铺满整个画面。',
         shortLabel: '俯视拍摄',
       },
     },

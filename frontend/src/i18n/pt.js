@@ -156,11 +156,11 @@ export default {
   "camera": {
     "steps": {
       "side": {
-        "instructions": "Coloque o dedo de lado (vista de perfil) dentro do quadro-guia, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
+        "instructions": "Coloque o dedo de lado (vista de perfil) no centro da tela, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
         "shortLabel": "Perfil lateral"
       },
       "top": {
-        "instructions": "Agora, fotografe seu dedo visto de cima dentro do quadro-guia, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
+        "instructions": "Agora, fotografe seu dedo visto de cima no centro da tela, com a unha voltada para a câmera. Use um fundo liso que preencha todo o quadro.",
         "shortLabel": "De cima para baixo"
       }
     },

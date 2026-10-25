@@ -1200,10 +1200,10 @@
 .cam-guide-ring {
   width: 52%;
   aspect-ratio: 3 / 4;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  /* no visible frame: the ring only sizes/positions the finger outline (and matches the photo crop) */
+  border: 0;
   border-radius: 24px;
   position: relative;
-  animation: guide-breathe 2.8s ease-in-out infinite;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -1395,18 +1395,16 @@
   z-index: 10;
   margin: 0 20px;
   padding: 12px 18px;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  /* plain text over the camera (no box); a soft shadow keeps it readable */
+  background: none;
   animation: banner-in 0.3s ease both;
 }
 
 .cam-instruction-banner p {
   font-size: 0.8125rem;
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.6);
   text-align: center;
   margin: 0;
 }
@@ -2628,7 +2626,7 @@
 .radar-chip {
   --c: rgba(255, 255, 255, 0.55);
   position: absolute; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 2px;
-  padding: 8px 9px; text-align: left; color: #f2f4f4; font: inherit; cursor: pointer;
+  padding: 8px; text-align: left; color: #f2f4f4; font: inherit; cursor: pointer;
   background: rgba(16, 18, 21, 0.72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 14px; -webkit-tap-highlight-color: transparent;
   animation: finding-in 0.4s var(--ease-out, ease-out) both; animation-delay: calc(var(--i) * 60ms);
@@ -2639,8 +2637,13 @@
 .radar-chip--outside { --c: #f5a524; border-color: rgba(245, 165, 36, 0.45); }
 .radar-chip.is-active { border-color: var(--c); box-shadow: 0 0 16px -2px var(--c); }
 .radar-chip-icon { display: inline-flex; color: var(--c); }
-.radar-chip-term { font-size: min(0.6875rem, 3cqw); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: break-word; hyphens: auto; }
+.radar-chip-term { font-size: min(0.6563rem, 3cqw); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: break-word; }
 .radar-chip-status { font-size: min(0.625rem, 2.9cqw); line-height: 1.2; color: var(--c); }
 :root.a11y-reduce-motion .radar-line { animation: none; stroke-dashoffset: 0; }
 :root.a11y-reduce-motion .radar-chip { animation: none; }
 :root.a11y-contrast .radar-chip-status { color: #f2f4f4; }
+
+/* iOS home-screen mode: the fixed root stopped short of the bottom edge, leaving a strip under the bottom bar. */
+@media (display-mode: standalone) and (max-width: 559px) {
+  #root { bottom: auto; height: 100vh; }
+}
