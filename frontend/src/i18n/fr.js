@@ -141,6 +141,9 @@ export default {
     },
     "showAll": "Afficher les {n}",
     "notYet": "Six autres signes sont encore en cours de validation et ne sont pas encore signalés.",
+    "ondeviceDownloading": "Téléchargement de l'IA sur votre téléphone (première fois seulement) : {pct} %",
+    "ondeviceStarting": "Démarrage de l'IA sur l'appareil...",
+    "ondeviceReady": "L'IA s'exécute sur cet appareil. Vos photos ne le quittent jamais.",
     "showLess": "Afficher moins",
     "dailyTip": "Conseil du jour",
     "tips": [
@@ -435,6 +438,8 @@ export default {
     "close": "Fermer la politique de confidentialité",
     "photosTitle": "Vos photos",
     "photosBody": "Vos deux photos sont analysées en mémoire puis supprimées. Aucune photo n'est jamais enregistrée sur disque ni dans la base de données : seuls les résultats (étiquettes, verdicts, confiance) sont conservés.",
+    "photosBodyDevice": "L'IA s'exécute sur cet appareil. Vos deux photos sont analysées ici, en mémoire, et ne sont jamais envoyées ni enregistrées : elles ne quittent pas votre téléphone.",
+    "storedBodyDevice": "Les résultats des scans (libellés, verdicts, confiance) sont enregistrés uniquement sur cet appareil pour que l'Historique affiche les scans passés, et vous pouvez les supprimer à tout moment depuis l'Historique. Les réglages d'affichage et de langue sont stockés uniquement sur cet appareil.",
     "storedTitle": "Ce qui est conservé",
     "storedBody": "Les résultats des analyses sont enregistrés localement afin que l'Historique et le graphique de tendance de l'angle puissent afficher les analyses passées. Si vous répondez à « est-ce que cela correspond à ce que vous voyez ? », cette réponse est conservée de la même façon pour aider à calibrer l'application plus tard - évitez d'inclure des informations identifiantes dans le champ de note. Les réglages d'affichage et de langue sont enregistrés uniquement sur cet appareil.",
     "notCollectedTitle": "Ce qui n'est pas collecté",

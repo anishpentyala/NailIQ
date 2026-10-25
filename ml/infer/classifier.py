@@ -31,6 +31,7 @@ from pathlib import Path
 
 import cv2
 
+from . import onnx_backend
 from .preprocessing import crop_to_finger_roi
 
 _MODELS = Path(__file__).resolve().parent.parent / "models"
@@ -65,6 +66,8 @@ def is_available():
         meta = json.loads(_LABELS_PATH.read_text())
     except (OSError, ValueError):
         return False
+    if onnx_backend.active():
+        return any(onnx_backend.has(onnx_backend.onnx_name(wf)) for _, wf, _ in _members_from_meta(meta))
     if not any((_MODELS / wf).exists() for _, wf, _ in _members_from_meta(meta)):
         return False
     try:
@@ -123,11 +126,18 @@ def classify_bgr(image_bgr):
     Crops to the finger ROI, then averages temperature-scaled, TTA'd probabilities
     across every ensemble member.
     """
-    s = _load()
-    torch = s["torch"]
-
     roi = crop_to_finger_roi(image_bgr)
     rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+    if onnx_backend.active():
+        meta = json.loads(_LABELS_PATH.read_text())
+        members = [(wf, t) for _, wf, t in _members_from_meta(meta) if onnx_backend.has(onnx_backend.onnx_name(wf))]
+        probs = onnx_backend.ensemble_probs(meta, members, rgb)
+        classes = meta["classes"]
+        idx = int(probs.argmax())
+        return classes[idx], float(probs[idx]), {c: round(float(probs[i]), 3) for i, c in enumerate(classes)}
+
+    s = _load()
+    torch = s["torch"]
     tensor = torch.from_numpy(rgb).permute(2, 0, 1).float() / 255.0
     base = s["tf"](tensor)
     views = torch.stack([base, torch.flip(base, dims=[2])])  # TTA: image + h-flip

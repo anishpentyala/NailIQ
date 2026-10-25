@@ -95,6 +95,9 @@ export default {
     },
     showAll: 'Ver los {n}',
     notYet: 'Otros seis signos aún se están validando y todavía no se informan.',
+    ondeviceDownloading: "Descargando la IA en tu teléfono (solo la primera vez): {pct}%",
+    ondeviceStarting: "Iniciando la IA en el dispositivo...",
+    ondeviceReady: "La IA se ejecuta en este dispositivo. Tus fotos nunca salen de él.",
     showLess: 'Ver menos',
     dailyTip: 'Consejo del día',
     tips: [
@@ -460,6 +463,8 @@ export default {
     photosTitle: 'Tus fotos',
     photosBody:
       'Tus dos fotos se analizan en memoria y luego se descartan. Ninguna foto se guarda nunca en disco ni en la base de datos: solo se almacenan los resultados (etiquetas, veredictos, confianza).',
+    photosBodyDevice: "La IA se ejecuta en este dispositivo. Tus dos fotos se analizan aquí, en memoria, y nunca se suben ni se guardan: no salen de tu teléfono.",
+    storedBodyDevice: "Los resultados de cada escaneo (etiquetas, veredictos, confianza) se guardan solo en este dispositivo para que el Historial muestre escaneos anteriores, y puedes borrarlos cuando quieras desde el Historial. Los ajustes de pantalla e idioma se guardan solo en este dispositivo.",
     storedTitle: 'Qué se almacena',
     storedBody:
       'Los resultados de los escaneos se guardan localmente para que el Historial y el gráfico de tendencia del ángulo puedan mostrar escaneos anteriores. Si respondes "¿esto coincide con lo que ves?", esa respuesta se almacena de la misma manera para ayudar a calibrar la aplicación más adelante; evita incluir información identificable en el campo de notas. La configuración de pantalla e idioma se guarda solo en este dispositivo.',

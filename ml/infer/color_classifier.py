@@ -33,6 +33,8 @@ from pathlib import Path
 
 import cv2
 
+from . import onnx_backend
+
 _MODELS = Path(__file__).resolve().parent.parent / "models"
 _LABELS_PATH = _MODELS / "nail_color_classifier_labels.json"
 
@@ -111,6 +113,8 @@ def is_available():
         meta = json.loads(_LABELS_PATH.read_text())
     except (OSError, ValueError):
         return False
+    if onnx_backend.active():
+        return any(onnx_backend.has(onnx_backend.onnx_name(wf)) for _, wf, _ in _members_from_meta(meta))
     if not any((_MODELS / wf).exists() for _, wf, _ in _members_from_meta(meta)):
         return False
     try:
@@ -204,10 +208,20 @@ def classify_nail_bgr(nail_bgr):
     Ensembled, temperature-scaled, TTA'd (image + horizontal flip), exactly like the
     geometry CNN so calibration carries over.
     """
+    rgb = cv2.cvtColor(nail_bgr, cv2.COLOR_BGR2RGB)
+    if onnx_backend.active():
+        if not _state.get("rules_configured"):
+            configure_manifest_rules()
+            _state["rules_configured"] = True
+        meta = json.loads(_LABELS_PATH.read_text())
+        members = [(wf, t) for _, wf, t in _members_from_meta(meta) if onnx_backend.has(onnx_backend.onnx_name(wf))]
+        probs = onnx_backend.ensemble_probs(meta, members, rgb)
+        classes = meta["classes"]
+        idx = int(probs.argmax())
+        return classes[idx], float(probs[idx]), {c: round(float(probs[i]), 3) for i, c in enumerate(classes)}
+
     s = _load()
     torch = s["torch"]
-
-    rgb = cv2.cvtColor(nail_bgr, cv2.COLOR_BGR2RGB)
     tensor = torch.from_numpy(rgb).permute(2, 0, 1).float() / 255.0
     base = s["tf"](tensor)
     views = torch.stack([base, torch.flip(base, dims=[2])])

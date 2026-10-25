@@ -1,10 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
 import { useI18n } from '../i18n'
+import { getOnDeviceState, subscribeOnDevice } from '../ondevice'
 
 export default function PrivacySheet({ onClose }) {
   const { t } = useI18n()
   const sheetRef = useRef(null)
+  const [device, setDevice] = useState(getOnDeviceState)
+  useEffect(() => subscribeOnDevice(setDevice), [])
+  const onDevice = device.phase === 'ready'
 
   useEffect(() => {
     const onKey = (e) => {
@@ -42,16 +46,20 @@ export default function PrivacySheet({ onClose }) {
 
         <div className="sheet-body">
           <h3 className="settings-group-title">{t('privacy.photosTitle')}</h3>
-          <p className="settings-row-desc">{t('privacy.photosBody')}</p>
+          <p className="settings-row-desc">{t(onDevice ? 'privacy.photosBodyDevice' : 'privacy.photosBody')}</p>
 
           <h3 className="settings-group-title">{t('privacy.storedTitle')}</h3>
-          <p className="settings-row-desc">{t('privacy.storedBody')}</p>
+          <p className="settings-row-desc">{t(onDevice ? 'privacy.storedBodyDevice' : 'privacy.storedBody')}</p>
 
           <h3 className="settings-group-title">{t('privacy.notCollectedTitle')}</h3>
           <p className="settings-row-desc">{t('privacy.notCollectedBody')}</p>
 
-          <h3 className="settings-group-title">{t('privacy.limitationTitle')}</h3>
-          <p className="settings-row-desc">{t('privacy.limitationBody')}</p>
+          {!onDevice && (
+            <>
+              <h3 className="settings-group-title">{t('privacy.limitationTitle')}</h3>
+              <p className="settings-row-desc">{t('privacy.limitationBody')}</p>
+            </>
+          )}
 
           <p className="settings-note">{t('privacy.disclaimer')}</p>
         </div>

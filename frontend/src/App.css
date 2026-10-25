@@ -2718,3 +2718,20 @@
   opacity: 0.6;
   cursor: wait;
 }
+
+/* ── On-device AI status ── */
+.home-ondevice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--primary);
+  text-align: center;
+}
+
+.home-ondevice--busy {
+  color: var(--text-muted);
+}

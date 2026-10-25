@@ -141,6 +141,9 @@ export default {
     },
     "showAll": "Ver todos os {n}",
     "notYet": "Outros seis sinais ainda estão em validação e ainda não são informados.",
+    "ondeviceDownloading": "Baixando a IA para o seu celular (só na primeira vez): {pct}%",
+    "ondeviceStarting": "Iniciando a IA no dispositivo...",
+    "ondeviceReady": "A IA roda neste dispositivo. Suas fotos nunca saem dele.",
     "showLess": "Ver menos",
     "dailyTip": "Dica do dia",
     "tips": [
@@ -435,6 +438,8 @@ export default {
     "close": "Fechar política de privacidade",
     "photosTitle": "Suas fotos",
     "photosBody": "Suas duas fotos são analisadas na memória e depois descartadas. Nenhuma foto é salva em disco ou no banco de dados - apenas os resultados (rótulos, veredictos, confiança) são armazenados.",
+    "photosBodyDevice": "A IA roda neste dispositivo. Suas duas fotos são analisadas aqui, na memória, e nunca são enviadas nem salvas: elas não saem do seu celular.",
+    "storedBodyDevice": "Os resultados dos escaneamentos (rótulos, veredictos, confiança) são salvos apenas neste dispositivo para que o Histórico mostre escaneamentos anteriores, e você pode excluí-los a qualquer momento no Histórico. As configurações de exibição e idioma ficam apenas neste dispositivo.",
     "storedTitle": "O que é armazenado",
     "storedBody": "Os resultados dos escaneamentos são salvos localmente para que o Histórico e o gráfico de tendência do ângulo possam mostrar escaneamentos anteriores. Se você responder \"isso corresponde ao que você vê?\", essa resposta é armazenada da mesma forma para ajudar a calibrar o aplicativo no futuro - evite incluir informações identificáveis no campo de observação. As configurações de exibição e idioma são salvas apenas neste aparelho.",
     "notCollectedTitle": "O que não é coletado",

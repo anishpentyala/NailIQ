@@ -12,14 +12,15 @@ import base64
 import cv2
 import numpy as np
 
-from . import classifier
+from . import classifier, onnx_backend
 from .preprocessing import crop_to_finger_roi, finger_roi_box
 
 OVERLAY_SIZE = 256
 
 
 def is_available():
-    return classifier.is_available()
+    # Grad-CAM needs gradients, which the ONNX (on-device) backend does not provide
+    return classifier.is_available() and not onnx_backend.active()
 
 
 def _heatmap(model, x, target_layer, torch):

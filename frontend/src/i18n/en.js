@@ -96,6 +96,9 @@ export default {
     },
     showAll: 'Show all {n}',
     notYet: "Six more signs are still being validated and aren't reported yet.",
+    ondeviceDownloading: "Downloading the AI to your phone (first time only): {pct}%",
+    ondeviceStarting: "Starting the on-device AI...",
+    ondeviceReady: "The AI runs on this device. Your photos never leave it.",
     showLess: 'Show less',
     dailyTip: 'Daily tip',
     tips: [
@@ -464,6 +467,8 @@ export default {
     photosTitle: 'Your photos',
     photosBody:
       'Your two photos are analyzed in memory and then discarded. No photo is ever saved to disk or to the database - only the findings (labels, verdicts, confidence) are stored.',
+    photosBodyDevice: "The AI runs on this device. Your two photos are analyzed here, in memory, and are never uploaded or saved - they don't leave your phone.",
+    storedBodyDevice: "Scan findings (labels, verdicts, confidence) are saved only on this device so History can show past scans, and you can delete them any time from History. Display and language settings are stored only on this device.",
     storedTitle: 'What is stored',
     storedBody:
       'Scan findings are saved locally so History and the angle-trend chart can show past scans. If you answer "does this match what you see?", that response is stored the same way to help calibrate the app later - avoid putting anything identifying in the note field. Display and language settings are stored only on this device.',

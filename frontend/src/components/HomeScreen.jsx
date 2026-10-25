@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { getHistory } from '../api'
+import { getOnDeviceState, subscribeOnDevice } from '../ondevice'
 import { relativeTime } from '../scanStatus'
 import { useI18n } from '../i18n'
 import { CONDITION_KEYS, CONDITION_ICONS, signNameParts } from '../conditions'
@@ -105,6 +106,27 @@ function SignRadar({ scans }) {
   )
 }
 
+// Shows whether the AI is running on this device: downloading the first time, then ready (photos never leave it).
+function OnDeviceStatus() {
+  const { t } = useI18n()
+  const [state, setState] = useState(getOnDeviceState)
+  useEffect(() => subscribeOnDevice(setState), [])
+  if (state.phase === 'downloading') {
+    const pct = state.total ? Math.min(99, Math.round((100 * state.done) / state.total)) : 0
+    return <p className="home-ondevice home-ondevice--busy" role="status">{t('home.ondeviceDownloading', { pct })}</p>
+  }
+  if (state.phase === 'starting') return <p className="home-ondevice home-ondevice--busy" role="status">{t('home.ondeviceStarting')}</p>
+  if (state.phase === 'ready') {
+    return (
+      <p className="home-ondevice" role="status">
+        <Icon name="checkCircle" size={14} />
+        {t('home.ondeviceReady')}
+      </p>
+    )
+  }
+  return null
+}
+
 export default function HomeScreen({ onStartScan }) {
   const { t, lang } = useI18n()
   // 'loading' keeps the grid a stable height so the page doesn't jump once history arrives; 'error' degrades to
@@ -145,6 +167,7 @@ export default function HomeScreen({ onStartScan }) {
         <button type="button" className="primary-btn home-cta" onClick={onStartScan}>
           {t('home.cta')}
         </button>
+        <OnDeviceStatus />
         <p className="home-not-yet">{t('home.notYet')}</p>
       </section>
 

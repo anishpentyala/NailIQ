@@ -73,3 +73,8 @@ data/phone_test_certs/
 data/phone_test_logs/
 hf_space_build/
 hf_models_build/
+
+# on-device AI bundle (built by scripts/build_ondevice.py)
+frontend/public/ondevice/
+deploy/ondevice/models/
+ml/eval/out/

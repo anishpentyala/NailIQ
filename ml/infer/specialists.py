@@ -24,7 +24,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from . import color_classifier
+from . import color_classifier, onnx_backend
 
 ENABLED = ("onycholysis", "leukonychia", "beaus_lines")  # melanonychia withheld 2026-10-18 (real-phone false alarm). beaus_lines (2026-10-19) is a LIMITED-validation sign, see validation_policy.LIMITED_VALIDATION. muehrckes_lines was tried 2026-10-20 and reverted: flags 20/43 (46.5%) readable real-camera Hb nails
 _MODELS = Path(__file__).resolve().parent.parent / "models"
@@ -37,6 +37,8 @@ def _paths(sign):
 
 def is_available(sign):
     weights, meta = _paths(sign)
+    if onnx_backend.active():
+        return sign in ENABLED and meta.is_file() and onnx_backend.has(f"{sign}_specialist_0.onnx")
     return sign in ENABLED and weights.is_file() and meta.is_file() and importlib.util.find_spec("torch") is not None
 
 
@@ -63,6 +65,8 @@ def _load(sign):
 
 def probability(sign, nail_bgr):
     """Mean sigmoid over members x 4 quarter-turns x flip (tip direction is irrelevant)."""
+    if onnx_backend.active():
+        return _probability_onnx(sign, nail_bgr)
     torch, dev, nets, size = _load(sign)
     rgb = cv2.cvtColor(cv2.resize(nail_bgr, (size, size)), cv2.COLOR_BGR2RGB)
     mean = torch.tensor([0.485, 0.456, 0.406], device=dev)[:, None, None]
@@ -77,6 +81,25 @@ def probability(sign, nail_bgr):
                     xx = torch.flip(xx, (3,)) if flip else xx
                     total += torch.sigmoid(net(xx)).item()
                     n += 1
+    return total / n
+
+
+def _probability_onnx(sign, nail_bgr):
+    """Same average as the PyTorch path: sigmoid over members x 4 quarter-turns x flip, in numpy + ONNX."""
+    size = int(json.loads(_paths(sign)[1].read_text()).get("size", 224))
+    rgb = cv2.cvtColor(cv2.resize(nail_bgr, (size, size)), cv2.COLOR_BGR2RGB)
+    x = onnx_backend.preprocess(rgb, size, [0.485, 0.456, 0.406], [0.229, 0.224, 0.225], resize=None)
+    views = []
+    for k in range(4):
+        r = np.rot90(x, k, axes=(1, 2))
+        views.extend([r, r[:, :, ::-1]])
+    batch = np.stack(views)
+    total, n, i = 0.0, 0, 0
+    while onnx_backend.has(f"{sign}_specialist_{i}.onnx"):
+        logits = onnx_backend.run(f"{sign}_specialist_{i}.onnx", batch).reshape(-1)
+        total += float((1.0 / (1.0 + np.exp(-logits))).sum())
+        n += len(logits)
+        i += 1
     return total / n
 
 
