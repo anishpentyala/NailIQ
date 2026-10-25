@@ -16,7 +16,7 @@ export default {
   "retake": "重新拍照",
   "appearance": "照片外观"
 },
-  langName: '中文（简体）',
+  langName: '简体中文',
 
   app: {
     tagline: '一款预防性指甲健康筛查工具',

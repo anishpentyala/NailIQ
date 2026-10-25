@@ -11,8 +11,9 @@ import ko from './ko'
 import vi from './vi'
 import ru from './ru'
 
-// add a language: import its dictionary and list it here
-const DICTIONARIES = { en, es, zh, hi, fr, pt, ko, vi, ru }
+// add a language: import its dictionary and list it here. Order is the order shown in Settings: Latin scripts first,
+// then the rest, so the 3-column grid reads in tidy rows.
+const DICTIONARIES = { en, es, fr, pt, vi, ru, ko, zh, hi }
 export const LANGUAGES = Object.entries(DICTIONARIES).map(([code, dict]) => ({
   code,
   name: dict.langName,

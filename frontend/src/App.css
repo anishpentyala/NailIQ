@@ -2172,12 +2172,11 @@
   margin-top: 0;
 }
 
-/* Chips that wrap across rows -- a single-row segmented control (flex: 1 per
-   item) breaks down once there are more than 3-4 languages, especially with
-   longer/CJK names like "中文（简体）" wrapping mid-button. */
+/* An even grid of equal tiles (3 across on a phone, fewer when large text needs the room) instead of ragged wrapped
+   chips; the selected tick sits in the corner so it never changes a tile's width. */
 .settings-lang-group {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
   gap: 8px;
   background: transparent;
   border-radius: 0;
@@ -2185,20 +2184,27 @@
 }
 
 .settings-lang-btn {
-  flex: 0 0 auto;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 14px;
+  min-height: 48px;
+  padding: 9px 12px;
   border: 1.5px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text);
   font-size: 0.9375rem;
   font-weight: 500;
-  white-space: nowrap;
+  text-align: center;
+  line-height: 1.2;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-lang-btn svg {
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
 .settings-lang-btn--active {
