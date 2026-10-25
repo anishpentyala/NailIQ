@@ -72,3 +72,4 @@ backend/tests/__pycache__/
 data/phone_test_certs/
 data/phone_test_logs/
 hf_space_build/
+hf_models_build/

@@ -21,4 +21,5 @@ ENV NAILIQ_STATIC_DIR=/home/user/app/frontend/dist \
     PYTHONUNBUFFERED=1
 
 EXPOSE 7860
-CMD ["gunicorn", "--chdir", "backend", "-b", "0.0.0.0:7860", "--workers", "1", "--threads", "4", "--timeout", "180", "app:app"]
+# fetch_models.py pulls the weights from the private model repo (see its docstring), then the server starts
+CMD ["sh", "-c", "python fetch_models.py && exec gunicorn --chdir backend -b 0.0.0.0:7860 --workers 1 --threads 4 --timeout 180 app:app"]
