@@ -44,3 +44,6 @@ Correctly excluded (never used for training): Yakimov Hb set (CC BY-NC-ND, evalu
 
 In every option: credit the datasets (Space README + app), keep describing the app as an educational screener, and do not publish the
 Hb-set or other NC/ND data.
+
+## Decision (2026-10-24)
+Owner chose **A**: weights in a private model repo, public Space downloads them with a secret token (`deploy/hf_space/fetch_models.py`, `scripts/build_hf_space.py`, `docs/HOSTING.md`). The Space README carries the dataset credits.
