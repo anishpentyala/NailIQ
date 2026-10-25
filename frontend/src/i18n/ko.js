@@ -196,6 +196,7 @@ export default {
   "result": {
     "scanResults": "스캔 결과",
     "tapCard": "자세한 내용을 보려면 표지판을 탭하세요",
+    "oneLine": "진단이 아닙니다. 설정 → 고지 사항 및 한계를 참고하세요.",
     "reportTitle": "NailIQ 네일 건강 검진 보고서",
     "summaryWithin": "모든 수치가 정상 범위에 들어 있습니다.",
     "summaryOutsideOne": "1개의 신호가 일반적인 범위를 벗어났습니다.",
@@ -428,7 +429,10 @@ export default {
     "reduceMotion": "움직임 줄이기",
     "reduceMotionDesc": "애니메이션과 전환 효과를 끄세요.",
     "note": "이 설정들은 이 기기에 저장됩니다.",
-    "privacyLink": "개인정보 처리방침"
+    "privacyLink": "개인정보 처리방침",
+    "disclaimersLink": "고지 사항 및 한계",
+    "disclaimersTitle": "고지 사항 및 한계",
+    "disclaimersClose": "고지 사항 닫기",
   },
   "privacy": {
     "title": "개인정보 처리방침",

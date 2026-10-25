@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
 import PrivacySheet from './PrivacySheet'
+import DisclaimerSheet from './DisclaimerSheet'
 import { useI18n, LANGUAGES } from '../i18n'
 
 function Toggle({ id, label, description, checked, onChange }) {
@@ -29,6 +30,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
   const { t, lang, setLang, highContrast, largeText, reduceMotion, darkMode, setPref } = useI18n()
   const sheetRef = useRef(null)
   const [privacyOpen, setPrivacyOpen] = useState(false)
+  const [disclaimersOpen, setDisclaimersOpen] = useState(false)
 
   useEffect(() => {
     const onKey = (e) => {
@@ -123,6 +125,11 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
             {t('settings.privacyLink')}
           </button>
 
+          <button type="button" className="settings-link" onClick={() => setDisclaimersOpen(true)}>
+            <Icon name="info" size={16} />
+            {t('settings.disclaimersLink')}
+          </button>
+
           <button type="button" className="settings-link" onClick={onReplayIntro}>
             <Icon name="sparkle" size={16} />
             {t('onboarding.replay')}
@@ -133,6 +140,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
       </div>
 
       {privacyOpen && <PrivacySheet onClose={() => setPrivacyOpen(false)} />}
+      {disclaimersOpen && <DisclaimerSheet onClose={() => setDisclaimersOpen(false)} />}
     </div>
   )
 }

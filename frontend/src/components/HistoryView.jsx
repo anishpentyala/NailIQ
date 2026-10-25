@@ -39,7 +39,6 @@ function FindingDetail({ finding }) {
 
   return (
     <div className="history-finding-body">
-      {finding.track_used === 'appearance' && <p className="history-detail-message">{t('crop.appearanceNote')}</p>}
       {isInconclusive ? (
         <p className="history-detail-message">{failureReasonMessage(t, finding.failure_reason)}</p>
       ) : (
@@ -224,7 +223,6 @@ function AngleTrend({ scans }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="history-trend-note">{t('history.trendNote')}</p>
     </section>
   )
 }

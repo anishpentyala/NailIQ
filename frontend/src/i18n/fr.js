@@ -199,6 +199,7 @@ export default {
   "result": {
     "scanResults": "Résultats du scan",
     "tapCard": "Touchez un signe pour les détails",
+    "oneLine": "Ceci n'est pas un diagnostic. Voir Réglages → Avertissements et limites.",
     "reportTitle": "Rapport de dépistage de la santé des ongles NailIQ",
     "summaryWithin": "Tout semble dans la plage typique.",
     "summaryOutsideOne": "1 signe est hors de la plage typique.",
@@ -432,7 +433,10 @@ export default {
     "reduceMotion": "Réduire les animations",
     "reduceMotionDesc": "Désactive les animations et les transitions.",
     "note": "Ces paramètres sont enregistrés sur cet appareil.",
-    "privacyLink": "Politique de confidentialité"
+    "privacyLink": "Politique de confidentialité",
+    "disclaimersLink": "Avertissements et limites",
+    "disclaimersTitle": "Avertissements et limites",
+    "disclaimersClose": "Fermer les avertissements",
   },
   "privacy": {
     "title": "Politique de confidentialité",

@@ -196,6 +196,7 @@ export default {
   "result": {
     "scanResults": "Kết quả quét",
     "tapCard": "Nhấn vào một biển báo để xem chi tiết",
+    "oneLine": "Không phải là chẩn đoán. Xem Cài đặt → Tuyên bố miễn trừ và giới hạn.",
     "reportTitle": "Báo cáo kiểm tra sức khỏe móng tay NailIQ",
     "summaryWithin": "Mọi thứ đều nằm trong phạm vi bình thường.",
     "summaryOutsideOne": "Có 1 chỉ số nằm ngoài phạm vi thông thường.",
@@ -428,7 +429,10 @@ export default {
     "reduceMotion": "Giảm chuyển động",
     "reduceMotionDesc": "Tắt các hiệu ứng động và hiệu ứng chuyển cảnh.",
     "note": "Các cài đặt này được lưu trên thiết bị này.",
-    "privacyLink": "Chính sách bảo mật"
+    "privacyLink": "Chính sách bảo mật",
+    "disclaimersLink": "Tuyên bố miễn trừ và giới hạn",
+    "disclaimersTitle": "Tuyên bố miễn trừ và giới hạn",
+    "disclaimersClose": "Đóng tuyên bố miễn trừ",
   },
   "privacy": {
     "title": "Chính sách bảo mật",

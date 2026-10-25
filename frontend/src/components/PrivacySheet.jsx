@@ -61,7 +61,6 @@ export default function PrivacySheet({ onClose }) {
             </>
           )}
 
-          <p className="settings-note">{t('privacy.disclaimer')}</p>
         </div>
       </div>
     </div>

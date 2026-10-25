@@ -199,6 +199,7 @@ export default {
   "result": {
     "scanResults": "Resultados do exame",
     "tapCard": "Toque num sinal para ver detalhes",
+    "oneLine": "Não é um diagnóstico. Veja Configurações → Avisos e limitações.",
     "reportTitle": "Relatório de triagem de saúde das unhas NailIQ",
     "summaryWithin": "Tudo parece estar dentro da faixa típica.",
     "summaryOutsideOne": "1 sinal está fora da faixa típica.",
@@ -432,7 +433,10 @@ export default {
     "reduceMotion": "Reduzir movimento",
     "reduceMotionDesc": "Desativa as animações e transições.",
     "note": "Essas configurações são salvas neste aparelho.",
-    "privacyLink": "Política de privacidade"
+    "privacyLink": "Política de privacidade",
+    "disclaimersLink": "Avisos e limitações",
+    "disclaimersTitle": "Avisos e limitações",
+    "disclaimersClose": "Fechar avisos",
   },
   "privacy": {
     "title": "Política de privacidade",

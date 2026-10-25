@@ -158,6 +158,7 @@ export default {
   result: {
     scanResults: 'स्कैन परिणाम',
     tapCard: 'विवरण के लिए किसी संकेत पर टैप करें',
+    oneLine: "यह निदान नहीं है। सेटिंग्स → अस्वीकरण और सीमाएँ देखें।",
     reportTitle: 'NailIQ नाखून-स्वास्थ्य स्क्रीनिंग रिपोर्ट',
     summaryWithin: 'सब कुछ सामान्य दायरे में दिखता है।',
     summaryOutsideOne: '1 लक्षण सामान्य दायरे से बाहर है।',
@@ -447,6 +448,9 @@ export default {
     reduceMotionDesc: 'एनिमेशन और ट्रांज़िशन बंद करें।',
     note: 'ये सेटिंग्स इसी डिवाइस पर सहेजी जाती हैं।',
     privacyLink: 'गोपनीयता नीति',
+    disclaimersLink: "अस्वीकरण और सीमाएँ",
+    disclaimersTitle: "अस्वीकरण और सीमाएँ",
+    disclaimersClose: "अस्वीकरण बंद करें",
   },
 
   privacy: {

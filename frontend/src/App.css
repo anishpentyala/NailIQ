@@ -2752,3 +2752,6 @@
 :root.a11y-contrast .history-changed-badge { color: var(--warn); }
 :root.a11y-contrast .bottom-nav-item:not(.active) { color: var(--text-muted); }
 .nail-crop-hint { max-width: 480px; margin: 0; text-align: center; font-size: 0.8125rem; color: var(--warn); }
+.result-one-line { margin: 0; text-align: center; font-size: 0.75rem; color: var(--text-muted); }
+.disclaimer-item { padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+.disclaimer-item:last-child { border-bottom: none; }

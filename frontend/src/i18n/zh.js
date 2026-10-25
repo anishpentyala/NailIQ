@@ -155,6 +155,7 @@ export default {
   result: {
     scanResults: '扫描结果',
     tapCard: '点按某项体征查看详情',
+    oneLine: "这不是诊断。详见 设置 → 免责声明与局限。",
     reportTitle: 'NailIQ 指甲健康筛查报告',
     summaryWithin: '一切看起来都在典型范围内。',
     summaryOutsideOne: '有 1 项征象超出典型范围。',
@@ -432,6 +433,9 @@ export default {
     reduceMotionDesc: '关闭动画和过渡效果。',
     note: '这些设置保存在本设备上。',
     privacyLink: '隐私政策',
+    disclaimersLink: "免责声明与局限",
+    disclaimersTitle: "免责声明与局限",
+    disclaimersClose: "关闭免责声明",
   },
 
   privacy: {

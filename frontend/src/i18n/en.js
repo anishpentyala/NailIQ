@@ -160,6 +160,7 @@ export default {
   result: {
     scanResults: 'Scan results',
     tapCard: 'Tap a sign for details',
+    oneLine: "Not a diagnosis. See Settings → Disclaimers & limitations.",
     reportTitle: 'NailIQ Nail Health Screening Report',
     summaryWithin: 'Everything looks within the typical range.',
     summaryOutsideOne: '1 sign is outside the typical range.',
@@ -460,6 +461,9 @@ export default {
     reduceMotionDesc: 'Turn off animations and transitions.',
     note: 'These settings are saved on this device.',
     privacyLink: 'Privacy policy',
+    disclaimersLink: "Disclaimers & limitations",
+    disclaimersTitle: "Disclaimers & limitations",
+    disclaimersClose: "Close disclaimers",
   },
 
   privacy: {

@@ -179,7 +179,6 @@ export default function Onboarding({ onDone }) {
                   )}
                   {sec.id === 'photos' && (
                     <>
-                      <p className="ob-fine">{t('app.disclaimer')}</p>
                       <button type="button" className="primary-btn ob-start" onClick={finish}>{t('onboarding.start')}</button>
                     </>
                   )}

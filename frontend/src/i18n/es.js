@@ -159,6 +159,7 @@ export default {
   result: {
     scanResults: 'Resultados del escaneo',
     tapCard: 'Toca un signo para ver detalles',
+    oneLine: "No es un diagnóstico. Consulta Ajustes → Avisos y limitaciones.",
     reportTitle: 'Informe de detección de salud de uñas NailIQ',
     summaryWithin: 'Todo parece estar dentro del rango típico.',
     summaryOutsideOne: '1 signo está fuera del rango típico.',
@@ -456,6 +457,9 @@ export default {
     reduceMotionDesc: 'Desactiva las animaciones y transiciones.',
     note: 'Esta configuración se guarda en este dispositivo.',
     privacyLink: 'Política de privacidad',
+    disclaimersLink: "Avisos y limitaciones",
+    disclaimersTitle: "Avisos y limitaciones",
+    disclaimersClose: "Cerrar avisos",
   },
 
   privacy: {

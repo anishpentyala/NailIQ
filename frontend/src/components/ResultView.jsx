@@ -15,16 +15,6 @@ function mlLabelText(t, label) {
   return text === key ? null : text
 }
 
-function toneCaveatText(t, finding) {
-  if (!finding.tone_caveat) return null
-  if (finding.tone_tier) {
-    const key = `result.toneCaveat.${finding.tone_tier}`
-    const text = t(key)
-    if (text !== key) return text
-  }
-  return finding.tone_caveat
-}
-
 function FeedbackRow({ scanId, finding, showImpact }) {
   const { t } = useI18n()
   const [sent, setSent] = useState(false)
@@ -99,7 +89,6 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
   // only show the reference diagram when there's something worth a closer look
   const showDiagram = finding.verdict === 'outside' || finding.verdict === 'inconclusive'
   const summary = conditionSummary(t, finding.label)
-  const toneCaveat = toneCaveatText(t, finding)
 
   return (
     <div className="finding-card" id={`finding-${finding.label}`} style={{ '--finding-delay': `${index * 50}ms` }}>
@@ -129,19 +118,6 @@ function FindingCard({ finding, index, scanId, showFeedbackImpact }) {
         <p className="result-match">{t('result.mlClosestMatch', { label: mlMatch })}</p>
       )}
       <p className="result-message">{message}</p>
-      {finding.track_used === 'appearance' && <p className="result-tone-caveat">{t('crop.appearanceNote')}</p>}
-      {finding.validation_tier === 'limited' && finding.verdict !== 'inconclusive' && (
-        <p className="result-tone-caveat">
-          <Icon name="info" size={14} />
-          {t('result.limitedNote')}
-        </p>
-      )}
-      {toneCaveat && finding.verdict !== 'inconclusive' && (
-        <p className="result-tone-caveat">
-          <Icon name="info" size={14} />
-          {toneCaveat}
-        </p>
-      )}
       {showDiagram && summary && (
         <div className="finding-diagram-section">
           <NailDiagram type={finding.label} />
@@ -328,7 +304,7 @@ function ScanHero({ findings, outside, inconclusive, topImage, bbox, gradcam, at
 
       <div className="scan-hero-summary">
         <p className="scan-hero-summary-main">{summary}</p>
-        <p className="scan-hero-summary-sub">{t('result.tapCard')} · {t('result.notARiskScore')}</p>
+        <p className="scan-hero-summary-sub">{t('result.tapCard')}</p>
       </div>
     </section>
   )
@@ -399,7 +375,6 @@ function ScanDashboard({ findings, imageQuality }) {
           <div className="attention-meter-fill" style={{ width: `${attention}%` }} />
         </div>
         <span className="meter-ends"><span>{t('result.low')}</span><span>{t('result.high')}</span></span>
-        <span className="tile-sub">{t('result.notARiskScore')}</span>
       </div>
 
       <div className="dashboard-tile">
@@ -592,8 +567,11 @@ export default function ResultView({ result, topImage, onReset }) {
         </button>
       </div>
 
-      <p className="result-disclaimer">{t('result.disclaimer')}</p>
-      <p className="result-sources">{t('result.sources')}</p>
+      <p className="result-one-line">{t('result.oneLine')}</p>
+      <div className="print-only-block">
+        <p className="result-disclaimer">{t('result.disclaimer')}</p>
+        <p className="result-sources">{t('result.sources')}</p>
+      </div>
     </div>
   )
 }

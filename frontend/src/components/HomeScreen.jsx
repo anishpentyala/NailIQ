@@ -185,7 +185,6 @@ export default function HomeScreen({ onStartScan }) {
           {t('home.cta')}
         </button>
         <OnDeviceStatus />
-        <p className="home-not-yet">{t('home.notYet')}</p>
       </section>
 
       <section className="home-group">
@@ -216,7 +215,6 @@ export default function HomeScreen({ onStartScan }) {
             </div>
           ))}
         </div>
-        <p className="home-group-footnote">{t('home.whoFor')}</p>
       </section>
 
       <button type="button" className="home-tip" onClick={nextTip}>
@@ -227,7 +225,6 @@ export default function HomeScreen({ onStartScan }) {
         </div>
       </button>
 
-      <p className="home-group-footnote home-disclaimer">{t('app.disclaimer')}</p>
     </div>
   )
 }
