@@ -7,9 +7,12 @@ import zh from './zh'
 import hi from './hi'
 import fr from './fr'
 import pt from './pt'
+import ko from './ko'
+import vi from './vi'
+import ru from './ru'
 
 // add a language: import its dictionary and list it here
-const DICTIONARIES = { en, es, zh, hi, fr, pt }
+const DICTIONARIES = { en, es, zh, hi, fr, pt, ko, vi, ru }
 export const LANGUAGES = Object.entries(DICTIONARIES).map(([code, dict]) => ({
   code,
   name: dict.langName,

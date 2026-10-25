@@ -183,29 +183,33 @@ button {
   color-scheme: dark;
 }
 
-/* High contrast: darker text, fully opaque tints, visible borders, no soft
-   shadows. Only overrides the variables - component styles stay untouched.
-   Defined after theme-dark so it wins when both are on, guaranteeing the
-   max-legibility palette regardless of the dark-mode setting. */
+/* High contrast: a pure-black page with white text, saturated accents and thick light borders, so it reads as its own
+   theme rather than as light mode (and is clearly different from the softer dark mode above). Only overrides the
+   variables - component styles stay untouched. Defined after theme-dark so it wins when both are on. */
 :root.a11y-contrast {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --text: #0d1517;
-  --text-muted: #2e3f43;
-  --primary: #135a49;
-  --primary-dark: #0c4034;
-  --primary-bg: #d9ebe6;
-  --warn: #7a4f10;
-  --warn-bg: #f4e8d4;
-  --danger: #8f2118;
-  --danger-bg: #f6ddda;
-  --border: #46565a;
-  --hairline: #46565a;
-  --fill-secondary: #dde4e2;
+  --bg: #000000;
+  --surface: #000000;
+  --text: #ffffff;
+  --text-muted: #dfe5e6;
+  --primary: #5cf2cb;
+  --primary-dark: #a6f7e1;
+  --primary-bg: #06362c;
+  --warn: #ffd04d;
+  --warn-bg: #352600;
+  --danger: #ff9488;
+  --danger-bg: #430d08;
+  --border: #ffffff;
+  --hairline: #bfc7c8;
+  --fill-secondary: #262b2d;
   --shadow: none;
   /* Translucency is the main legibility risk here - make the bars opaque. */
   --glass-bg: var(--surface);
   --glass-blur: none;
+  --skin-1: #c79f7f;
+  --skin-2: #cdab8d;
+  --skin-3: #dcc4ad;
+  --skin-edge: #a8815f;
+  color-scheme: dark;
 }
 
 /* Reduce motion: kill animations/transitions both when the user asks the app
@@ -239,5 +243,5 @@ button {
 
 :root.a11y-contrast :focus-visible {
   outline-width: 4px;
-  outline-color: #0c4034;
+  outline-color: #ffd04d;
 }

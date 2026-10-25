@@ -2741,3 +2741,7 @@
 .home-ondevice--busy {
   color: var(--text-muted);
 }
+
+/* High contrast is a black theme: undo the light-mode-only colours above. */
+:root.a11y-contrast .history-changed-badge { color: var(--warn); }
+:root.a11y-contrast .bottom-nav-item:not(.active) { color: var(--text-muted); }
