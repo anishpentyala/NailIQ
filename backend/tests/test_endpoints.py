@@ -389,3 +389,18 @@ class TestPerClientHistory:
         monkeypatch.setattr(app_module, '_REQUIRE_CLIENT_ID', True)
         assert client.get('/history').get_json()['scans'] == []
         assert len(client.get('/history', headers=self.ALICE).get_json()['scans']) == 1
+
+    def test_delete_history_only_removes_own_scans(self, client):
+        self._scan(client, self.ALICE)
+        self._scan(client, self.ALICE)
+        self._scan(client, self.BOB)
+        r = client.delete('/history', headers=self.ALICE)
+        assert r.status_code == 200 and r.get_json()['deleted'] == 2
+        assert client.get('/history', headers=self.ALICE).get_json()['scans'] == []
+        assert len(client.get('/history', headers=self.BOB).get_json()['scans']) == 1
+
+    def test_delete_history_needs_a_client_id(self, client):
+        self._scan(client, self.ALICE)
+        assert client.delete('/history').status_code == 400
+        assert client.delete('/history', headers={'X-Client-Id': 'short'}).status_code == 400
+        assert len(client.get('/history', headers=self.ALICE).get_json()['scans']) == 1

@@ -59,3 +59,8 @@ export async function submitFeedback({ scanId, label, shownVerdict, agreed, note
   })
   return res.data
 }
+
+export async function clearHistory() {
+  const res = await axios.delete(`${API_BASE}/history`)
+  return res.data
+}

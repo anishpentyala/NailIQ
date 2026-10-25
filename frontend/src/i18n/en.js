@@ -134,6 +134,7 @@ export default {
     checking: 'Checking photo…',
     analyzing: 'Analyzing…',
     upload: 'Upload a photo instead',
+    uploadHint: "Upload a close-up of one finger on a plain background, not a whole-hand photo.",
     stepOf: 'Step {n} of 2',
   },
 
@@ -266,6 +267,12 @@ export default {
     example: 'Example',
     changed: 'Changed',
     changedSinceLast: 'Changed since last scan',
+    compareNone: "Nothing changed since your last scan.",
+    compareSome: "Changed since your last scan: {names}.",
+    clear: "Clear my history",
+    clearAsk: "Delete all saved scans for this browser? This cannot be undone.",
+    clearYes: "Yes, delete",
+    clearNo: "Keep them",
     withinRange: 'Within range',
     outsideRange: 'Outside range',
     inconclusive: 'Inconclusive',
@@ -291,16 +298,12 @@ export default {
     invalid_image: "That photo couldn't be processed. Please try again.",
     camera_feed_blank:
       "We didn't get an actual image from your camera. Check that camera access is allowed, then reload and try again.",
-    too_blurry:
-      'That photo looks blurry. Hold your hand and camera steady, let it focus, and retake the shot.',
-    no_contour_found:
-      "We couldn't find your finger in that photo. Make sure it fills the frame against a plain background.",
+    too_blurry: "That photo is blurry. Rest your hand on something steady, tap your nail on the screen to focus, and retake.",
+    no_contour_found: "We couldn't find your finger. Hold it up against a plain wall or sheet of paper, with the whole fingertip inside the guide, then retake.",
     contour_too_small: 'Your finger looks too small in the frame. Move the camera closer and try again.',
     contour_degenerate: "That photo couldn't be processed. Please try again.",
-    background_not_filling_frame:
-      "Something behind your finger is being read as part of it. Use a plain surface that fills the whole frame, then retake.",
-    fingertip_cropped:
-      'Your fingertip is cut off at the edge of the frame. Move it fully into view and retake.',
+    background_not_filling_frame: "Hold your finger up against a plain wall or a blank sheet of paper so nothing else is behind it, then retake.",
+    fingertip_cropped: "Your fingertip is cut off. Pull the camera back a little so the whole fingertip is inside the frame, then retake.",
     fingertip_not_clear:
       "We couldn't get a clear view of your fingertip. Try better lighting and hold the camera steady.",
     cuticle_not_detected:
@@ -333,8 +336,7 @@ export default {
       "We don't have enough validated data on this sign to call it confidently, and our two checks didn't agree. Retake in good lighting, and consider showing a doctor if you're concerned.",
     requires_ai_model: 'This sign can only be checked by the AI model, which isn\'t available right now, so we\'re not giving a result for it.',
     no_confident_ai_call: 'The AI model wasn\'t confident enough about this sign in your photo to call it either way. Retake the top-down photo in even light with the whole nail in view; consider showing a doctor if you\'re concerned.',
-    default:
-      "We couldn't detect a nail in that photo. Try a plainer background, better lighting, and your whole finger in frame.",
+    default: "We couldn't find a nail in that photo. Try a plain wall or paper behind your finger, bright even light, and keep your whole fingertip in the frame.",
   },
 
   status: {

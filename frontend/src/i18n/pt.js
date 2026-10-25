@@ -176,6 +176,7 @@ export default {
     "checking": "Verificando a foto…",
     "analyzing": "Analisando…",
     "upload": "Enviar uma foto em vez disso",
+    "uploadHint": "Envie uma foto de perto de um único dedo sobre um fundo liso, não da mão inteira.",
     "stepOf": "Etapa {n} de 2"
   },
   "verdict": {
@@ -294,6 +295,12 @@ export default {
     "example": "Exemplo",
     "changed": "Mudou",
     "changedSinceLast": "Mudou desde o último escaneamento",
+    "compareNone": "Nada mudou desde o seu último escaneamento.",
+    "compareSome": "Mudou desde o seu último escaneamento: {names}.",
+    "clear": "Limpar meu histórico",
+    "clearAsk": "Excluir todos os escaneamentos salvos neste navegador? Isso não pode ser desfeito.",
+    "clearYes": "Sim, excluir",
+    "clearNo": "Manter",
     "withinRange": "Dentro da faixa",
     "outsideRange": "Fora da faixa",
     "inconclusive": "Inconclusivo",
@@ -314,12 +321,12 @@ export default {
   "failure": {
     "invalid_image": "Não foi possível processar essa foto. Tente novamente.",
     "camera_feed_blank": "Não recebemos uma imagem real da sua câmera. Verifique se o acesso à câmera está permitido e recarregue a página.",
-    "too_blurry": "Essa foto parece desfocada. Mantenha a mão e a câmera firmes, deixe a câmera focar e tire a foto de novo.",
-    "no_contour_found": "Não conseguimos identificar seu dedo nessa foto. Certifique-se de que ele ocupe todo o quadro, contra um fundo liso.",
+    "too_blurry": "Essa foto está tremida. Apoie a mão em algo firme, toque na unha na tela para focar e tire a foto novamente.",
+    "no_contour_found": "Não conseguimos encontrar seu dedo. Segure-o contra uma parede lisa ou uma folha de papel, com toda a ponta dentro da guia, e tire a foto novamente.",
     "contour_too_small": "Seu dedo parece muito pequeno no enquadramento. Aproxime a câmera e tente novamente.",
     "contour_degenerate": "Não foi possível processar essa foto. Tente novamente.",
-    "background_not_filling_frame": "Algo atrás do seu dedo está sendo interpretado como parte dele. Use uma superfície lisa que preencha todo o quadro e tire a foto novamente.",
-    "fingertip_cropped": "A ponta do seu dedo está cortada na borda do quadro. Reposicione-a para que fique totalmente visível e tire a foto novamente.",
+    "background_not_filling_frame": "Segure o dedo contra uma parede lisa ou uma folha de papel em branco para que não haja mais nada atrás, e tire a foto novamente.",
+    "fingertip_cropped": "A ponta do seu dedo está cortada. Afaste um pouco a câmera para que toda a ponta fique dentro do quadro e tire a foto novamente.",
     "fingertip_not_clear": "Não conseguimos ver bem a ponta do seu dedo. Tente uma iluminação melhor e segure a câmera com firmeza.",
     "cuticle_not_detected": "Não conseguimos ver claramente sua unha e sua cutícula. Certifique-se de que toda a unha esteja visível, voltada para a câmera.",
     "points_too_close": "Não conseguimos ler claramente o formato da sua unha. Tente reposicionar o dedo e tirar a foto novamente.",
@@ -337,7 +344,7 @@ export default {
     "insufficient_data_for_confident_call": "Não temos dados validados suficientes sobre esse sinal para nos pronunciarmos com confiança, e nossas duas verificações não concordaram. Tire a foto novamente com boa iluminação e, se estiver preocupado, considere mostrar a um médico.",
     "requires_ai_model": "Este sinal só pode ser verificado pelo modelo de IA, que não está disponível no momento, então não estamos dando um resultado para ele.",
     "no_confident_ai_call": "O modelo de IA não teve confiança suficiente sobre este sinal na sua foto para dar um resultado. Tire novamente a foto de cima com luz uniforme e a unha inteira visível; considere mostrar a um médico se estiver preocupado.",
-    "default": "Não conseguimos detectar uma unha nessa foto. Tente um fundo mais liso, uma iluminação melhor e o dedo inteiro no enquadramento."
+    "default": "Não conseguimos encontrar uma unha nessa foto. Tente uma parede lisa ou papel atrás do dedo, luz forte e uniforme, e mantenha toda a ponta do dedo no quadro."
   },
   "status": {
     "outsideCount": "{n} fora da faixa típica",

@@ -176,6 +176,7 @@ export default {
     "checking": "Vérification de la photo…",
     "analyzing": "Analyse en cours…",
     "upload": "Téléverser une photo à la place",
+    "uploadHint": "Importez un gros plan d'un seul doigt sur un fond uni, pas une photo de toute la main.",
     "stepOf": "Étape {n} sur 2"
   },
   "verdict": {
@@ -294,6 +295,12 @@ export default {
     "example": "Exemple",
     "changed": "Changé",
     "changedSinceLast": "Changé depuis le dernier scan",
+    "compareNone": "Rien n'a changé depuis votre dernier scan.",
+    "compareSome": "Changé depuis votre dernier scan : {names}.",
+    "clear": "Effacer mon historique",
+    "clearAsk": "Supprimer tous les scans enregistrés sur ce navigateur ? Cette action est irréversible.",
+    "clearYes": "Oui, supprimer",
+    "clearNo": "Les garder",
     "withinRange": "Dans la plage",
     "outsideRange": "Hors plage",
     "inconclusive": "Non concluant",
@@ -314,12 +321,12 @@ export default {
   "failure": {
     "invalid_image": "Cette photo n'a pas pu être traitée. Veuillez réessayer.",
     "camera_feed_blank": "Nous n'avons reçu aucune image réelle de votre caméra. Vérifiez que l'accès à la caméra est autorisé, puis rechargez la page et réessayez.",
-    "too_blurry": "Cette photo semble floue. Gardez la main et la caméra stables, laissez la mise au point se faire, puis reprenez la photo.",
-    "no_contour_found": "Nous n'avons pas trouvé votre doigt sur cette photo. Assurez-vous qu'il remplit le cadre devant un fond uni.",
+    "too_blurry": "Cette photo est floue. Appuyez votre main sur un support stable, touchez l'ongle à l'écran pour faire la mise au point, puis reprenez la photo.",
+    "no_contour_found": "Nous n'avons pas trouvé votre doigt. Tenez-le devant un mur uni ou une feuille de papier, le bout du doigt entièrement dans le guide, puis reprenez la photo.",
     "contour_too_small": "Votre doigt semble trop petit dans le cadre. Rapprochez la caméra et réessayez.",
     "contour_degenerate": "Cette photo n'a pas pu être traitée. Veuillez réessayer.",
-    "background_not_filling_frame": "Quelque chose derrière votre doigt est interprété comme en faisant partie. Utilisez une surface unie qui remplit tout le cadre, puis reprenez la photo.",
-    "fingertip_cropped": "Le bout de votre doigt est coupé au bord du cadre. Repositionnez-le pour qu'il soit entièrement visible, puis reprenez la photo.",
+    "background_not_filling_frame": "Tenez votre doigt devant un mur uni ou une feuille de papier blanche pour qu'il n'y ait rien d'autre derrière, puis reprenez la photo.",
+    "fingertip_cropped": "Le bout de votre doigt est coupé. Éloignez un peu la caméra pour que tout le bout du doigt soit dans le cadre, puis reprenez la photo.",
     "fingertip_not_clear": "Nous n'avons pas pu voir clairement le bout de votre doigt. Essayez un meilleur éclairage et gardez la caméra stable.",
     "cuticle_not_detected": "Nous n'avons pas pu repérer clairement votre ongle et votre cuticule. Assurez-vous que tout l'ongle est visible, face à la caméra.",
     "points_too_close": "Nous n'avons pas pu lire clairement la forme de votre ongle. Repositionnez votre doigt et reprenez la photo.",
@@ -337,7 +344,7 @@ export default {
     "insufficient_data_for_confident_call": "Nous n'avons pas assez de données validées sur ce signe pour trancher avec confiance, et nos deux vérifications ne concordaient pas. Reprenez la photo sous une bonne lumière, et envisagez de consulter un médecin si cela vous inquiète.",
     "requires_ai_model": "Ce signe ne peut être vérifié que par le modèle IA, qui n'est pas disponible pour le moment ; nous ne donnons donc pas de résultat.",
     "no_confident_ai_call": "Le modèle IA n'était pas assez sûr de ce signe sur votre photo pour se prononcer. Reprenez la photo du dessus sous une lumière uniforme avec l'ongle entier visible ; consultez un médecin si vous êtes inquiet.",
-    "default": "Nous n'avons pas détecté d'ongle sur cette photo. Essayez un fond plus uni, un meilleur éclairage et le doigt entier dans le cadre."
+    "default": "Nous n'avons pas trouvé d'ongle sur cette photo. Essayez avec un mur uni ou du papier derrière le doigt, une lumière vive et uniforme, et gardez tout le bout du doigt dans le cadre."
   },
   "status": {
     "outsideCount": "{n} hors de la plage typique",

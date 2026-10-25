@@ -333,6 +333,7 @@ export default function CameraCapture({ onCapture, loading, onClose }) {
           </svg>
           {t('camera.upload')}
         </button>
+        <p className="cam-upload-hint">{t('camera.uploadHint')}</p>
         <input
           ref={fileInputRef}
           type="file"

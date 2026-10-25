@@ -154,6 +154,21 @@ def history():
     return jsonify({"scans": [r.to_dict() for r in records]})
 
 
+@app.route("/history", methods=["DELETE"])
+def clear_history():
+    # only ever deletes the caller's own scans; with no valid client id there is nothing that is "theirs"
+    client_id = _client_id()
+    if client_id is None:
+        return jsonify({"error": "missing or invalid X-Client-Id"}), 400
+    try:
+        deleted = ScanRecord.query.filter(ScanRecord.client_id == client_id).delete(synchronize_session=False)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "could not clear history"}), 500
+    return jsonify({"deleted": deleted})
+
+
 @app.route("/feedback", methods=["POST"])
 def feedback():
     data = request.get_json(silent=True) or {}

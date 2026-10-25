@@ -133,6 +133,7 @@ export default {
     checking: 'Verificando la foto…',
     analyzing: 'Analizando…',
     upload: 'Subir una foto en su lugar',
+    uploadHint: "Sube una foto cercana de un solo dedo sobre un fondo liso, no de toda la mano.",
     stepOf: 'Paso {n} de 2',
   },
 
@@ -265,6 +266,12 @@ export default {
     example: 'Ejemplo',
     changed: 'Cambió',
     changedSinceLast: 'Cambió desde el último escaneo',
+    compareNone: "Nada cambió desde tu último escaneo.",
+    compareSome: "Cambió desde tu último escaneo: {names}.",
+    clear: "Borrar mi historial",
+    clearAsk: "¿Eliminar todos los escaneos guardados de este navegador? No se puede deshacer.",
+    clearYes: "Sí, eliminar",
+    clearNo: "Conservarlos",
     withinRange: 'Dentro del rango',
     outsideRange: 'Fuera del rango',
     inconclusive: 'No concluyente',
@@ -290,16 +297,12 @@ export default {
     invalid_image: 'Esa foto no se pudo procesar. Inténtalo de nuevo.',
     camera_feed_blank:
       'No recibimos una imagen real de tu cámara. Comprueba que el acceso a la cámara esté permitido y vuelve a cargar la página.',
-    too_blurry:
-      'Esa foto se ve borrosa. Mantén la mano y la cámara firmes, deja que enfoque y vuelve a tomarla.',
-    no_contour_found:
-      'No pudimos encontrar tu dedo en esa foto. Asegúrate de que llene el cuadro contra un fondo liso.',
+    too_blurry: "Esa foto está borrosa. Apoya la mano en algo firme, toca la uña en la pantalla para enfocar y vuelve a tomar la foto.",
+    no_contour_found: "No pudimos encontrar tu dedo. Sostenlo frente a una pared lisa o una hoja de papel, con toda la yema dentro de la guía, y vuelve a tomar la foto.",
     contour_too_small: 'Tu dedo se ve muy pequeño en el cuadro. Acerca la cámara e inténtalo de nuevo.',
     contour_degenerate: 'Esa foto no se pudo procesar. Inténtalo de nuevo.',
-    background_not_filling_frame:
-      'Algo detrás de tu dedo se está leyendo como parte de él. Usa una superficie lisa que llene todo el encuadre y vuelve a tomar la foto.',
-    fingertip_cropped:
-      'La punta de tu dedo queda cortada en el borde del cuadro. Muévela para que quede totalmente visible y vuelve a tomar la foto.',
+    background_not_filling_frame: "Sostén el dedo frente a una pared lisa o una hoja de papel en blanco para que no haya nada más detrás, y vuelve a tomar la foto.",
+    fingertip_cropped: "La punta de tu dedo queda cortada. Aleja un poco la cámara para que toda la punta quede dentro del cuadro y vuelve a tomar la foto.",
     fingertip_not_clear:
       'No pudimos ver con claridad la punta de tu dedo. Prueba con mejor iluminación y mantén la cámara firme.',
     cuticle_not_detected:
@@ -329,8 +332,7 @@ export default {
       'No tenemos suficientes datos validados sobre este signo para determinarlo con confianza, y nuestras dos revisiones no coincidieron. Vuelve a tomar la foto con buena luz, y considera mostrárselo a un médico si te preocupa.',
     requires_ai_model: 'Este signo solo lo puede revisar el modelo de IA, que no está disponible en este momento, así que no damos un resultado.',
     no_confident_ai_call: 'El modelo de IA no estuvo lo bastante seguro sobre este signo en tu foto para dar un resultado. Vuelve a tomar la foto desde arriba con buena luz y la uña completa a la vista; considera consultar a un médico si te preocupa.',
-    default:
-      'No pudimos detectar una uña en esa foto. Prueba con un fondo más liso, mejor iluminación y todo el dedo dentro del cuadro.',
+    default: "No pudimos encontrar una uña en esa foto. Prueba con una pared lisa o papel detrás del dedo, luz intensa y pareja, y mantén toda la punta del dedo dentro del cuadro.",
   },
 
   status: {

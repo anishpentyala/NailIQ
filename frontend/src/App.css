@@ -2647,3 +2647,74 @@
 @media (display-mode: standalone) and (max-width: 559px) {
   #root { bottom: auto; height: 100vh; }
 }
+
+/* ── Upload hint, scan comparison, clear history ── */
+.cam-upload-hint {
+  margin: -2px 0 0;
+  padding: 0 24px;
+  max-width: 320px;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.history-compare-note {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.history-compare-note--changed {
+  color: var(--text);
+  border-color: var(--primary);
+}
+
+.history-clear-btn {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.history-clear-confirm {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.history-clear-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.history-clear-actions > button {
+  flex: 1;
+}
+
+.history-clear-yes {
+  border: 1px solid #c0392b;
+  background: #c0392b;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-clear-yes:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

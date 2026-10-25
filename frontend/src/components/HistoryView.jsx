@@ -3,7 +3,7 @@ import {
   CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 import Icon from './Icon'
-import { getHistory } from '../api'
+import { clearHistory, getHistory } from '../api'
 import { overallStatus, relativeTime } from '../scanStatus'
 import { failureReasonMessage } from '../failureReasons'
 import { PLACEHOLDER_SCANS } from '../placeholderScans'
@@ -140,6 +140,57 @@ function ScanCard({ scan, previousScan, defaultOpen }) {
   )
 }
 
+// one-line summary of how the newest scan differs from the one before it
+function CompareNote({ scans }) {
+  const { t } = useI18n()
+  const [latest, previous] = scans
+  if (!previous || latest.isPlaceholder) return null
+  const changed = changedLabels(latest, previous)
+  const names = latest.findings.filter((f) => changed.has(f.label)).map((f) => findingName(t, f))
+  return (
+    <p className={`history-compare-note ${names.length ? 'history-compare-note--changed' : ''}`} role="status">
+      {names.length ? t('history.compareSome', { names: names.join(', ') }) : t('history.compareNone')}
+    </p>
+  )
+}
+
+function ClearHistory({ onCleared }) {
+  const { t } = useI18n()
+  const [asking, setAsking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(false)
+
+  const doClear = async () => {
+    setBusy(true)
+    setError(false)
+    try {
+      await clearHistory()
+      onCleared()
+    } catch {
+      setError(true)
+      setBusy(false)
+    }
+  }
+
+  if (!asking) {
+    return (
+      <button type="button" className="history-clear-btn" onClick={() => setAsking(true)}>
+        {t('history.clear')}
+      </button>
+    )
+  }
+  return (
+    <div className="history-clear-confirm" role="alertdialog" aria-label={t('history.clear')}>
+      <p>{t('history.clearAsk')}</p>
+      {error && <p className="camera-error" role="alert">{t('history.error')}</p>}
+      <div className="history-clear-actions">
+        <button type="button" className="secondary-btn" onClick={() => setAsking(false)} disabled={busy}>{t('history.clearNo')}</button>
+        <button type="button" className="history-clear-yes" onClick={doClear} disabled={busy}>{t('history.clearYes')}</button>
+      </div>
+    </div>
+  )
+}
+
 function AngleTrend({ scans }) {
   const { t, lang } = useI18n()
   const points = scans
@@ -213,6 +264,7 @@ export default function HistoryView() {
           {scans[0].isPlaceholder && (
             <p className="history-placeholder-note">{t('history.placeholderNote')}</p>
           )}
+          <CompareNote scans={scans} />
           <p className="history-rescan-note">{t('history.rescanNote')}</p>
           <AngleTrend scans={scans} />
           <div className="history-list">
@@ -220,6 +272,7 @@ export default function HistoryView() {
               <ScanCard key={scan.id} scan={scan} previousScan={scans[i + 1]} defaultOpen={i === 0} />
             ))}
           </div>
+          {!scans[0].isPlaceholder && <ClearHistory onCleared={() => setScans(PLACEHOLDER_SCANS)} />}
         </>
       )}
     </div>
