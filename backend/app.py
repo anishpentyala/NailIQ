@@ -7,7 +7,9 @@ import time
 from collections import deque
 from threading import Lock
 
-from flask import Flask, jsonify, request
+import re
+
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,6 +41,34 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 with app.app_context():
     db.create_all()
+    # databases created before per-browser history have no client_id column; add it in place
+    from sqlalchemy import inspect, text
+    if "client_id" not in {c["name"] for c in inspect(db.engine).get_columns("scan_record")}:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE scan_record ADD COLUMN client_id VARCHAR(64)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_scan_record_client_id ON scan_record (client_id)"))
+
+# Hosted deployment switches (all off by default, so local development is unchanged):
+#   NAILIQ_REQUIRE_CLIENT_ID=1  /history returns nothing unless the request carries an X-Client-Id
+#   NAILIQ_TRUST_PROXY=1         take the visitor IP from X-Forwarded-For (the host's proxy sits in front)
+#   NAILIQ_STATIC_DIR=<dir>      also serve the built web app (frontend/dist) from this server
+_REQUIRE_CLIENT_ID = os.environ.get("NAILIQ_REQUIRE_CLIENT_ID") == "1"
+_TRUST_PROXY = os.environ.get("NAILIQ_TRUST_PROXY") == "1"
+_STATIC_DIR = os.environ.get("NAILIQ_STATIC_DIR")
+_CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
+
+
+def _client_id():
+    value = request.headers.get("X-Client-Id", "")
+    return value if _CLIENT_ID_RE.match(value) else None
+
+
+def _visitor_ip():
+    if _TRUST_PROXY:
+        forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        if forwarded:
+            return forwarded
+    return request.remote_addr or "unknown"
 
 # basic rate limit so one person can't spam the analyze endpoint
 _RATE_LIMIT = 30          # requests
@@ -72,7 +102,7 @@ def _valid_b64_image(value, max_b64_len=10_000_000):
 @app.before_request
 def _enforce_rate_limit():
     if request.method == "POST" and request.path in ("/analyze", "/validate_photo", "/feedback"):
-        if _rate_limited(request.remote_addr or "unknown"):
+        if _rate_limited(_visitor_ip()):
             return jsonify({"error": "rate_limited", "message": "Too many requests; slow down."}), 429
     return None
 
@@ -92,7 +122,7 @@ def analyze():
               if box is not None else run_analysis(data['side_image'], data['top_image']))
 
     try:
-        record = ScanRecord(findings_json=json.dumps(result["findings"]))
+        record = ScanRecord(findings_json=json.dumps(result["findings"]), client_id=_client_id())
         db.session.add(record)
         db.session.commit()
         result["scan_id"] = record.id
@@ -114,9 +144,13 @@ def history():
     except ValueError:
         limit = _HISTORY_DEFAULT_LIMIT
     limit = max(1, min(limit, _HISTORY_MAX_LIMIT))
-    records = (
-        ScanRecord.query.order_by(ScanRecord.created_at.desc()).limit(limit).all()
-    )
+    query = ScanRecord.query
+    client_id = _client_id()
+    if client_id is not None:
+        query = query.filter(ScanRecord.client_id == client_id)
+    elif _REQUIRE_CLIENT_ID:
+        return jsonify({"scans": []})
+    records = query.order_by(ScanRecord.created_at.desc()).limit(limit).all()
     return jsonify({"scans": [r.to_dict() for r in records]})
 
 
@@ -171,6 +205,17 @@ def validate_photo_route():
     proposal = box if box is not None else (propose_nail_bbox(data['image']) if not require_keypoints else None)
     return jsonify({'ok': ok, 'failure_reason': failure_reason, 'top_nail_bbox': proposal,
                     'roi_review_available': 'assisted' in model_metadata().get('validated_roi_modes', [])})
+
+
+if _STATIC_DIR and os.path.isdir(_STATIC_DIR):
+    @app.route("/", defaults={"path": ""}, methods=["GET"])
+    @app.route("/<path:path>", methods=["GET"])
+    def web_app(path):
+        # API routes above are more specific and win; anything else is the built web app
+        full = os.path.join(_STATIC_DIR, path)
+        if path and os.path.isfile(full):
+            return send_from_directory(_STATIC_DIR, path)
+        return send_from_directory(_STATIC_DIR, "index.html")
 
 
 if __name__ == "__main__":

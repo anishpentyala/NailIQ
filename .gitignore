@@ -71,3 +71,4 @@ backend/tests/__pycache__/
 # local phone-testing certificate material
 data/phone_test_certs/
 data/phone_test_logs/
+hf_space_build/

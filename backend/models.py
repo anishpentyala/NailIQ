@@ -12,6 +12,8 @@ class ScanRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     findings_json = db.Column(db.Text, nullable=False)
+    # anonymous per-browser id (X-Client-Id header) so a shared server shows each person only their own scans
+    client_id = db.Column(db.String(64), nullable=True, index=True)
 
     def to_dict(self):
         return {

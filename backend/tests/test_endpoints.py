@@ -357,3 +357,35 @@ class TestHistoryEndpoint:
         assert 'id' in scan
         assert 'created_at' in scan
         assert 'findings' in scan
+
+
+class TestPerClientHistory:
+    """A shared server must show each browser only its own scans."""
+
+    ALICE = {'X-Client-Id': 'alice-browser-0123456789'}
+    BOB = {'X-Client-Id': 'bob-browser-9876543210'}
+
+    def _scan(self, client, headers):
+        b64_img = _make_tiny_jpeg()
+        return client.post('/analyze', json={'side_image': b64_img, 'top_image': b64_img}, headers=headers)
+
+    def test_each_client_sees_only_its_own_scans(self, client):
+        self._scan(client, self.ALICE)
+        self._scan(client, self.ALICE)
+        self._scan(client, self.BOB)
+        assert len(client.get('/history', headers=self.ALICE).get_json()['scans']) == 2
+        assert len(client.get('/history', headers=self.BOB).get_json()['scans']) == 1
+        # a stranger's id sees nothing
+        assert client.get('/history', headers={'X-Client-Id': 'stranger-browser-000000'}).get_json()['scans'] == []
+
+    def test_malformed_client_id_is_ignored(self, client):
+        self._scan(client, self.ALICE)
+        bad = {'X-Client-Id': 'short'}
+        # falls back to the legacy "no id" behaviour (all scans) when not required
+        assert len(client.get('/history', headers=bad).get_json()['scans']) == 1
+
+    def test_require_client_id_hides_everything_without_one(self, client, monkeypatch):
+        self._scan(client, self.ALICE)
+        monkeypatch.setattr(app_module, '_REQUIRE_CLIENT_ID', True)
+        assert client.get('/history').get_json()['scans'] == []
+        assert len(client.get('/history', headers=self.ALICE).get_json()['scans']) == 1

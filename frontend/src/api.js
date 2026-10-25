@@ -6,6 +6,25 @@ import { visibleFindings } from './conditions'
 const onLocalhost = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname)
 const API_BASE = import.meta.env.VITE_API_BASE || (onLocalhost ? 'http://localhost:5000' : '')
 
+// Anonymous per-browser id so a shared server shows each person only their own History. Not an account; no personal data.
+function clientId() {
+  try {
+    let id = localStorage.getItem('nailiq.clientId')
+    if (!id) {
+      id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`).replace(/[^A-Za-z0-9_-]/g, '')
+      localStorage.setItem('nailiq.clientId', id)
+    }
+    return id
+  } catch {
+    return null // storage blocked: History simply is not separated
+  }
+}
+axios.interceptors.request.use((config) => {
+  const id = clientId()
+  if (id) config.headers['X-Client-Id'] = id
+  return config
+})
+
 export async function analyzeImages({ sideImage, topImage, topNailBbox }) {
   const res = await axios.post(`${API_BASE}/analyze`, {
     side_image: sideImage,
