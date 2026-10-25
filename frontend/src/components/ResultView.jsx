@@ -215,7 +215,7 @@ function HeroPhoto({ topImage, bbox, gradcam, attention, tone }) {
     const zoom = 1 + 0.25 * ease(Math.min(1, progress * 1.6)) // pushes in as the scan "locks on"
     const w = Math.max(55 / bw, 100, 100 * ar) * zoom // image width as % of the circle
     const h = w / ar
-    const left = Math.min(0, Math.max(100 - w, 40 - fx * w)) // anchored left of centre: the right of the circle is off-screen
+    const left = Math.min(0, Math.max(100 - w, 50 - fx * w)) // the focus point sits at the centre of the circle
     const top = Math.min(0, Math.max(100 - h, 50 - fy * h))
     imgStyle = { left: `${left}%`, top: `${top}%`, width: `${w}%` }
     box = { left: `${left + x0 * w}%`, top: `${top + y0 * h}%`, width: `${(x1 - x0) * w}%`, height: `${(y1 - y0) * h}%` }

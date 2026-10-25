@@ -6,6 +6,7 @@ export default {
     appearanceNote: "Este resultado describe el aspecto de la uña en la foto superior. No se midió el ángulo ni la profundidad del perfil lateral.",
   "title": "Selecciona la uña",
   "instructions": "Mueve y ajusta el recuadro alrededor de una uña. Incluye sus bordes y un poco de piel.",
+  "tooBig": "El recuadro es grande. Redúcelo para que cubra solo la uña, no el dedo, y la lectura sea más precisa.",
   "photo": "Foto de la uña",
   "move": "Mover recuadro",
   "nw": "Ajustar esquina superior izquierda",

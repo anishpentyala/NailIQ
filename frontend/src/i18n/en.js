@@ -7,6 +7,7 @@ export default {
     appearanceNote: "This finding describes the nail’s appearance in the top photo. No side-profile angle or depth was measured.",
   "title": "Select the nail",
   "instructions": "Move and resize the box around one nail. Include its edges and a little surrounding skin.",
+  "tooBig": "That box is large. Shrink it so it covers just the nail, not the finger, for a more accurate read.",
   "photo": "Captured nail photo",
   "move": "Move nail box",
   "nw": "Resize top left",

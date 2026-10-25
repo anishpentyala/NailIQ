@@ -8,6 +8,7 @@ export default {
     "appearanceNote": "Kết quả này mô tả hình dáng của móng tay trong bức ảnh phía trên. Không có góc nhìn nghiêng hay độ sâu nào được đo lường.",
     "title": "Chọn móng tay",
     "instructions": "Di chuyển và điều chỉnh kích thước ô bao quanh một móng tay. Bao gồm các mép của móng và một ít da xung quanh.",
+    "tooBig": "Khung hơi lớn. Hãy thu nhỏ để chỉ bao quanh móng tay, không phải cả ngón tay, để kết quả chính xác hơn.",
     "photo": "Ảnh chụp móng tay",
     "move": "Di chuyển hộp đựng móng tay",
     "nw": "Thay đổi kích thước góc trên bên trái",

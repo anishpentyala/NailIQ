@@ -10,6 +10,7 @@ export default {
     appearanceNote: "Este resultado descreve a aparência da unha na foto superior. Nenhum ângulo ou profundidade do perfil lateral foi medido.",
   "title": "Selecione a unha",
   "instructions": "Mova e ajuste a caixa ao redor de uma unha. Inclua as bordas e um pouco de pele.",
+  "tooBig": "A caixa está grande. Reduza-a para cobrir apenas a unha, não o dedo, para uma leitura mais precisa.",
   "photo": "Foto da unha",
   "move": "Mover caixa",
   "nw": "Ajustar canto superior esquerdo",

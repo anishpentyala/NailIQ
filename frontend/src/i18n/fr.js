@@ -10,6 +10,7 @@ export default {
     appearanceNote: "Ce résultat décrit l’aspect de l’ongle sur la photo du dessus. Aucun angle ni profondeur du profil latéral n’a été mesuré.",
   "title": "Sélectionnez l’ongle",
   "instructions": "Déplacez et ajustez le cadre autour d’un ongle. Incluez ses bords et un peu de peau.",
+  "tooBig": "Le cadre est grand. Réduisez-le pour qu'il couvre uniquement l'ongle, pas le doigt, afin d'obtenir une lecture plus précise.",
   "photo": "Photo de l’ongle",
   "move": "Déplacer le cadre",
   "nw": "Ajuster le coin supérieur gauche",

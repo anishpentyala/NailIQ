@@ -2,11 +2,15 @@ import { useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 
 const LIMIT = 0.05
+const DEFAULT_BOX = [0.36, 0.14, 0.64, 0.42]
+const TOO_BIG_AREA = 0.18 // share of the photo; a nail rarely fills more than this
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value))
 
 export default function NailBoxSelector({ image, initialBox, busy, error, onConfirm, onRetake }) {
   const { t } = useI18n()
-  const [box, setBox] = useState(initialBox ?? [0.25, 0.2, 0.75, 0.7])
+  // Without a detected nail, start with a small box where the nail sits inside the camera guide (near the top of the
+  // ring, centred) rather than a half-photo box that swallows the whole finger.
+  const [box, setBox] = useState(initialBox ?? DEFAULT_BOX)
   const [aspect, setAspect] = useState(1)
   const frame = useRef(null)
   const drag = useRef(null)
@@ -71,6 +75,7 @@ export default function NailBoxSelector({ image, initialBox, busy, error, onConf
           ))}
         </div>
       </div>
+      {(box[2] - box[0]) * (box[3] - box[1]) > TOO_BIG_AREA && <p className="nail-crop-hint" role="status">{t('crop.tooBig')}</p>}
       {error && <p className="camera-error" role="alert">{error}</p>}
       <div className="nail-crop-actions">
         <button type="button" disabled={busy} onClick={() => onConfirm(box)}>{busy ? t('camera.checking') : t('crop.confirm')}</button>

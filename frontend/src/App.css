@@ -2360,7 +2360,7 @@
 
 .scan-hero-body {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
+  grid-template-columns: 128px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   margin-top: 16px;
@@ -2397,13 +2397,13 @@
 
 .hero-photo-wrap {
   position: sticky; top: 60px;
-  display: flex; flex-direction: column; align-items: flex-start;
+  display: flex; flex-direction: column; align-items: stretch;
 }
 .hero-photo {
   --glow: var(--h-good);
   --glow-soft: rgba(95, 207, 128, 0.22);
   position: relative;
-  width: 330px; height: 330px; flex: none;
+  width: 100%; aspect-ratio: 1; flex: none;
   border-radius: 50%;
   overflow: hidden;
   background: #111;
@@ -2443,13 +2443,13 @@
 :root.a11y-reduce-motion .hero-scanline { display: none; }
 @media (prefers-reduced-motion: reduce) { .hero-scanline { display: none; } }
 
-.hero-toggle { display: flex; gap: 4px; margin-top: 10px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); }
+.hero-toggle { display: flex; gap: 4px; margin-top: 10px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); align-self: center; }
 .hero-toggle button {
   border: none; background: transparent; color: var(--h-muted);
   font-size: 0.6875rem; font-weight: 600; padding: 5px 9px; border-radius: 999px;
 }
 .hero-toggle button.active { background: rgba(255, 255, 255, 0.16); color: var(--h-text); }
-.hero-photo-caption { margin-top: 8px; max-width: 200px; font-size: 0.6875rem; line-height: 1.35; color: var(--h-muted); }
+.hero-photo-caption { margin-top: 8px; font-size: 0.6875rem; line-height: 1.35; text-align: center; color: var(--h-muted); }
 
 .scan-hero-summary { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
 .scan-hero-summary-main { font-size: 1.0625rem; font-weight: 500; line-height: 1.4; color: var(--h-text); }
@@ -2471,7 +2471,7 @@
 /* Result cards: small muted label over a larger term, like the reference's "Blood Glucose / 125 mg/dl" stacks. */
 .sign-card-label { font-size: 0.6875rem; color: var(--h-muted); line-height: 1.2; }
 .sign-card-name { font-size: 1.0625rem; margin-top: -2px; }
-.hero-photo { width: 300px; height: 300px; }
+/* (the photo now fills its column; see .hero-photo above) */
 
 /* ================= Home dashboard ================= */
 .home-dash { display: flex; flex-direction: column; gap: 14px; }
@@ -2751,3 +2751,4 @@
 /* High contrast is a black theme: undo the light-mode-only colours above. */
 :root.a11y-contrast .history-changed-badge { color: var(--warn); }
 :root.a11y-contrast .bottom-nav-item:not(.active) { color: var(--text-muted); }
+.nail-crop-hint { max-width: 480px; margin: 0; text-align: center; font-size: 0.8125rem; color: var(--warn); }
