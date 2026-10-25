@@ -7,10 +7,19 @@ import { useI18n } from '../i18n'
 import { CONDITION_KEYS, CONDITION_ICONS, signNameParts } from '../conditions'
 import nailPhoto from '../assets/onboarding-nail.webp'
 
-function tipOfTheDay(tips) {
-  const start = new Date(new Date().getFullYear(), 0, 0)
-  const dayOfYear = Math.floor((Date.now() - start) / 86_400_000)
-  return tips[dayOfYear % tips.length]
+// The tip moves on every time the app is opened (the last one shown is remembered on this device) and again whenever
+// the card is tapped, so it visibly changes instead of repeating all day.
+const TIP_KEY = 'nailiq.tipIndex'
+
+function initialTipIndex() {
+  try {
+    const last = Number(localStorage.getItem(TIP_KEY))
+    const next = Number.isInteger(last) && localStorage.getItem(TIP_KEY) !== null ? last + 1 : Math.floor(Math.random() * 1000)
+    localStorage.setItem(TIP_KEY, String(next))
+    return next
+  } catch {
+    return Math.floor(Math.random() * 1000)
+  }
 }
 
 const WHY_ROWS = [
@@ -133,6 +142,14 @@ export default function HomeScreen({ onStartScan }) {
   // the not-scanned-yet state.
   const [scanState, setScanState] = useState('loading')
   const [scans, setScans] = useState([])
+  const [tipIndex, setTipIndex] = useState(initialTipIndex)
+  const nextTip = () =>
+    setTipIndex((i) => {
+      try {
+        localStorage.setItem(TIP_KEY, String(i + 1))
+      } catch { /* private mode: the tip still changes for this visit */ }
+      return i + 1
+    })
 
   useEffect(() => {
     let cancelled = false
@@ -202,13 +219,13 @@ export default function HomeScreen({ onStartScan }) {
         <p className="home-group-footnote">{t('home.whoFor')}</p>
       </section>
 
-      <section className="home-tip">
+      <button type="button" className="home-tip" onClick={nextTip}>
         <span className="home-card-icon home-card-icon--accent"><Icon name="sparkle" /></span>
         <div className="info-row-text">
           <strong>{t('home.dailyTip')}</strong>
-          <p>{tipOfTheDay(t('home.tips'))}</p>
+          <p aria-live="polite">{t('home.tips')[tipIndex % t('home.tips').length]}</p>
         </div>
-      </section>
+      </button>
 
       <p className="home-group-footnote home-disclaimer">{t('app.disclaimer')}</p>
     </div>
