@@ -56,7 +56,22 @@ function App() {
     setActiveTab('home')
   }, [])
 
-  if (intro) return <Onboarding onDone={() => setIntro(false)} />
+  // Finishing (or skipping) the intro always lands on Home, and drops ?intro from the address so a reload or a saved
+  // bookmark does not replay it.
+  const finishIntro = () => {
+    setActiveTab('home')
+    setResult(null)
+    setError(null)
+    setSettingsOpen(false)
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('intro')) {
+      url.searchParams.delete('intro')
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash)
+    }
+    setIntro(false)
+  }
+
+  if (intro) return <Onboarding onDone={finishIntro} />
 
   // go full-screen while the camera is active
   const isCameraActive = activeTab === 'scan' && !result && !error
