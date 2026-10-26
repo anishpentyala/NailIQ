@@ -5,6 +5,7 @@ import Icon from './Icon'
 import NailDiagram, { AnnotatedNailDiagram } from './NailDiagram'
 import { conditionSummary, conditionNextStep, signNameParts, CONDITION_ICONS as CONDITION_ICON } from '../conditions'
 import { useI18n, findingName } from '../i18n'
+import { saveReport } from '../reportShare'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
 
@@ -566,7 +567,7 @@ export default function ResultView({ result, topImage, onReset }) {
       )}
 
       <div className="result-actions">
-        <button type="button" className="secondary-btn" onClick={() => window.print()}>
+        <button type="button" className="secondary-btn" onClick={() => saveReport(t, lang, findings)}>
           {t('result.savePrint')}
         </button>
         <button type="button" className="secondary-btn" onClick={onReset}>
