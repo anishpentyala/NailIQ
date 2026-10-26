@@ -6,6 +6,7 @@ import Icon from './Icon'
 import { clearHistory, getHistory } from '../api'
 import { overallStatus, relativeTime } from '../scanStatus'
 import { failureReasonMessage } from '../failureReasons'
+import { DEMO_LABEL } from '../demoMode'
 import { PLACEHOLDER_SCANS } from '../placeholderScans'
 import { useI18n, findingName } from '../i18n'
 
@@ -101,6 +102,7 @@ function ScanCard({ scan, previousScan, defaultOpen }) {
         <div className="history-card-info">
           <span className="history-card-status">{status.label}</span>
           <span className="history-card-time">{relativeTime(scan.created_at, t, lang)}</span>
+          {scan.findings.some((f) => f.demo) && <span className="history-card-time">{DEMO_LABEL}</span>}
           {!open && (
             <span className="history-card-dots" aria-hidden="true">
               {scan.findings.map((f) => <span key={f.label} className={`history-finding-dot history-finding-dot--${f.verdict}`} />)}
