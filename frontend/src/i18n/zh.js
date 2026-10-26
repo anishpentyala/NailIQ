@@ -204,6 +204,8 @@ export default {
     closestMatch: '最接近的视觉匹配：{label} · 置信度 {pct}%',
     mlClosestMatch: 'AI 模型最接近的视觉匹配：{label}',
     savePrint: '保存 / 打印报告',
+    savePdf: '保存 PDF',
+    savePdfHint: '然后选择"存储到文件"保存，或选择打印。',
     scanAgain: '再次扫描',
     disclaimer:
       'NailIQ 是一款教育性筛查工具，不是医疗器械。它不诊断任何疾病。任何健康疑虑请务必咨询医生。',

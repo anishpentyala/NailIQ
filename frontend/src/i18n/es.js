@@ -208,6 +208,8 @@ export default {
     closestMatch: 'Coincidencia visual más cercana: {label} · {pct}% de confianza',
     mlClosestMatch: 'Coincidencia visual más cercana del modelo de IA: {label}',
     savePrint: 'Guardar / imprimir informe',
+    savePdf: 'Guardar PDF',
+    savePdfHint: 'Luego elige "Guardar en Archivos" para conservarlo, o Imprimir.',
     scanAgain: 'Escanear de nuevo',
     disclaimer:
       'NailIQ es una herramienta educativa de detección, no un dispositivo médico. No diagnostica ninguna condición. Consulta siempre a un médico sobre tus preocupaciones de salud.',

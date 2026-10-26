@@ -240,6 +240,8 @@ export default {
     "closestMatch": "Kết quả trùng khớp về mặt hình ảnh gần nhất: {label} · độ tin cậy {pct} %",
     "mlClosestMatch": "Kết quả khớp hình ảnh gần nhất của mô hình AI: {label}",
     "savePrint": "Lưu / in báo cáo",
+    "savePdf": "Lưu PDF",
+    "savePdfHint": "Sau đó chọn \"Lưu vào Tệp\" để giữ lại, hoặc In.",
     "scanAgain": "Quét lại",
     "disclaimer": "NailIQ là một công cụ sàng lọc mang tính giáo dục, không phải là thiết bị y tế. Sản phẩm này không dùng để chẩn đoán bất kỳ tình trạng bệnh lý nào. Hãy luôn tham khảo ý kiến bác sĩ khi có bất kỳ lo ngại nào về sức khỏe.",
     "sources": "Phương pháp và tính trung thực: ngưỡng góc nghiêng được xác định theo Hsu et al. (2024); các kiểm tra về màu sắc và kết cấu sử dụng các ngưỡng heuristic chưa được hiệu chuẩn và chỉ mang tính chất sàng lọc tín hiệu, không phải là các phép đo. Các giá trị màu được điều chỉnh theo điều kiện ánh sáng và tông màu da, nhưng độ chính xác trong thực tế chưa được xác minh.",

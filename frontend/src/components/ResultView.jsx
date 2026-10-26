@@ -6,6 +6,7 @@ import NailDiagram, { AnnotatedNailDiagram } from './NailDiagram'
 import { conditionSummary, conditionNextStep, signNameParts, CONDITION_ICONS as CONDITION_ICON } from '../conditions'
 import { useI18n, findingName } from '../i18n'
 import { saveReport } from '../reportShare'
+import ReportPreview from './ReportPreview'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
 
@@ -479,6 +480,7 @@ function ResultSummary({ outside, inconclusive, total }) {
 
 export default function ResultView({ result, topImage, onReset }) {
   const { t, lang } = useI18n()
+  const [report, setReport] = useState(null)
   const findings = result.findings ?? []
   const scanId = result.scan_id ?? null
   const bbox = result.overlay?.top_bbox_norm ?? null
@@ -567,7 +569,7 @@ export default function ResultView({ result, topImage, onReset }) {
       )}
 
       <div className="result-actions">
-        <button type="button" className="secondary-btn" onClick={() => saveReport(t, lang, findings)}>
+        <button type="button" className="secondary-btn" onClick={() => saveReport(t, lang, findings, setReport)}>
           {t('result.savePrint')}
         </button>
         <button type="button" className="secondary-btn" onClick={onReset}>
@@ -580,6 +582,7 @@ export default function ResultView({ result, topImage, onReset }) {
         <p className="result-disclaimer">{t('result.disclaimer')}</p>
         <p className="result-sources">{t('result.sources')}</p>
       </div>
+      {report && <ReportPreview report={report} onClose={() => setReport(null)} />}
     </div>
   )
 }

@@ -209,6 +209,8 @@ export default {
     closestMatch: 'Closest visual match: {label} · {pct}% confidence',
     mlClosestMatch: "AI model's closest visual match: {label}",
     savePrint: 'Save / print report',
+    savePdf: 'Save PDF',
+    savePdfHint: 'Then choose "Save to Files" to keep it, or Print.',
     scanAgain: 'Scan again',
     disclaimer:
       'NailIQ is an educational screening tool, not a medical device. It does not diagnose any condition. Always consult a doctor about health concerns.',

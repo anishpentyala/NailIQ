@@ -243,6 +243,8 @@ export default {
     "closestMatch": "Correspondance visuelle la plus proche : {label} · {pct}% de confiance",
     "mlClosestMatch": "Correspondance visuelle la plus proche du modèle IA : {label}",
     "savePrint": "Enregistrer / imprimer le rapport",
+    "savePdf": "Enregistrer le PDF",
+    "savePdfHint": "Choisissez ensuite « Enregistrer dans Fichiers » pour le garder, ou Imprimer.",
     "scanAgain": "Scanner à nouveau",
     "disclaimer": "NailIQ est un outil éducatif de dépistage, pas un dispositif médical. Il ne diagnostique aucune maladie. Consultez toujours un médecin pour vos préoccupations de santé.",
     "sources": "Méthode et honnêteté : le seuil d'angle de l'hippocratisme suit Hsu et al. (2024) ; les vérifications de couleur et de texture utilisent des seuils heuristiques non calibrés et sont des signaux de dépistage, pas des mesures. Les lectures de couleur s'ajustent à l'éclairage et à la carnation, mais leur précision en conditions réelles n'est pas vérifiée.",

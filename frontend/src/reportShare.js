@@ -1,7 +1,6 @@
-// "Save / print report" for the installed (Home Screen) app. iOS ignores window.print() in a standalone web app, so
-// there the report is drawn onto page-sized images and handed to the share sheet, which offers Print, Save Image,
-// Files, Mail and Messages. Canvas text uses the system fonts, so every language renders. Everywhere else the
-// browser's own print dialog is used, with the print stylesheet in App.css.
+// "Save / print report": draws the report onto A4 pages with canvas and turns them into a PDF. iOS ignores
+// window.print() in a Home Screen app, so a PDF is the one format that works there and in every browser. Canvas
+// text uses the system fonts, so every language renders.
 import { failureReasonMessage } from './failureReasons'
 import { findingName } from './i18n'
 
@@ -105,23 +104,91 @@ export function buildReportPages(t, lang, findings) {
   return pages
 }
 
-const toFile = (canvas, name) =>
-  new Promise((resolve) => canvas.toBlob((blob) => resolve(new File([blob], name, { type: 'image/png' })), 'image/png'))
+// A minimal PDF: one A4 page per canvas, each page a full-page JPEG image (DCTDecode). Built by hand so the app
+// needs no PDF library.
+export function pagesToPdf(pages) {
+  const enc = new TextEncoder()
+  const parts = []
+  const offsets = []
+  let length = 0
+  const push = (chunk) => {
+    const bytes = typeof chunk === 'string' ? enc.encode(chunk) : chunk
+    parts.push(bytes)
+    length += bytes.length
+  }
+  const object = (id, ...chunks) => {
+    offsets[id] = length
+    push(`${id} 0 obj\n`)
+    chunks.forEach(push)
+    push('\nendobj\n')
+  }
+  const pw = 595.28 // A4 in points
+  const ph = 841.89
+  const pageIds = pages.map((_, i) => 3 + i * 3)
 
-export async function saveReport(t, lang, findings) {
-  if (!isStandalone() || !navigator.canShare) {
-    window.print()
-    return
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n')
+  object(1, '<< /Type /Catalog /Pages 2 0 R >>')
+  object(2, `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`)
+  pages.forEach((canvas, i) => {
+    const id = pageIds[i]
+    const jpeg = Uint8Array.from(atob(canvas.toDataURL('image/jpeg', 0.92).split(',')[1]), (c) => c.charCodeAt(0))
+    const draw = `q ${pw} 0 0 ${ph} 0 0 cm /Im0 Do Q`
+    object(id, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im0 ${id + 2} 0 R >> >> /Contents ${id + 1} 0 R >>`)
+    object(id + 1, `<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`)
+    object(id + 2, `<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`, jpeg, '\nendstream')
+  })
+  const count = 3 + pages.length * 3
+  const xref = length
+  push(`xref\n0 ${count}\n0000000000 65535 f \n`)
+  for (let id = 1; id < count; id++) push(`${String(offsets[id]).padStart(10, '0')} 00000 n \n`)
+  push(`trailer\n<< /Size ${count} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`)
+  const bytes = new Uint8Array(length)
+  let at = 0
+  for (const part of parts) {
+    bytes.set(part, at)
+    at += part.length
   }
-  const pages = buildReportPages(t, lang, findings)
-  const files = await Promise.all(pages.map((c, i) => toFile(c, `NailIQ-report-${i + 1}.png`)))
-  if (!navigator.canShare({ files })) {
-    window.print()
-    return
-  }
+  return bytes
+}
+
+function download(file) {
+  const url = URL.createObjectURL(file)
+  const link = document.createElement('a')
+  link.download = file.name
+  link.href = url
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 10000)
+}
+
+// Saves the report as a PDF. A browser downloads it straight away. iOS Home Screen apps can't download a file the
+// page made itself (taps on a download link are silently ignored, and opening the file replaces the app with a
+// screen it can't leave), so there the report opens in an in-app preview instead (onPreview gets the page images and
+// the PDF file), and its Save PDF button hands the file to iOS, whose sheet offers Save to Files and Print.
+export function saveReport(t, lang, findings, onPreview) {
+  let pages
+  let file
   try {
-    await navigator.share({ files, title: t('result.reportTitle') })
-  } catch (err) {
-    if (err?.name !== 'AbortError') window.print()
+    pages = buildReportPages(t, lang, findings)
+    const name = `NailIQ-report-${new Date().toLocaleDateString('en-CA')}.pdf` // en-CA is YYYY-MM-DD, local date
+    file = new File([pagesToPdf(pages)], name, { type: 'application/pdf' })
+  } catch {
+    window.print()
+    return
+  }
+  if (isStandalone() && onPreview) onPreview({ images: pages.map((c) => c.toDataURL('image/jpeg', 0.9)), file })
+  else download(file)
+}
+
+export async function savePdfFile(file) {
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] })
+    } catch {
+      // the person closed the sheet
+    }
+  } else {
+    download(file)
   }
 }

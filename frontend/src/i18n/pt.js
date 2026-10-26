@@ -243,6 +243,8 @@ export default {
     "closestMatch": "Correspondência visual mais próxima: {label} · {pct}% de confiança",
     "mlClosestMatch": "Correspondência visual mais próxima do modelo de IA: {label}",
     "savePrint": "Salvar / imprimir relatório",
+    "savePdf": "Salvar PDF",
+    "savePdfHint": "Depois escolha \"Salvar em Arquivos\" para guardar, ou Imprimir.",
     "scanAgain": "Escanear novamente",
     "disclaimer": "O NailIQ é uma ferramenta educacional de triagem, não um dispositivo médico. Ele não diagnostica nenhuma condição. Sempre consulte um médico em caso de preocupações com a saúde.",
     "sources": "Método e honestidade: o limiar do ângulo de baqueteamento segue Hsu et al. (2024); as verificações de cor e textura utilizam limiares heurísticos não calibrados e constituem sinais de triagem, não medições. As leituras de cor são ajustadas de acordo com a iluminação e o tom de pele, mas a precisão em condições reais não foi verificada.",
