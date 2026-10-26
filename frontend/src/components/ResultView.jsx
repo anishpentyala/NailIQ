@@ -7,6 +7,7 @@ import { conditionSummary, conditionNextStep, signNameParts, CONDITION_ICONS as 
 import { useI18n, findingName } from '../i18n'
 import { saveReport } from '../reportShare'
 import ReportPreview from './ReportPreview'
+import { DEMO_LABEL } from '../demoMode'
 
 const VERDICT_ICON = { within: 'checkCircle', outside: 'alertTriangle', inconclusive: 'helpCircle' }
 
@@ -20,7 +21,7 @@ function mlLabelText(t, label) {
 function FeedbackRow({ scanId, finding, showImpact }) {
   const { t } = useI18n()
   const [sent, setSent] = useState(false)
-  if (finding.verdict === 'inconclusive') return null
+  if (finding.verdict === 'inconclusive' || finding.demo) return null
 
   const send = (agreed) => {
     setSent(true)
@@ -502,6 +503,11 @@ export default function ResultView({ result, topImage, onReset }) {
         <h1>{t('result.reportTitle')}</h1>
         <p>{new Date().toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
+      {result.demo && (
+        <p className="result-demo-label" role="note" style={{ textAlign: 'center', fontWeight: 600, margin: '8px 0' }}>
+          {DEMO_LABEL}
+        </p>
+      )}
       <ScanHero
         findings={findings}
         outside={outside}
