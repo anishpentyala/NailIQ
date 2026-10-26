@@ -22,16 +22,22 @@ export function setDemoMode(on) {
   }
 }
 
-// Runs the real analysis first (so the photo checks and nail detection still apply), then, only if at least one
-// sign could be read from a nail in the photo, reports every sign as within typical range. If no sign could be
-// read (no nail found / unusable photo) the real "couldn't analyze" result is returned unchanged.
+// A nail counts as present only when the real analysis located one: the engine returns overlay.top_bbox_norm
+// only after it found a nail region that passed its own region-quality check. A blank, blurry or non-nail photo
+// gets no region. Demo mode runs the real analysis first, so those photo checks still apply, and with no region the
+// real "couldn't analyze" result is returned unchanged.
+export function hasLocatedNail(data) {
+  const box = data?.overlay?.top_bbox_norm
+  const located = Array.isArray(box) && box.length === 4 && box.every((n) => typeof n === 'number')
+  return located
+}
+
 export function applyDemoResult(data) {
-  const findings = data?.findings ?? []
-  if (!findings.some((f) => f.verdict !== 'inconclusive')) return data
+  if (!hasLocatedNail(data)) return data
   return {
     ...data,
     demo: true,
     demo_label: DEMO_LABEL,
-    findings: findings.map((f) => ({ ...f, verdict: 'within', demo: true, failure_reason: null })),
+    findings: (data.findings ?? []).map((f) => ({ ...f, verdict: 'within', demo: true, failure_reason: null })),
   }
 }
