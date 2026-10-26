@@ -3,6 +3,7 @@ import Icon from './Icon'
 import PrivacySheet from './PrivacySheet'
 import DisclaimerSheet from './DisclaimerSheet'
 import { useI18n, LANGUAGES } from '../i18n'
+import { DEMO_LABEL, isDemoMode, setDemoMode } from '../demoMode'
 
 function Toggle({ id, label, description, checked, onChange }) {
   return (
@@ -31,6 +32,7 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
   const sheetRef = useRef(null)
   const [privacyOpen, setPrivacyOpen] = useState(false)
   const [disclaimersOpen, setDisclaimersOpen] = useState(false)
+  const [demoOn, setDemoOn] = useState(isDemoMode())
 
   useEffect(() => {
     const onKey = (e) => {
@@ -114,6 +116,15 @@ export default function SettingsSheet({ onClose, onReplayIntro }) {
             description={t('settings.reduceMotionDesc')}
             checked={reduceMotion}
             onChange={(on) => setPref('reduceMotion', on)}
+          />
+
+          <h3 className="settings-group-title">Demo mode</h3>
+          <Toggle
+            id="setting-demo-mode"
+            label="Demo mode"
+            description={`Shows a fixed result for scans with a nail in the photo. Results are labeled "${DEMO_LABEL}". Turn off to use the real scanner.`}
+            checked={demoOn}
+            onChange={(on) => { setDemoMode(on); setDemoOn(on) }}
           />
 
           <button

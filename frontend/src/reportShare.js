@@ -3,6 +3,7 @@
 // text uses the system fonts, so every language renders.
 import { failureReasonMessage } from './failureReasons'
 import { findingName } from './i18n'
+import { DEMO_LABEL } from './demoMode'
 
 const W = 1240 // A4 at 150 dpi
 const H = 1754
@@ -86,6 +87,7 @@ export function buildReportPages(t, lang, findings) {
   write(t('result.reportTitle'), { size: 46, weight: 700, gap: 6 })
   write(new Date().toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' }),
     { size: 28, color: COLOR.muted, gap: 24 })
+  if (findings.some((f) => f.demo)) write(DEMO_LABEL, { size: 30, weight: 700, gap: 14 })
   write(summaryText(t, findings), { size: 34, weight: 600, gap: 20 })
   rule()
 
@@ -99,6 +101,7 @@ export function buildReportPages(t, lang, findings) {
     rule()
   }
 
+  if (findings.some((f) => f.demo)) write(DEMO_LABEL, { size: 24, weight: 600, color: COLOR.muted, gap: 12 })
   write(t('result.disclaimer'), { size: 24, color: COLOR.muted, gap: 12 })
   write(t('result.sources'), { size: 22, color: COLOR.muted, gap: 0 })
   return pages

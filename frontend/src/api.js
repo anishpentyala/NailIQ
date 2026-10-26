@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { visibleFindings } from './conditions'
 import { bundlePresent, onDeviceCall, onDeviceReady } from './ondevice'
+import { applyDemoResult, applyDemoToScans, isDemoMode, rememberDemoScan } from './demoMode'
 import { clearLocalScans, listLocalScans, saveLocalFeedback, saveLocalScan } from './localHistory'
 
 // On localhost the backend is on :5000. Opened from any other host (an HTTPS tunnel for phone testing), use the same
@@ -42,6 +43,16 @@ export async function analyzeImages({ sideImage, topImage, topNailBbox }) {
   } else {
     data = (await axios.post(`${API_BASE}/analyze`, payload)).data
   }
+  if (isDemoMode()) {
+    const demo = applyDemoResult(data)
+    if (demo.demo) {
+      // saved like any scan, but with the labeled demo findings
+      const demoFindings = visibleFindings(demo.findings)
+      const demoScanId = local ? saveLocalScan(demo.findings).id : data.scan_id
+      rememberDemoScan(demoScanId, demo.findings)
+      return { ...demo, scan_id: demoScanId, findings: demoFindings }
+    }
+  }
   const scanId = local ? saveLocalScan(data.findings).id : data.scan_id
   return { ...data, scan_id: scanId, findings: visibleFindings(data.findings) }
 }
@@ -56,7 +67,7 @@ export async function getHistory(limit) {
   let data
   if (await bundlePresent()) data = { scans: listLocalScans(limit) }
   else data = (await axios.get(`${API_BASE}/history`, { params: limit ? { limit } : undefined })).data
-  return { ...data, scans: (data.scans ?? []).map((scan) => ({ ...scan, findings: visibleFindings(scan.findings) })) }
+  return { ...data, scans: applyDemoToScans(data.scans ?? []).map((scan) => ({ ...scan, findings: visibleFindings(scan.findings) })) }
 }
 
 export async function submitFeedback({ scanId, label, shownVerdict, agreed, note }) {
