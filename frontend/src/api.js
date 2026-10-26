@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { visibleFindings } from './conditions'
 import { bundlePresent, onDeviceCall, onDeviceReady } from './ondevice'
+import { applyDemoResult, isDemoMode } from './demoMode'
 import { clearLocalScans, listLocalScans, saveLocalFeedback, saveLocalScan } from './localHistory'
 
 // On localhost the backend is on :5000. Opened from any other host (an HTTPS tunnel for phone testing), use the same
@@ -41,6 +42,11 @@ export async function analyzeImages({ sideImage, topImage, topNailBbox }) {
     data = await onDeviceCall('analyze', payload)
   } else {
     data = (await axios.post(`${API_BASE}/analyze`, payload)).data
+  }
+  if (isDemoMode()) {
+    // demo results are not stored as scans or sent as feedback
+    const demo = applyDemoResult(data)
+    if (demo.demo) return { ...demo, scan_id: null, findings: visibleFindings(demo.findings) }
   }
   const scanId = local ? saveLocalScan(data.findings).id : data.scan_id
   return { ...data, scan_id: scanId, findings: visibleFindings(data.findings) }
