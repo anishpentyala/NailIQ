@@ -41,3 +41,32 @@ export function applyDemoResult(data) {
     findings: (data.findings ?? []).map((f) => ({ ...f, verdict: 'within', demo: true, failure_reason: null })),
   }
 }
+
+// Demo scans stay in History like any other scan, but the findings shown there are the demo findings (labeled), never
+// the engine's real ones. The server keeps the engine's own record, so remember which scan ids were demo scans here.
+const SCANS_KEY = 'nailiq.demoScans'
+
+function readDemoScans() {
+  try {
+    return JSON.parse(localStorage.getItem(SCANS_KEY)) ?? {}
+  } catch {
+    return {}
+  }
+}
+
+export function rememberDemoScan(id, findings) {
+  if (id == null) return
+  try {
+    const all = readDemoScans()
+    all[String(id)] = findings
+    const keep = Object.keys(all).slice(-200)
+    localStorage.setItem(SCANS_KEY, JSON.stringify(Object.fromEntries(keep.map((k) => [k, all[k]]))))
+  } catch {
+    /* storage blocked: the scan simply shows its real record in History */
+  }
+}
+
+export function applyDemoToScans(scans) {
+  const all = readDemoScans()
+  return scans.map((scan) => (all[String(scan.id)] ? { ...scan, findings: all[String(scan.id)] } : scan))
+}
