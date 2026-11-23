@@ -342,3 +342,8 @@ reasonably decide yourself")
   deliberately asymmetrically (the bottom is never padded away), since a symmetric
   crop erases the very border-contact signal the fix depends on. See CLAUDE.md's
   "Real-photo framing" section and `ml/eval/eval_real_hands.py`.
+
+
+## AI development disclosure
+
+Claude Code and OpenAI Codex wrote much of the code under Anish Pentyala's direction. Anish directed and reviewed model selection, training runs, evaluation decisions, and final changes. See ATTRIBUTION.md for model and dataset sources. The project is not clinically validated.
